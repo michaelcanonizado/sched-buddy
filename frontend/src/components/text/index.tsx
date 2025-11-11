@@ -1,7 +1,11 @@
 import { cn } from '@/lib/cn'
 
+/*
+Minor Third is used
+*/
+
 export const textDisplayClassNames =
-  'font-heading text-foreground text-[39.4px] leading-[110%] font-[850] tracking-[-0.2px]'
+  'font-heading text-foreground text-[47.28px] leading-[110%] font-[850] tracking-[-0.2px]'
 export const TextDisplay = ({
   className,
   children,

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import '@/styles/globals.css'
 import { Inter, Nunito } from 'next/font/google'
+import Navigation from '@/features/navigation/components'
 
 const nunito = Nunito({
   variable: '--font-nunito',
@@ -27,9 +28,12 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body
-        className={`${nunito.variable} ${inter.variable} light antialiased`}
+        className={`${nunito.variable} ${inter.variable} light relative antialiased`}
       >
-        {children}
+        <header className='sticky top-0 z-[999]'>
+          <Navigation />
+        </header>
+        <main>{children}</main>
       </body>
     </html>
   )

@@ -47,6 +47,7 @@ function Button({
         textBodyClassNames,
         'font-heading font-[850] tracking-[0.3px]',
         buttonVariants({ variant, size, className }),
+        'focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive focus-visible:ring-[3px]',
       )}
       {...props}
     />

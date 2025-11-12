@@ -1,6 +1,7 @@
-import Button from '@/components/button'
 import Container from '@/components/container'
 import { TextBody, TextDisplay, TextHeading } from '@/components/text'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 export default function HomePage() {
   return (
@@ -34,7 +35,9 @@ export default function HomePage() {
               </TextBody>
             </div>
             <div className='flex w-full flex-row justify-center gap-4'>
-              <Button>Get Started</Button>
+              <Button>
+                <Link href='/schedule'>Get Started</Link>
+              </Button>
               <Button variant='outline'>Pay ₱1000</Button>
             </div>
           </div>

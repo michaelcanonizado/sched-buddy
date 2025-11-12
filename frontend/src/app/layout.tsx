@@ -30,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${nunito.variable} ${inter.variable} light relative antialiased`}
       >
-        <header className='sticky top-0 z-[999]'>
+        <header className='sticky top-0 z-999'>
           <Navigation />
         </header>
         <main>{children}</main>

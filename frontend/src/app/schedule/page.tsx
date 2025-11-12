@@ -1,5 +1,6 @@
 import Container from '@/components/container'
 import { Button } from '@/components/ui/button'
+import ChangeDisplayButton from '@/features/schedule/components/change-display-button'
 import Schedule from '@/features/schedule/components/schedule'
 import {
   CalendarPlusIcon,
@@ -20,10 +21,7 @@ export default function SchedulePage() {
           <Button variant='outline'>
             <ScanQrCodeIcon /> Scan COR
           </Button>
-          <Button variant='outline'>
-            <MonitorSmartphoneIcon />
-            Pick a Display
-          </Button>
+          <ChangeDisplayButton />
           <Button variant='outline'>
             <CalendarPlusIcon /> Add Course
           </Button>

@@ -2,10 +2,10 @@ import Button from '@/components/button'
 import Container from '@/components/container'
 import { TextBody, TextDisplay, TextHeading } from '@/components/text'
 
-export default function Home() {
+export default function HomePage() {
   return (
     <div className='grid h-screen w-screen place-items-center'>
-      <Container className=''>
+      <Container>
         <div className='flex flex-col items-center justify-center gap-12'>
           <div className='flex flex-col items-center gap-4'>
             <TextDisplay className='text-center'>

@@ -43,8 +43,11 @@ export default function ScheduleView({ className }: ComponentClassNameProp) {
         rotate: orientation === 'portrait' ? `0deg` : `-90deg`,
       }}
       className={cn(
-        'grid place-items-center rounded-2xl bg-orange-500',
+        'grid place-items-center bg-orange-500',
         'h-full max-w-min transition-all duration-300',
+        display.type !== 'phone' && display.type !== 'tablet'
+          ? 'rounded-none'
+          : 'rounded-2xl',
         className,
       )}
     >

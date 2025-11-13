@@ -20,26 +20,6 @@ export default function ScheduleView({ className }: ComponentClassNameProp) {
     <div
       style={{
         aspectRatio: `${antecedent}/${consequent}`,
-        /*
-		aspectRatio:
-          orientation === 'portrait'
-            ? `${antecedent}/${consequent}`
-            : `${consequent}/${antecedent}`,
-
-		// landscape: {
-		// 	width: 100%;
-		// 	max-height: 100%;
-		// }
-
-		// portrait: {
-		// 	height: 100%;
-		// 	max-width: 100%;
-		// }
-        width: orientation === 'portrait' ? `auto` : `100%`,
-        height: orientation === 'portrait' ? `100%` : `auto`,
-        maxWidth: orientation === 'portrait' ? `100%` : `none`,
-        maxHeight: orientation === 'portrait' ? `none` : `100%`,
-		*/
         rotate: orientation === 'portrait' ? `0deg` : `-90deg`,
       }}
       className={cn(

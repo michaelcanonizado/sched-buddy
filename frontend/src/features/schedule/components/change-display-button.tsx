@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import { MonitorSmartphoneIcon } from 'lucide-react'
 import displays from '@/features/display/lib/displays'
@@ -6,14 +8,16 @@ import {
   DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { TextBody } from '@/components/text'
+import { useDisplayActions } from '@/features/display/store/use-display-store'
 
 export default function ChangeDisplayButton() {
+  const { setDisplay } = useDisplayActions()
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -34,9 +38,11 @@ export default function ChangeDisplayButton() {
           <div className='flex flex-col gap-2'>
             {displays.map((display, index) => {
               return (
-                <Button key={index} variant='outline'>
-                  {display.name}
-                </Button>
+                <DialogClose key={index} asChild>
+                  <Button variant='outline' onClick={() => setDisplay(display)}>
+                    {display.name}
+                  </Button>
+                </DialogClose>
               )
             })}
           </div>

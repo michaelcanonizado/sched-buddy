@@ -28,12 +28,12 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body
-        className={`${nunito.variable} ${inter.variable} light relative antialiased`}
+        className={`${nunito.variable} ${inter.variable} light relative flex min-h-screen flex-col antialiased`}
       >
         <header className='sticky top-0 z-999'>
           <Navigation />
         </header>
-        <main>{children}</main>
+        <main className='flex grow flex-col'>{children}</main>
       </body>
     </html>
   )

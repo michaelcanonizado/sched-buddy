@@ -1,4 +1,4 @@
-type Display = {
+export type Display = {
   name: string
   type: 'phone' | 'tablet' | 'paper' | 'custom'
   /* In pixels */

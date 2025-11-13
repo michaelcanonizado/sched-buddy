@@ -6,7 +6,6 @@ import {
   CalendarPlusIcon,
   FolderUpIcon,
   ImageDownIcon,
-  MonitorSmartphoneIcon,
   PencilIcon,
   PlusIcon,
   ScanQrCodeIcon,
@@ -15,8 +14,8 @@ import {
 
 export default function SchedulePage() {
   return (
-    <Container className='mt-16 max-w-[1440px]'>
-      <div className='flex flex-row gap-4'>
+    <Container className='mt-16 mb-8 flex max-w-[1440px] grow'>
+      <div className='flex grow flex-row gap-4'>
         <div className='flex flex-col gap-4'>
           <Button variant='outline'>
             <ScanQrCodeIcon /> Scan COR
@@ -46,7 +45,9 @@ export default function SchedulePage() {
             New Schedule
           </Button>
         </div>
-        <Schedule className='grow bg-orange-500' />
+        <div className='grid grow place-items-center'>
+          <Schedule className='bg-orange-500' />
+        </div>
       </div>
     </Container>
   )

@@ -8,7 +8,7 @@ import {
 } from '@/features/display/store/use-display-store'
 import { cn } from '@/lib/utils'
 
-export default function Schedule({ className }: ComponentClassNameProp) {
+export default function ScheduleView({ className }: ComponentClassNameProp) {
   const display = useDisplay()
   const orientation = useDisplayOrientation()
   const { antecedent, consequent } = getAspectRatio(

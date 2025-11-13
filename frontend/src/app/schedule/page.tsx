@@ -1,7 +1,7 @@
 import Container from '@/components/container'
 import { Button } from '@/components/ui/button'
 import ChangeDisplayButton from '@/features/schedule/components/change-display-button'
-import Schedule from '@/features/schedule/components/schedule'
+import ScheduleView from '@/features/schedule/components/schedule-view'
 import {
   CalendarPlusIcon,
   FolderUpIcon,
@@ -46,7 +46,7 @@ export default function SchedulePage() {
           </Button>
         </div>
         <div className='grid w-full place-items-center overflow-hidden rounded-xl border-2 p-4'>
-          <Schedule />
+          <ScheduleView />
         </div>
       </div>
     </Container>

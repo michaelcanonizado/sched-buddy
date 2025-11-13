@@ -16,7 +16,7 @@ import { TextBody } from '@/components/text'
 import { useDisplayActions } from '@/features/display/store/use-display-store'
 
 export default function ChangeDisplayButton() {
-  const { setDisplay } = useDisplayActions()
+  const { setDisplay, setOrientation } = useDisplayActions()
 
   return (
     <Dialog>
@@ -35,6 +35,20 @@ export default function ChangeDisplayButton() {
         </DialogHeader>
         <div className='flex flex-col gap-2'>
           <TextBody className='text-center'>Temporary content</TextBody>
+          <div className='grid grid-cols-2 gap-2'>
+            <Button
+              variant='outline'
+              onClick={() => setOrientation('portrait')}
+            >
+              Portrait
+            </Button>
+            <Button
+              variant='outline'
+              onClick={() => setOrientation('landscape')}
+            >
+              Landscape
+            </Button>
+          </div>
           <div className='flex flex-col gap-2'>
             {displays.map((display, index) => {
               return (

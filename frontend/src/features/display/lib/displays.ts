@@ -1,7 +1,11 @@
 export type Display = {
   name: string
   type: 'phone' | 'tablet' | 'paper' | 'custom'
-  /* In pixels */
+  /* 
+  Rules:
+  1) Unit is in pixels
+  2) Height should be greater than the width to set the initial orientation to be portrait
+  */
   dimensions: {
     width: number
     height: number

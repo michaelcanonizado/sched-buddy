@@ -45,8 +45,8 @@ export default function SchedulePage() {
             New Schedule
           </Button>
         </div>
-        <div className='grid grow place-items-center'>
-          <Schedule className='bg-orange-500' />
+        <div className='grid w-full place-items-center overflow-hidden rounded-xl border-2 p-4'>
+          <Schedule />
         </div>
       </div>
     </Container>

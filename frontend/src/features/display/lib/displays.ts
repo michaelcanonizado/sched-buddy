@@ -22,6 +22,14 @@ const displays: Display[] = [
     },
   },
   {
+    name: 'iPad Pro 11"',
+    type: 'tablet',
+    dimensions: {
+      width: 834,
+      height: 1194,
+    },
+  },
+  {
     name: 'A4',
     type: 'paper',
     dimensions: {

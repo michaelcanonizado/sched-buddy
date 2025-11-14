@@ -1,4 +1,5 @@
 import Container from '@/components/container'
+import { TextHeading } from '@/components/text'
 import { Button } from '@/components/ui/button'
 import ChangeDisplayButton from '@/features/schedule/components/change-display-button'
 import ScheduleView from '@/features/schedule/components/schedule-view'
@@ -45,9 +46,14 @@ export default function SchedulePage() {
             New Schedule
           </Button>
         </div>
-        <div className='grid w-full place-items-center overflow-hidden rounded-xl border-2 p-4'>
+
+        <div className='relative h-full grow rounded-xl border-2'>
           <ScheduleView />
         </div>
+        {/* <div className='relative w-full overflow-hidden rounded-xl border-2'>
+          <ScheduleView />
+          {/* <div className='absolute inset-4 flex flex-row items-center justify-center'>
+          </div> */}
       </div>
     </Container>
   )

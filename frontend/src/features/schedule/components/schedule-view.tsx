@@ -47,9 +47,13 @@ export default function ScheduleView({ className }: ComponentClassNameProp) {
     })
 
     /* Reset position of timetable */
-    timetableGroup.top = canvasHeight - timetableGroup.height + 1
-    timetableGroup.left = 0
+    timetableGroup.top = (canvasHeight - timetableGroup.height!) / 2
+
+    timetableGroup.left = (canvasWidth - timetableGroup.width!) / 2
     timetableGroup.setCoords()
+    // timetableGroup.top = canvasHeight - timetableGroup.height + 1
+    // timetableGroup.left = 0
+    // timetableGroup.setCoords()
 
     timetableGroup.on('mousedown', () => {
       console.log('Group clicked!')
@@ -60,7 +64,7 @@ export default function ScheduleView({ className }: ComponentClassNameProp) {
     return () => {
       initCanvas.dispose()
     }
-  }, [])
+  }, [timeTableStyles])
 
   /* Resize logic */
   useEffect(() => {

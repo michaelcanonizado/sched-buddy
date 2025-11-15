@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
 type ScheduleStoreActions = {
-  setTimetableMargins: (x: number, y: number) => void
+  setTimetableStylesMargins: ({ x, y }: { x?: number; y?: number }) => void
 }
 
 type ScheduleStoreState = {
@@ -17,14 +17,23 @@ type ScheduleStoreState = {
 const useScheduleStore = create<ScheduleStoreState>((set) => ({
   timetableStyles: {
     margins: {
-      x: 0,
-      y: 0,
+      x: 16,
+      y: 16,
     },
   },
 
   actions: {
-    setTimetableMargins: (x, y) =>
-      set({ timetableStyles: { margins: { x, y } } }),
+    setTimetableStylesMargins: ({ x, y }: { x?: number; y?: number }) => {
+      set((state) => ({
+        timetableStyles: {
+          ...state.timetableStyles,
+          margins: {
+            x: x !== undefined ? x : state.timetableStyles.margins.x,
+            y: y !== undefined ? y : state.timetableStyles.margins.y,
+          },
+        },
+      }))
+    },
   },
 }))
 

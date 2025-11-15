@@ -1,6 +1,6 @@
 export type Display = {
   name: string
-  type: 'phone' | 'tablet' | 'paper' | 'custom'
+  type: 'phone' | 'tablet' | 'custom'
   /* 
   Rules:
   1) Unit is in pixels
@@ -27,14 +27,6 @@ const displays: Display[] = [
     dimensions: {
       width: 834,
       height: 1194,
-    },
-  },
-  {
-    name: 'A4',
-    type: 'paper',
-    dimensions: {
-      width: 2480,
-      height: 3508,
     },
   },
 ]

@@ -3,9 +3,11 @@
 import { getAspectRatio } from '@/features/display/lib/get-aspect-ratio'
 import { useDisplay } from '@/features/display/store/use-display-store'
 import { cn } from '@/lib/utils'
-import { Canvas, Group, Rect, Text } from 'fabric'
-import { useEffect, useRef, useState } from 'react'
+import { Canvas } from 'fabric'
+import { useEffect, useRef } from 'react'
 import { useTimetableStyles } from '../store/use-schedule-store'
+import { CanvasEngine } from '@/features/engine/canvas-engine'
+import { Button } from '@/components/ui/button'
 
 export default function ScheduleView({ className }: ComponentClassNameProp) {
   const display = useDisplay()
@@ -18,103 +20,49 @@ export default function ScheduleView({ className }: ComponentClassNameProp) {
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const [canvas, setCanvas] = useState<Canvas | null>(null)
+  const engineRef = useRef<CanvasEngine | null>(null)
 
   /* Initialize canvas */
   useEffect(() => {
-    if (!canvasRef.current) return
+    if (!canvasRef.current || !containerRef.current) return
 
-    const initCanvas = new Canvas(canvasRef.current, {
+    const displayCanvas = new Canvas(canvasRef.current, {
       backgroundColor: '#ff0000',
       strokeWidth: 0,
     })
-    const canvasWidth = initCanvas.getWidth()
-    const canvasHeight = initCanvas.getHeight()
+    engineRef.current = new CanvasEngine(displayCanvas)
 
-    const timetableBackground = new Rect({
-      width: canvasWidth * 1 - timeTableStyles.margins.x,
-      height: canvasHeight * 0.5 - timeTableStyles.margins.y,
-      strokeWidth: 0,
-      fill: '#00ff00',
-      originX: 'left',
-      originY: 'top',
+    const container = containerRef.current
+    const containerHeight = container.clientHeight
+    // Height-first sizing
+    const displayHeight = containerHeight
+    const displayWidth = containerHeight * deviceRatio
+
+    displayCanvas.setDimensions({
+      width: displayWidth,
+      height: displayHeight,
     })
 
-    const timetableGroup = new Group([timetableBackground], {
-      selectable: false,
-      evented: true,
-      hoverCursor: 'pointer',
-    })
-
-    /* Reset position of timetable */
-    timetableGroup.top = (canvasHeight - timetableGroup.height!) / 2
-
-    timetableGroup.left = (canvasWidth - timetableGroup.width!) / 2
-    timetableGroup.setCoords()
-    // timetableGroup.top = canvasHeight - timetableGroup.height + 1
-    // timetableGroup.left = 0
-    // timetableGroup.setCoords()
-
-    timetableGroup.on('mousedown', () => {
-      console.log('Group clicked!')
-    })
-
-    initCanvas.add(timetableGroup)
-    setCanvas(initCanvas)
     return () => {
-      initCanvas.dispose()
+      displayCanvas.dispose()
     }
-  }, [timeTableStyles])
+  }, [timeTableStyles, display, deviceRatio])
 
-  /* Resize logic */
-  useEffect(() => {
-    if (!canvas || !containerRef.current) return
-
-    const handleContainerResize = () => {
-      if (!canvas || !containerRef.current) return
-
-      const container = containerRef.current
-      const containerHeight = container.clientHeight
-
-      /* Height-first sizing */
-      const newHeight = containerHeight
-      const newWidth = containerHeight * deviceRatio
-
-      const oldWidth = canvas.getWidth()
-      const oldHeight = canvas.getHeight()
-
-      canvas.setWidth(newWidth)
-      canvas.setHeight(newHeight)
-
-      /* Rescale canvas contents */
-      const scaleX = newWidth / oldWidth
-      const scaleY = newHeight / oldHeight
-      // const zoom = Math.min(scaleX, scaleY)
-      // canvas.setZoom(zoom)
-      canvas.getObjects().forEach((obj) => {
-        obj.scaleX *= scaleX
-        obj.scaleY *= scaleY
-        obj.left *= scaleX
-        obj.top *= scaleY
-        obj.setCoords()
-      })
-
-      canvas.requestRenderAll()
-    }
-
-    /* Initial resize */
-    handleContainerResize()
-    window.addEventListener('resize', handleContainerResize)
-    return () => {
-      window.removeEventListener('resize', handleContainerResize)
-    }
-  }, [canvas, deviceRatio])
+  const addRectangle = () => {
+    if (!engineRef.current) return
+    engineRef.current.addRectangle()
+  }
 
   return (
     <div
       ref={containerRef}
-      className='absolute inset-4 grid place-items-center'
+      className='absolute inset-4 grid place-items-center bg-pink-500'
     >
+      <div className='absolute top-0 right-0'>
+        <Button variant={'outline'} onClick={addRectangle}>
+          Add Rectangle
+        </Button>
+      </div>
       <div
         className={cn(
           'size-fit overflow-hidden rounded-xl',

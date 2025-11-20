@@ -5,7 +5,6 @@ import { useDisplay } from '@/features/display/store/use-display-store'
 import { cn } from '@/lib/utils'
 import { Canvas } from 'fabric'
 import { useEffect, useMemo, useRef } from 'react'
-import { useTimetableStyles } from '../store/use-schedule-store'
 import { CanvasEngine } from '@/features/canvas-engine/canvas-engine'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,8 +23,6 @@ export default function ScheduleView() {
     )
     return ratio
   }, [display])
-
-  const timeTableStyles = useTimetableStyles()
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -46,7 +43,7 @@ export default function ScheduleView() {
       displayCanvas.dispose()
       setCanvasEngine(null)
     }
-  }, [timeTableStyles, setCanvasEngine])
+  }, [setCanvasEngine])
 
   useEffect(() => {
     if (!canvasEngine || !containerRef.current) return

@@ -6,12 +6,12 @@ import { cn } from '@/lib/utils'
 import { Canvas } from 'fabric'
 import { useEffect, useRef } from 'react'
 import { useTimetableStyles } from '../store/use-schedule-store'
-import { CanvasEngine } from '@/features/engine/canvas-engine'
+import { CanvasEngine } from '@/features/canvas-engine/canvas-engine'
 import { Button } from '@/components/ui/button'
 import {
   useCanvasEngine,
   useCanvasEngineActions,
-} from '@/features/engine/store/use-engine-store'
+} from '@/features/canvas-engine/store/use-canvas-engine-store'
 
 export default function ScheduleView() {
   const display = useDisplay()
@@ -24,7 +24,7 @@ export default function ScheduleView() {
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const engine = useCanvasEngine()
+  const canvasEngine = useCanvasEngine()
   const { setEngine } = useCanvasEngineActions()
 
   /* Initialize canvas */
@@ -54,8 +54,8 @@ export default function ScheduleView() {
   }, [timeTableStyles, display, deviceRatio, setEngine])
 
   const addRectangle = () => {
-    if (!engine) return
-    engine.addRectangle()
+    if (!canvasEngine) return
+    canvasEngine.addRectangle()
   }
 
   return (

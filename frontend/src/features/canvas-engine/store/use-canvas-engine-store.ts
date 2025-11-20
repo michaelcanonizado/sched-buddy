@@ -6,21 +6,21 @@ type CanvasEngineActions = {
 }
 
 type CanvasEngineStoreState = {
-  engine: CanvasEngine | null
+  canvasEngine: CanvasEngine | null
   actions: CanvasEngineActions
 }
 
 const useCanvasEnginerStore = create<CanvasEngineStoreState>((set) => ({
-  engine: null,
+  canvasEngine: null,
   actions: {
     setEngine: (engine) => {
-      set({ engine })
+      set({ canvasEngine: engine })
     },
   },
 }))
 
 export function useCanvasEngine() {
-  return useCanvasEnginerStore((state) => state.engine)
+  return useCanvasEnginerStore((state) => state.canvasEngine)
 }
 
 export function useCanvasEngineActions() {

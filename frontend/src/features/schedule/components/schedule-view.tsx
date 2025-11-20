@@ -15,7 +15,7 @@ import {
 
 export default function ScheduleView() {
   const display = useDisplay()
-  const { ratio: deviceRatio } = getAspectRatio(
+  const { ratio: displayRatio } = getAspectRatio(
     display.dimensions.width,
     display.dimensions.height,
   )
@@ -25,9 +25,9 @@ export default function ScheduleView() {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const canvasEngine = useCanvasEngine()
-  const { setEngine } = useCanvasEngineActions()
+  const { setCanvasEngine } = useCanvasEngineActions()
 
-  /* Initialize canvas */
+  /* Initialize canvas engine */
   useEffect(() => {
     if (!canvasRef.current || !containerRef.current) return
 
@@ -35,28 +35,31 @@ export default function ScheduleView() {
       backgroundColor: '#ff0000',
       strokeWidth: 0,
     })
-    setEngine(new CanvasEngine(displayCanvas))
-
-    const container = containerRef.current
-    const containerHeight = container.clientHeight
-    // Height-first sizing
-    const displayHeight = containerHeight
-    const displayWidth = containerHeight * deviceRatio
-
-    displayCanvas.setDimensions({
-      width: displayWidth,
-      height: displayHeight,
-    })
+    setCanvasEngine(new CanvasEngine(displayCanvas))
 
     return () => {
       displayCanvas.dispose()
+      setCanvasEngine(null)
     }
-  }, [timeTableStyles, display, deviceRatio, setEngine])
+  }, [timeTableStyles, setCanvasEngine])
+
+  useEffect(() => {
+    if (!canvasEngine || !containerRef.current) return
+    canvasEngine.setVariant({
+      variant: 'with-display',
+      height: containerRef.current.clientHeight,
+      ratio: displayRatio,
+    })
+  }, [canvasEngine, displayRatio])
 
   const addRectangle = () => {
     if (!canvasEngine) return
     canvasEngine.addRectangle()
   }
+
+  useEffect(() => {
+    console.log('rendering /schedule')
+  }, [])
 
   return (
     <div

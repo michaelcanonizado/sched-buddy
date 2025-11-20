@@ -7,6 +7,25 @@ export class CanvasEngine {
     this.canvas = canvas
   }
 
+  setVariant(
+    options:
+      | { variant: 'with-display'; height: number; ratio: number }
+      | { variant: 'without-display' },
+  ) {
+    const { variant } = options
+
+    if (variant === 'with-display') {
+      const { height, ratio } = options
+      const displayHeight = height
+      const displayWidth = height * ratio
+
+      this.canvas.setDimensions({
+        width: displayWidth,
+        height: displayHeight,
+      })
+    }
+  }
+
   addRectangle() {
     const rect = new Rect({
       width: 150,

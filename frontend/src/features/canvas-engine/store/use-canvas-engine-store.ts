@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { CanvasEngine } from '../canvas-engine'
 
 type CanvasEngineActions = {
-  setEngine: (engine: CanvasEngine | null) => void
+  setCanvasEngine: (canvasEngine: CanvasEngine | null) => void
 }
 
 type CanvasEngineStoreState = {
@@ -13,9 +13,7 @@ type CanvasEngineStoreState = {
 const useCanvasEnginerStore = create<CanvasEngineStoreState>((set) => ({
   canvasEngine: null,
   actions: {
-    setEngine: (engine) => {
-      set({ canvasEngine: engine })
-    },
+    setCanvasEngine: (canvasEngine) => set({ canvasEngine }),
   },
 }))
 

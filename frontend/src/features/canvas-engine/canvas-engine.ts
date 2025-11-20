@@ -10,18 +10,25 @@ export class CanvasEngine {
   setVariant(
     options:
       | { variant: 'with-display'; height: number; ratio: number }
-      | { variant: 'without-display' },
+      | { variant: 'without-display'; height: number },
   ) {
-    const { variant } = options
+    const { variant, height } = options
 
     if (variant === 'with-display') {
-      const { height, ratio } = options
+      const { ratio } = options
       const displayHeight = height
       const displayWidth = height * ratio
 
       this.canvas.setDimensions({
         width: displayWidth,
         height: displayHeight,
+      })
+    }
+
+    if (variant === 'without-display') {
+      this.canvas.setDimensions({
+        width: 700,
+        height: height,
       })
     }
   }

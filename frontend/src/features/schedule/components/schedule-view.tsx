@@ -4,7 +4,7 @@ import { getAspectRatio } from '@/features/display/lib/get-aspect-ratio'
 import { useDisplay } from '@/features/display/store/use-display-store'
 import { cn } from '@/lib/utils'
 import { Canvas } from 'fabric'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useTimetableStyles } from '../store/use-schedule-store'
 import { CanvasEngine } from '@/features/canvas-engine/canvas-engine'
 import { Button } from '@/components/ui/button'
@@ -15,10 +15,15 @@ import {
 
 export default function ScheduleView() {
   const display = useDisplay()
-  const { ratio: displayRatio } = getAspectRatio(
-    display.dimensions.width,
-    display.dimensions.height,
-  )
+  const displayRatio = useMemo(() => {
+    if (!display) return null
+
+    const { ratio } = getAspectRatio(
+      display.dimensions.width,
+      display.dimensions.height,
+    )
+    return ratio
+  }, [display])
 
   const timeTableStyles = useTimetableStyles()
 
@@ -45,12 +50,19 @@ export default function ScheduleView() {
 
   useEffect(() => {
     if (!canvasEngine || !containerRef.current) return
-    canvasEngine.setVariant({
-      variant: 'with-display',
-      height: containerRef.current.clientHeight,
-      ratio: displayRatio,
-    })
-  }, [canvasEngine, displayRatio])
+    if (display && displayRatio) {
+      canvasEngine.setVariant({
+        variant: 'with-display',
+        height: containerRef.current.clientHeight,
+        ratio: displayRatio,
+      })
+    } else {
+      canvasEngine.setVariant({
+        variant: 'without-display',
+        height: containerRef.current.clientHeight,
+      })
+    }
+  }, [canvasEngine, displayRatio, display])
 
   const addRectangle = () => {
     if (!canvasEngine) return
@@ -64,7 +76,7 @@ export default function ScheduleView() {
   return (
     <div
       ref={containerRef}
-      className='absolute inset-4 grid place-items-center bg-pink-500'
+      className='absolute inset-4 grid place-items-center'
     >
       <div className='absolute top-0 right-0'>
         <Button variant={'outline'} onClick={addRectangle}>
@@ -75,9 +87,11 @@ export default function ScheduleView() {
         className={cn(
           'size-fit overflow-hidden rounded-xl',
           // 'border-2',
-          display.type !== 'phone' && display.type !== 'tablet'
-            ? 'rounded-none'
-            : 'rounded-2xl',
+          display
+            ? display.type !== 'phone' && display.type !== 'tablet'
+              ? 'rounded-none'
+              : 'rounded-2xl'
+            : 'rounded-none',
         )}
       >
         <canvas className='m-0 block p-0' ref={canvasRef} />

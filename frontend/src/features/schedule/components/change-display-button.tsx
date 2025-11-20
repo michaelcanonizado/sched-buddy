@@ -49,6 +49,11 @@ export default function ChangeDisplayButton() {
               Landscape
             </Button>
           </div>
+          <DialogClose asChild>
+            <Button variant='outline' onClick={() => setDisplay(null)}>
+              Remove Display
+            </Button>
+          </DialogClose>
           <div className='flex flex-col gap-2'>
             {displays.map((display, index) => {
               return (

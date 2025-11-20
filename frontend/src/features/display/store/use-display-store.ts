@@ -1,21 +1,21 @@
 import { create } from 'zustand'
-import displays, { Display } from '../lib/displays'
+import { Display } from '../lib/displays'
 
 type Orientation = 'portrait' | 'landscape'
 
 type DisplayStoreActions = {
-  setDisplay: (display: Display) => void
+  setDisplay: (display: Display | null) => void
   setOrientation: (orientation: Orientation) => void
 }
 
 type DisplayStoreState = {
-  display: Display
+  display: Display | null
   orientation: Orientation
   actions: DisplayStoreActions
 }
 
 const useDisplayStore = create<DisplayStoreState>((set) => ({
-  display: displays[0],
+  display: null,
   orientation: 'portrait',
   actions: {
     setDisplay: (display) => set({ display }),

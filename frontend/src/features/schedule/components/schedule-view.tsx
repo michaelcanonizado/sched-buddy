@@ -8,8 +8,12 @@ import { useEffect, useRef } from 'react'
 import { useTimetableStyles } from '../store/use-schedule-store'
 import { CanvasEngine } from '@/features/engine/canvas-engine'
 import { Button } from '@/components/ui/button'
+import {
+  useCanvasEngine,
+  useCanvasEngineActions,
+} from '@/features/engine/store/use-engine-store'
 
-export default function ScheduleView({ className }: ComponentClassNameProp) {
+export default function ScheduleView() {
   const display = useDisplay()
   const { ratio: deviceRatio } = getAspectRatio(
     display.dimensions.width,
@@ -20,7 +24,8 @@ export default function ScheduleView({ className }: ComponentClassNameProp) {
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const engineRef = useRef<CanvasEngine | null>(null)
+  const engine = useCanvasEngine()
+  const { setEngine } = useCanvasEngineActions()
 
   /* Initialize canvas */
   useEffect(() => {
@@ -30,7 +35,7 @@ export default function ScheduleView({ className }: ComponentClassNameProp) {
       backgroundColor: '#ff0000',
       strokeWidth: 0,
     })
-    engineRef.current = new CanvasEngine(displayCanvas)
+    setEngine(new CanvasEngine(displayCanvas))
 
     const container = containerRef.current
     const containerHeight = container.clientHeight
@@ -46,11 +51,11 @@ export default function ScheduleView({ className }: ComponentClassNameProp) {
     return () => {
       displayCanvas.dispose()
     }
-  }, [timeTableStyles, display, deviceRatio])
+  }, [timeTableStyles, display, deviceRatio, setEngine])
 
   const addRectangle = () => {
-    if (!engineRef.current) return
-    engineRef.current.addRectangle()
+    if (!engine) return
+    engine.addRectangle()
   }
 
   return (

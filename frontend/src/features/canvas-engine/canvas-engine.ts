@@ -1,4 +1,5 @@
 import { Canvas, Rect } from 'fabric'
+import { useScheduleStore } from '../schedule/store/use-schedule-store'
 
 export class CanvasEngine {
   canvas: Canvas
@@ -40,10 +41,13 @@ export class CanvasEngine {
       fill: 'lightgray',
       left: 100,
       top: 100,
+      data: { id: 67 },
     })
 
     this.canvas.add(rect)
     this.canvas.setActiveObject(rect)
     this.canvas.requestRenderAll()
+
+    useScheduleStore.getState().actions.addObject(rect)
   }
 }

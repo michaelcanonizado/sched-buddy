@@ -1,37 +1,26 @@
-import { Canvas, Rect } from 'fabric'
+import { Canvas, Group, Rect } from 'fabric'
 import { useScheduleStore } from '../schedule/store/use-schedule-store'
 
 export class CanvasEngine {
   canvas: Canvas
+  unsubscribeDisplay: () => void
 
   constructor(canvas: Canvas) {
+    const timetableBackground = new Rect({
+      width: 100,
+      height: 100,
+      fill: 'green',
+      left: 50,
+      top: 50,
+    })
+    const timetableGroup = new Group([timetableBackground])
+    canvas.add(timetableGroup)
+
+    this.unsubscribeDisplay = useScheduleStore.subscribe((state, oldState) => {
+      console.log('state: ', state, 'oldState: ', oldState)
+    })
+
     this.canvas = canvas
-  }
-
-  setVariant(
-    options:
-      | { variant: 'with-display'; height: number; ratio: number }
-      | { variant: 'without-display'; height: number },
-  ) {
-    const { variant, height } = options
-
-    if (variant === 'with-display') {
-      const { ratio } = options
-      const displayHeight = height
-      const displayWidth = height * ratio
-
-      this.canvas.setDimensions({
-        width: displayWidth,
-        height: displayHeight,
-      })
-    }
-
-    if (variant === 'without-display') {
-      this.canvas.setDimensions({
-        width: 700,
-        height: height,
-      })
-    }
   }
 
   addRectangle() {
@@ -49,5 +38,10 @@ export class CanvasEngine {
     this.canvas.requestRenderAll()
 
     useScheduleStore.getState().actions.addObject(rect)
+  }
+
+  dispose() {
+    this.unsubscribeDisplay()
+    this.canvas.dispose()
   }
 }

@@ -13,10 +13,10 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { TextBody } from '@/components/text'
-import { useDisplayActions } from '@/features/display/store/use-display-store'
+import { useScheduleActions } from '../store/use-schedule-store'
 
 export default function ChangeDisplayButton() {
-  const { setDisplay, setOrientation } = useDisplayActions()
+  const { setDisplay } = useScheduleActions()
 
   return (
     <Dialog>
@@ -36,16 +36,10 @@ export default function ChangeDisplayButton() {
         <div className='flex flex-col gap-2'>
           <TextBody className='text-center'>Temporary content</TextBody>
           <div className='grid grid-cols-2 gap-2'>
-            <Button
-              variant='outline'
-              onClick={() => setOrientation('portrait')}
-            >
+            <Button variant='outline' onClick={() => {}}>
               Portrait
             </Button>
-            <Button
-              variant='outline'
-              onClick={() => setOrientation('landscape')}
-            >
+            <Button variant='outline' onClick={() => {}}>
               Landscape
             </Button>
           </div>

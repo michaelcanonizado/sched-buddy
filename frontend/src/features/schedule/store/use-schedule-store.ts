@@ -1,23 +1,39 @@
-import { FabricObject } from 'fabric'
+import { Display } from '@/features/display/lib/displays'
 import { create } from 'zustand'
+import { Subject } from '../lib/mock-data'
+
+type DisplayOrientation = 'portrait' | 'landscape'
 
 type ScheduleStoreActions = {
-  addObject: (object: FabricObject) => void
+  setDisplay: (display: Display | null) => void
+  setOrientation: (orientation: DisplayOrientation) => void
 }
 
 type ScheduleStoreState = {
-  objects: Record<number, FabricObject>
+  subjects: Subject[]
+  display: Display | null
+  orientation: DisplayOrientation
   actions: ScheduleStoreActions
 }
 
 export const useScheduleStore = create<ScheduleStoreState>((set, get) => ({
-  objects: {},
+  subjects: [],
+  display: null,
+  orientation: 'portrait',
   actions: {
-    addObject: (object: FabricObject) => {
-      set((s) => ({
-        objects: { ...s.objects, [object.data.id]: object },
-      }))
-      console.log(get().objects[67].fill)
-    },
+    setDisplay: (display) => set({ display }),
+    setOrientation: (orientation) => set({ orientation }),
   },
 }))
+
+export function useScheduleDisplay() {
+  return useScheduleStore((state) => state.display)
+}
+
+export function useScheduleDisplayOrientation() {
+  return useScheduleStore((state) => state.orientation)
+}
+
+export function useScheduleActions() {
+  return useScheduleStore((state) => state.actions)
+}

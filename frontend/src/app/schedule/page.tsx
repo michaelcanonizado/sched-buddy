@@ -2,7 +2,6 @@
 
 import Container from '@/components/container'
 import { Button } from '@/components/ui/button'
-import ChangeDisplayButton from '@/features/schedule/components/change-display-button'
 import ScheduleView from '@/features/schedule/components/schedule-view'
 import {
   CalendarPlusIcon,
@@ -22,7 +21,6 @@ export default function SchedulePage() {
           <Button variant='outline'>
             <ScanQrCodeIcon /> Scan COR
           </Button>
-          <ChangeDisplayButton />
           <Button variant='outline'>
             <CalendarPlusIcon /> Add Course
           </Button>

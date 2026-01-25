@@ -3,6 +3,7 @@
 import Container from '@/components/container'
 import { Button } from '@/components/ui/button'
 import ScheduleView from '@/features/schedule/components/schedule-view'
+import { useScheduleActions } from '@/features/schedule/store/use-schedule-store'
 import {
   CalendarPlusIcon,
   FolderUpIcon,
@@ -14,6 +15,8 @@ import {
 } from 'lucide-react'
 
 export default function SchedulePage() {
+  const { addSubject } = useScheduleActions()
+
   return (
     <Container className='mt-16 mb-8 flex max-w-[1440px] grow'>
       <div className='flex grow flex-row gap-4'>
@@ -21,7 +24,13 @@ export default function SchedulePage() {
           <Button variant='outline'>
             <ScanQrCodeIcon /> Scan COR
           </Button>
-          <Button variant='outline'>
+          <Button
+            variant='outline'
+            onClick={() => {
+              console.log('btn click')
+              addSubject()
+            }}
+          >
             <CalendarPlusIcon /> Add Course
           </Button>
           <Button variant='outline'>

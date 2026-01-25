@@ -1,10 +1,15 @@
 import { Canvas } from 'fabric'
+import { ScheduleStoreState } from '../schedule/store/use-schedule-store'
 
 export class CanvasEngine {
-  canvas: Canvas
+  private canvas: Canvas
 
-  constructor(canvas: Canvas) {
-    this.canvas = canvas
+  constructor(canvas: HTMLCanvasElement) {
+    this.canvas = new Canvas(canvas, {})
+  }
+
+  render(state: ScheduleStoreState) {
+    console.log('Rerendering canvas with state: ', state)
   }
 
   dispose() {

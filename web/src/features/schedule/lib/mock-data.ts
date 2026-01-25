@@ -1,6 +1,36 @@
-export const scheduleData = [
+type Days = {
+  monday: boolean
+  tuesday: boolean
+  wednesday: boolean
+  thursday: boolean
+  friday: boolean
+  saturday: boolean
+  sunday: boolean
+}
+
+type Meeting = {
+  days: Days
+  startTime: {
+    hours: number
+    minutes: number
+  }
+  endTime: {
+    hours: number
+    minutes: number
+  }
+  instructor: string
+  location: string
+}
+
+export type Subject = {
+  title: string
+  color: string
+  meetings: Meeting[]
+}
+
+export const scheduleData: Subject[] = [
   {
-    courseTitle: 'Operating Systems',
+    title: 'Operating Systems',
     color: '#FFE37D',
     meetings: [
       {
@@ -21,7 +51,6 @@ export const scheduleData = [
           hours: 12,
           minutes: 30,
         },
-        courseType: null,
         instructor: 'Canon, M',
         location: 'CS-02-201',
       },

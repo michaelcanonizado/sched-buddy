@@ -29,7 +29,6 @@ export const useScheduleStore = create<ScheduleStoreState>()(
       orientation: 'portrait',
       actions: {
         addSubject: () => {
-          console.log('adding subject...')
           const subject: Subject = {
             title: 'Computer Programming 1',
             color: 'abc',

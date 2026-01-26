@@ -1,20 +1,17 @@
-export type Days = {
-  monday: boolean
-  tuesday: boolean
-  wednesday: boolean
-  thursday: boolean
-  friday: boolean
-  saturday: boolean
-  sunday: boolean
-}
+export type Days =
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday'
 
-export type Time = {
-  hours: number
-  minutes: number
-}
+/* minutes since midnight (0[00:00] -> 1,439[23:59]) */
+export type Time = number
 
 export type Meeting = {
-  days: Days
+  days: Days[]
   startTime: Time
   endTime: Time
   instructor: string
@@ -33,23 +30,9 @@ export const scheduleData: Subject[] = [
     color: '#FFE37D',
     meetings: [
       {
-        days: {
-          monday: false,
-          tuesday: true,
-          wednesday: false,
-          thursday: true,
-          friday: false,
-          saturday: false,
-          sunday: false,
-        },
-        startTime: {
-          hours: 9,
-          minutes: 0,
-        },
-        endTime: {
-          hours: 12,
-          minutes: 30,
-        },
+        days: ['tuesday', 'thursday'],
+        startTime: 540,
+        endTime: 750,
         instructor: 'Canon, M',
         location: 'CS-02-201',
       },

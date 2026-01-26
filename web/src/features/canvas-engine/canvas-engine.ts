@@ -4,14 +4,8 @@ import { Time } from '../schedule/lib/mock-data'
 
 export class CanvasEngine {
   private canvas: Canvas
-  private gridStartTime: Time = {
-    hours: 11,
-    minutes: 0,
-  }
-  private gridEndTime: Time = {
-    hours: 17,
-    minutes: 0,
-  }
+  private gridStartTime: Time = 11 * 60 + 0
+  private gridEndTime: Time = 17 * 60 + 0
   private timeResolution = 30
   private gridOverlap = 0
   private daysOfTheWeek = [
@@ -41,52 +35,34 @@ export class CanvasEngine {
     end: Time,
     resolution: number,
   ): number {
-    const minutesSpan =
-      end.hours * 60 + end.minutes - (start.hours * 60 + start.minutes)
-    console.log('Minute Span: ', minutesSpan, ' | ', minutesSpan / resolution)
-    return minutesSpan / resolution
+    return (end - start) / resolution
   }
 
   _timeIncrement(time: Time, incrementInMinutes: number): Time {
-    if (incrementInMinutes < 0) {
-      console.warn(
-        "timeIncrement() error! Can't increment time with negative number: \n",
-        'time: ',
-        time,
-        ' incrementInMinutes: ',
-        incrementInMinutes,
-      )
-    }
-
-    const totalMinutes = time.hours * 60 + time.minutes + incrementInMinutes
-    /* If the time and incrementMinute passed will result in overlap, wrap it to the next day */
-    const wrappedMinutes = ((totalMinutes % 1440) + 1440) % 1440
-    const hours = Math.floor(wrappedMinutes / 60)
-    const minutes = wrappedMinutes % 60
-
-    return { hours, minutes }
+    return time + incrementInMinutes
   }
 
-  _timeGenerateLabel(time: Time, format: '12' | '24'): string {
-    if (
-      time.hours > 23 ||
-      time.hours < 0 ||
-      time.minutes > 59 ||
-      time.minutes < 0
-    ) {
-      console.warn('Invalid time format: ', time)
+  _timeGenerateLabel(totalMinutes: number, format: '12' | '24'): string {
+    if (totalMinutes < 0 || totalMinutes > 1439) {
+      console.warn('Invalid time value: ', totalMinutes)
     }
 
+    const hours = Math.floor(totalMinutes / 60)
+    const minutes = totalMinutes % 60
+
+    /* 24-hour format */
     if (format === '24') {
-      return `${time.hours}:${time.minutes.toString().padStart(2, '0')}`
+      return `${hours}:${minutes.toString().padStart(2, '0')}`
     }
 
-    const isAM = time.hours < 12
-    let hour = time.hours % 12
-    if (hour === 0) hour = 12
-    const minute = time.minutes.toString().padStart(2, '0')
+    /* 12-hour format */
+    const isAM = hours < 12
+    let hour12 = hours % 12
+    if (hour12 === 0) hour12 = 12
+    const minuteStr = minutes.toString().padStart(2, '0')
     const meridiem = isAM ? 'AM' : 'PM'
-    return `${hour}:${minute}${meridiem}`
+
+    return `${hour12}:${minuteStr}${meridiem}`
   }
 
   _drawTimetableGrid() {

@@ -34,8 +34,8 @@ export default function ScheduleView() {
   }, [hasContextHydrated, state])
 
   return (
-    <div className='h-full w-full'>
-      <canvas ref={canvasElementRef} />
+    <div className='grid h-full w-full place-items-center'>
+      <canvas ref={canvasElementRef} className='rounded-lg border' />
     </div>
   )
 }

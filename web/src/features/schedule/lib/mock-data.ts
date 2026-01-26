@@ -1,4 +1,4 @@
-type Days = {
+export type Days = {
   monday: boolean
   tuesday: boolean
   wednesday: boolean
@@ -8,16 +8,15 @@ type Days = {
   sunday: boolean
 }
 
-type Meeting = {
+export type Time = {
+  hours: number
+  minutes: number
+}
+
+export type Meeting = {
   days: Days
-  startTime: {
-    hours: number
-    minutes: number
-  }
-  endTime: {
-    hours: number
-    minutes: number
-  }
+  startTime: Time
+  endTime: Time
   instructor: string
   location: string
 }

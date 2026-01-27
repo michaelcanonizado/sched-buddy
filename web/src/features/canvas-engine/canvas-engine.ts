@@ -1,6 +1,7 @@
 import { Canvas, FabricText, Group, Path, Rect } from 'fabric'
 import { ScheduleStoreState } from '../schedule/store/use-schedule-store'
 import { Time } from '../schedule/lib/mock-data'
+import { Display } from '../display/lib/displays'
 
 export class CanvasEngine {
   private canvas: Canvas
@@ -16,6 +17,8 @@ export class CanvasEngine {
     'Friday',
   ]
 
+  private containerWidth = 0
+  private containerHeight = 0
   private virtualWidth = 1100
   private virtualHeigth = 800
 
@@ -28,7 +31,7 @@ export class CanvasEngine {
   }
 
   /* Width first scaling */
-  resize(containerWidth: number) {
+  resize(containerWidth: number, containerHeight: number) {
     if (!this.canvas) return
 
     const canvasAspectRatio = this.canvas.getWidth() / this.canvas.getHeight()
@@ -41,20 +44,52 @@ export class CanvasEngine {
     this.canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0])
     this.canvas.renderAll()
 
-    console.log(
-      'Canvas width: ',
-      this.canvas.getWidth(),
-      ', Canvas zoom: ',
-      this.canvas.getZoom(),
-      ', Final canvasWidth: ',
-      this.canvas.getWidth() * this.canvas.getZoom(),
-    )
+    this.containerWidth = containerWidth
+    this.containerHeight = containerHeight
+
+    // console.log(
+    //   'Canvas width: ',
+    //   this.canvas.getWidth(),
+    //   ', Canvas zoom: ',
+    //   this.canvas.getZoom(),
+    //   ', Final canvasWidth: ',
+    //   this.canvas.getWidth() * this.canvas.getZoom(),
+    // )
   }
 
   render(state: ScheduleStoreState) {
     this.canvas.clear()
-    this._drawTimetableGrid()
+    this._createDisplay(state.display)
+    // this._drawTimetableGrid()
     this.canvas.requestRenderAll()
+  }
+
+  _createDisplay(display: Display | null) {
+    if (!display) {
+      console.log('no display')
+      return
+    }
+
+    const deviceAspectRatio =
+      display.dimensions.width / display.dimensions.height
+
+    console.log('device ap: ', deviceAspectRatio)
+
+    const margin = this.containerHeight * 0.5
+    const displayHeight = this.containerHeight - margin
+    const displayWidth = displayHeight * deviceAspectRatio
+
+    const background = new Rect({
+      width: displayWidth,
+      height: displayHeight,
+      fill: '#a8327f',
+      left: 0,
+      top: 0,
+      originX: 'left',
+      originY: 'top',
+    })
+    const displayGroup = new Group([background], {})
+    this.canvas.add(displayGroup)
   }
 
   calculateNumberOfHorizontalGridLines(

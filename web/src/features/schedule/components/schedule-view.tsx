@@ -25,8 +25,8 @@ export default function ScheduleView() {
     const engine = new CanvasEngine(canvasElementRef.current)
     canvasEngineRef.current = engine
 
-    const { clientWidth } = canvasContainerRef.current
-    engine.resize(clientWidth)
+    const { clientWidth, clientHeight } = canvasContainerRef.current
+    engine.resize(clientWidth, clientHeight)
 
     return () => engine.dispose()
   }, [hasContextHydrated])
@@ -41,8 +41,8 @@ export default function ScheduleView() {
     )
       return
 
-    const { clientWidth } = canvasContainerRef.current
-    canvasEngineRef.current.resize(clientWidth)
+    const { clientWidth, clientHeight } = canvasContainerRef.current
+    canvasEngineRef.current.resize(clientWidth, clientHeight)
 
     canvasEngineRef.current.render(state)
   }, [hasContextHydrated, state])
@@ -58,8 +58,8 @@ export default function ScheduleView() {
         return
       }
 
-      const { clientWidth } = canvasContainerRef.current
-      canvasEngineRef.current.resize(clientWidth)
+      const { clientWidth, clientHeight } = canvasContainerRef.current
+      canvasEngineRef.current.resize(clientWidth, clientHeight)
     }
 
     window.addEventListener('resize', handleResize)

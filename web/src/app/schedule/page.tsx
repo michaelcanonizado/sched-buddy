@@ -2,6 +2,7 @@
 
 import Container from '@/components/container'
 import { Button } from '@/components/ui/button'
+import ChangeDisplayDialog from '@/features/display/components/change-display-dialog'
 import ScheduleView from '@/features/schedule/components/schedule-view'
 import { useScheduleActions } from '@/features/schedule/store/use-schedule-store'
 import {
@@ -24,6 +25,7 @@ export default function SchedulePage() {
           <Button variant='outline'>
             <ScanQrCodeIcon /> Scan COR
           </Button>
+          <ChangeDisplayDialog />
           <Button
             variant='outline'
             onClick={() => {

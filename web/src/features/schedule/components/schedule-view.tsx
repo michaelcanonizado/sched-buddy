@@ -6,6 +6,7 @@ import {
 } from '../store/use-schedule-store'
 
 export default function ScheduleView() {
+  const canvasContainerRef = useRef<HTMLDivElement | null>(null)
   const canvasElementRef = useRef<HTMLCanvasElement | null>(null)
   const canvasEngineRef = useRef<CanvasEngine | null>(null)
   const hasContextHydrated = useScheduleHasHydrated()
@@ -14,10 +15,18 @@ export default function ScheduleView() {
   /* On initial page load, wait for the context to be loaded from localStorage,
   then only create the engine */
   useEffect(() => {
-    if (!hasContextHydrated || !canvasElementRef.current) return
+    if (
+      !hasContextHydrated ||
+      !canvasElementRef.current ||
+      !canvasContainerRef.current
+    )
+      return
 
     const engine = new CanvasEngine(canvasElementRef.current)
     canvasEngineRef.current = engine
+
+    const { clientWidth } = canvasContainerRef.current
+    engine.resize(clientWidth)
 
     return () => engine.dispose()
   }, [hasContextHydrated])
@@ -27,14 +36,41 @@ export default function ScheduleView() {
     if (
       !hasContextHydrated ||
       !canvasElementRef.current ||
-      !canvasEngineRef.current
+      !canvasEngineRef.current ||
+      !canvasContainerRef.current
     )
       return
+
+    const { clientWidth } = canvasContainerRef.current
+    canvasEngineRef.current.resize(clientWidth)
+
     canvasEngineRef.current.render(state)
   }, [hasContextHydrated, state])
 
+  /* Attach the resize listener */
+  useEffect(() => {
+    const handleResize = () => {
+      if (
+        !canvasEngineRef.current ||
+        !canvasElementRef.current ||
+        !canvasContainerRef.current
+      ) {
+        return
+      }
+
+      const { clientWidth } = canvasContainerRef.current
+      canvasEngineRef.current.resize(clientWidth)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   return (
-    <div className='grid h-full w-full place-items-center'>
+    <div
+      ref={canvasContainerRef}
+      className='absolute inset-0 grid place-items-center overflow-scroll rounded-lg border border-red-500'
+    >
       <canvas ref={canvasElementRef} className='rounded-lg border' />
     </div>
   )

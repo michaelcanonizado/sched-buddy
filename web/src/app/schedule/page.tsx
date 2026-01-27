@@ -18,8 +18,8 @@ export default function SchedulePage() {
   const { addSubject } = useScheduleActions()
 
   return (
-    <Container className='mt-16 mb-8 flex max-w-[1440px] grow'>
-      <div className='flex grow flex-row gap-4'>
+    <Container className='mt-16 mb-8 flex grow md:max-w-[1440px]'>
+      <div className='flex grow flex-col gap-4 md:flex-row'>
         <div className='flex flex-col gap-4'>
           <Button variant='outline'>
             <ScanQrCodeIcon /> Scan COR
@@ -55,7 +55,7 @@ export default function SchedulePage() {
           </Button>
         </div>
 
-        <div className='relative h-full grow rounded-xl border-2'>
+        <div className='relative grow rounded-xl border-2'>
           <ScheduleView />
         </div>
       </div>

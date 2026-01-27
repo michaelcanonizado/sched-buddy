@@ -16,15 +16,42 @@ export class CanvasEngine {
     'Friday',
   ]
 
+  private virtualWidth = 1100
+  private virtualHeigth = 800
+
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = new Canvas(canvas, {
-      width: 1100,
-      height: 700,
+      width: this.virtualWidth,
+      height: this.virtualHeigth,
+      backgroundColor: '#32a852',
     })
   }
 
+  /* Width first scaling */
+  resize(containerWidth: number) {
+    if (!this.canvas) return
+
+    const canvasAspectRatio = this.canvas.getWidth() / this.canvas.getHeight()
+    const scale = containerWidth / this.canvas.getWidth()
+    const zoom = this.canvas.getZoom() * scale
+    this.canvas.setDimensions({
+      width: containerWidth,
+      height: containerWidth / canvasAspectRatio,
+    })
+    this.canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0])
+    this.canvas.renderAll()
+
+    console.log(
+      'Canvas width: ',
+      this.canvas.getWidth(),
+      ', Canvas zoom: ',
+      this.canvas.getZoom(),
+      ', Final canvasWidth: ',
+      this.canvas.getWidth() * this.canvas.getZoom(),
+    )
+  }
+
   render(state: ScheduleStoreState) {
-    console.log('Rerendering canvas with state: ', state)
     this.canvas.clear()
     this._drawTimetableGrid()
     this.canvas.requestRenderAll()

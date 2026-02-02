@@ -57,7 +57,7 @@ export default function SchedulePage() {
           </Button>
         </div>
 
-        <div className='relative grow rounded-xl border-2'>
+        <div className='relative h-full min-h-[600px] grow rounded-xl border-2'>
           <ScheduleView />
         </div>
       </div>

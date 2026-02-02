@@ -4,6 +4,7 @@ import {
   useScheduleHasHydrated,
   useScheduleStore,
 } from '../store/use-schedule-store'
+import { cn } from '@/lib/utils'
 
 export default function ScheduleView() {
   const canvasContainerRef = useRef<HTMLDivElement | null>(null)
@@ -42,9 +43,7 @@ export default function ScheduleView() {
       return
 
     const { clientWidth, clientHeight } = canvasContainerRef.current
-    canvasEngineRef.current.resize(clientWidth, clientHeight)
-
-    canvasEngineRef.current.render(state)
+    canvasEngineRef.current.render(state, clientWidth, clientHeight)
   }, [hasContextHydrated, state])
 
   /* Attach the resize listener */
@@ -69,7 +68,10 @@ export default function ScheduleView() {
   return (
     <div
       ref={canvasContainerRef}
-      className='absolute inset-0 grid place-items-center overflow-scroll rounded-lg border border-red-500'
+      className={cn(
+        'absolute inset-4 grid place-items-center overflow-scroll rounded-lg',
+        // 'border border-red-500',
+      )}
     >
       <canvas ref={canvasElementRef} className='rounded-lg border' />
     </div>

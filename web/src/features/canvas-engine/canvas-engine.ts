@@ -17,79 +17,93 @@ export class CanvasEngine {
     'Friday',
   ]
 
-  private containerWidth = 0
-  private containerHeight = 0
-  private virtualWidth = 1100
-  private virtualHeigth = 800
+  private VIRTUAL_TIMETABLE_WIDTH = 1100
+  private VIRTUAL_TIMETABLE_HEIGHT = 800
+
+  private virtualCanvasWidth = this.VIRTUAL_TIMETABLE_WIDTH
+  private virtualCanvasHeight = this.VIRTUAL_TIMETABLE_HEIGHT
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = new Canvas(canvas, {
-      width: this.virtualWidth,
-      height: this.virtualHeigth,
+      width: this.virtualCanvasWidth,
+      height: this.virtualCanvasHeight,
       backgroundColor: '#32a852',
     })
   }
 
-  /* Width first scaling */
   resize(containerWidth: number, containerHeight: number) {
+    /* Resize logic source: https://jsfiddle.net/robsch/g8x9mjvt/ */
     if (!this.canvas) return
 
-    const canvasAspectRatio = this.canvas.getWidth() / this.canvas.getHeight()
-    const scale = containerWidth / this.canvas.getWidth()
-    const zoom = this.canvas.getZoom() * scale
-    this.canvas.setDimensions({
-      width: containerWidth,
-      height: containerWidth / canvasAspectRatio,
-    })
-    this.canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0])
-    this.canvas.renderAll()
+    /* Determine whether to go with width-first or height-first scaling.
+    Whichever prevents an overflow. */
 
-    this.containerWidth = containerWidth
-    this.containerHeight = containerHeight
+    /* Try height-first scaling, and see if the width overflows the container */
+    const scale = containerHeight / this.virtualCanvasHeight
+    const scaledWidth = this.virtualCanvasWidth * scale
 
-    // console.log(
-    //   'Canvas width: ',
-    //   this.canvas.getWidth(),
-    //   ', Canvas zoom: ',
-    //   this.canvas.getZoom(),
-    //   ', Final canvasWidth: ',
-    //   this.canvas.getWidth() * this.canvas.getZoom(),
-    // )
+    /* If it doesn't overflow, stick with height-first scaling, else go with width-first. */
+    if (scaledWidth < containerWidth) {
+      /* Height-first scaling */
+      const canvasAspectRatio =
+        this.virtualCanvasHeight / this.virtualCanvasWidth
+      const scale = containerHeight / this.virtualCanvasHeight
+      const zoom = this.canvas.getZoom() * scale
+      this.canvas.setDimensions({
+        width: containerHeight / canvasAspectRatio,
+        height: containerHeight,
+      })
+
+      this.canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0])
+    } else {
+      /* Width-first scaling */
+      const canvasAspectRatio = this.canvas.getWidth() / this.canvas.getHeight()
+      const scale = containerWidth / this.canvas.getWidth()
+      const zoom = this.canvas.getZoom() * scale
+      this.canvas.setDimensions({
+        width: containerWidth,
+        height: containerWidth / canvasAspectRatio,
+      })
+
+      this.canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0])
+    }
   }
 
-  render(state: ScheduleStoreState) {
+  render(
+    state: ScheduleStoreState,
+    containerWidth: number,
+    containerHeight: number,
+  ) {
     this.canvas.clear()
-    this._createDisplay(state.display)
+    this._setCanvasDimension(state.display)
+    this.resize(containerWidth, containerHeight)
     // this._drawTimetableGrid()
     this.canvas.requestRenderAll()
   }
 
-  _createDisplay(display: Display | null) {
+  _setCanvasDimension(display: Display | null) {
+    /* Two types of canvas size:
+    1) Logical
+    2) Viewport
+    
+    Logical/virtual size is the base canvas size. Responsiveness
+    is done by scaling the canvas (viewport size). */
+
+    /* Determine the virtual dimensions */
     if (!display) {
-      console.log('no display')
+      this.virtualCanvasWidth = this.VIRTUAL_TIMETABLE_WIDTH
+      this.virtualCanvasHeight = this.VIRTUAL_TIMETABLE_HEIGHT
       return
+    } else {
+      this.virtualCanvasWidth = display.dimensions.width
+      this.virtualCanvasHeight = display.dimensions.height
     }
 
-    const deviceAspectRatio =
-      display.dimensions.width / display.dimensions.height
-
-    console.log('device ap: ', deviceAspectRatio)
-
-    const margin = this.containerHeight * 0.5
-    const displayHeight = this.containerHeight - margin
-    const displayWidth = displayHeight * deviceAspectRatio
-
-    const background = new Rect({
-      width: displayWidth,
-      height: displayHeight,
-      fill: '#a8327f',
-      left: 0,
-      top: 0,
-      originX: 'left',
-      originY: 'top',
+    /* Set canvas dimensions */
+    this.canvas.setDimensions({
+      width: this.virtualCanvasWidth,
+      height: this.virtualCanvasHeight,
     })
-    const displayGroup = new Group([background], {})
-    this.canvas.add(displayGroup)
   }
 
   calculateNumberOfHorizontalGridLines(

@@ -5,13 +5,19 @@ import {
   useScheduleStore,
 } from '../store/use-schedule-store'
 import { cn } from '@/lib/utils'
+import {
+  useCanvasEngine,
+  useSetCanvasEngine,
+} from '@/features/canvas-engine/use-canvas-engine-store'
 
 export default function ScheduleView() {
   const canvasContainerRef = useRef<HTMLDivElement | null>(null)
   const canvasElementRef = useRef<HTMLCanvasElement | null>(null)
-  const canvasEngineRef = useRef<CanvasEngine | null>(null)
+  // const canvasEngineRef = useRef<CanvasEngine | null>(null)
   const hasContextHydrated = useScheduleHasHydrated()
-  const state = useScheduleStore((s) => s)
+  const scheduleState = useScheduleStore((s) => s)
+  const canvasEngine = useCanvasEngine()
+  const setCanvasEngine = useSetCanvasEngine()
 
   /* On initial page load, wait for the context to be loaded from localStorage,
   then only create the engine */
@@ -19,38 +25,43 @@ export default function ScheduleView() {
     if (
       !hasContextHydrated ||
       !canvasElementRef.current ||
-      !canvasContainerRef.current
+      !canvasContainerRef.current ||
+      /* CanvasEngine already exist */
+      canvasEngine
     )
       return
 
     const engine = new CanvasEngine(canvasElementRef.current)
-    canvasEngineRef.current = engine
+    setCanvasEngine(engine)
 
     const { clientWidth, clientHeight } = canvasContainerRef.current
     engine.resize(clientWidth, clientHeight)
 
-    return () => engine.dispose()
-  }, [hasContextHydrated])
+    return () => {
+      engine.dispose()
+      setCanvasEngine(null)
+    }
+  }, [hasContextHydrated, setCanvasEngine])
 
   /* Rerender the canvas when the state changes */
   useEffect(() => {
     if (
       !hasContextHydrated ||
       !canvasElementRef.current ||
-      !canvasEngineRef.current ||
+      !canvasEngine ||
       !canvasContainerRef.current
     )
       return
 
     const { clientWidth, clientHeight } = canvasContainerRef.current
-    canvasEngineRef.current.render(state, clientWidth, clientHeight)
-  }, [hasContextHydrated, state])
+    canvasEngine.render(scheduleState, clientWidth, clientHeight)
+  }, [hasContextHydrated, scheduleState, canvasEngine])
 
   /* Attach the resize listener */
   useEffect(() => {
     const handleResize = () => {
       if (
-        !canvasEngineRef.current ||
+        !canvasEngine ||
         !canvasElementRef.current ||
         !canvasContainerRef.current
       ) {
@@ -58,12 +69,12 @@ export default function ScheduleView() {
       }
 
       const { clientWidth, clientHeight } = canvasContainerRef.current
-      canvasEngineRef.current.resize(clientWidth, clientHeight)
+      canvasEngine.resize(clientWidth, clientHeight)
     }
 
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  }, [canvasEngine])
 
   return (
     <div

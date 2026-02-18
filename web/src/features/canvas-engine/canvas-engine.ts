@@ -248,6 +248,10 @@ export class CanvasEngine {
     this.canvas.add(timetableGroup)
   }
 
+  export() {
+    console.log('Exporting canvas...')
+  }
+
   dispose() {
     this.canvas.dispose()
   }

@@ -2,6 +2,7 @@
 
 import Container from '@/components/container'
 import { Button } from '@/components/ui/button'
+import { useCanvasEngine } from '@/features/canvas-engine/use-canvas-engine-store'
 import ChangeDisplayDialog from '@/features/display/components/change-display-dialog'
 import ScheduleView from '@/features/schedule/components/schedule-view'
 import { useScheduleActions } from '@/features/schedule/store/use-schedule-store'
@@ -17,6 +18,16 @@ import {
 
 export default function SchedulePage() {
   const { addSubject } = useScheduleActions()
+  const canvasEngine = useCanvasEngine()
+
+  const onExport = () => {
+    if (!canvasEngine) {
+      console.warn('Trying to export but no CanvasEngine in store')
+      return
+    }
+
+    canvasEngine?.export()
+  }
 
   return (
     <Container className='mt-16 mb-8 flex grow md:max-w-[1440px]'>
@@ -43,7 +54,7 @@ export default function SchedulePage() {
             <Trash2Icon />
             Delete Course
           </Button>
-          <Button variant='outline'>
+          <Button variant='outline' onClick={onExport}>
             <ImageDownIcon />
             Export
           </Button>

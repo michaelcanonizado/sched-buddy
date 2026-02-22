@@ -27,44 +27,38 @@ export class CanvasEngine {
     this.canvas = new Canvas(canvas, {
       width: this.virtualCanvasWidth,
       height: this.virtualCanvasHeight,
-      backgroundColor: '#32a852',
+      backgroundColor: '#ff0000',
     })
   }
 
   resize(containerWidth: number, containerHeight: number) {
     /* Resize logic source: https://jsfiddle.net/robsch/g8x9mjvt/ */
     if (!this.canvas) return
-
     /* Determine whether to go with width-first or height-first scaling.
     Whichever prevents an overflow. */
-
     /* Try height-first scaling, and see if the width overflows the container */
-    const scale = containerHeight / this.virtualCanvasHeight
-    const scaledWidth = this.virtualCanvasWidth * scale
-
+    const tempScale = containerHeight / this.virtualCanvasHeight
+    const tempScaledWidth = this.virtualCanvasWidth * tempScale
     /* If it doesn't overflow, stick with height-first scaling, else go with width-first. */
-    if (scaledWidth < containerWidth) {
+    if (tempScaledWidth < containerWidth) {
       /* Height-first scaling */
-      const canvasAspectRatio =
-        this.virtualCanvasHeight / this.virtualCanvasWidth
-      const scale = containerHeight / this.virtualCanvasHeight
+      const ratio = this.canvas.getHeight() / this.canvas.getWidth()
+      const scale = containerHeight / this.canvas.getHeight()
       const zoom = this.canvas.getZoom() * scale
       this.canvas.setDimensions({
-        width: containerHeight / canvasAspectRatio,
+        width: containerHeight / ratio,
         height: containerHeight,
       })
-
       this.canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0])
     } else {
       /* Width-first scaling */
-      const canvasAspectRatio = this.canvas.getWidth() / this.canvas.getHeight()
+      const ratio = this.canvas.getWidth() / this.canvas.getHeight()
       const scale = containerWidth / this.canvas.getWidth()
       const zoom = this.canvas.getZoom() * scale
       this.canvas.setDimensions({
         width: containerWidth,
-        height: containerWidth / canvasAspectRatio,
+        height: containerWidth / ratio,
       })
-
       this.canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0])
     }
   }
@@ -77,8 +71,40 @@ export class CanvasEngine {
     this.canvas.clear()
     this._setCanvasDimension(state.display)
     this.resize(containerWidth, containerHeight)
-    // this._drawTimetableGrid()
+    this._drawTimetableGrid()
+    this.canvas.backgroundColor = '#ff0000'
     this.canvas.requestRenderAll()
+  }
+
+  _drawTimetableGrid() {
+    console.log('Adding rect')
+    const currentCanvasWidth = this.canvas.getWidth()
+    const currentCanvasHeight = this.canvas.getHeight()
+
+    const rect = new Rect({
+      originX: 'center',
+      originY: 'center',
+      left: 0,
+      top: 0,
+      width: 200,
+      height: 200,
+      fill: '#00ff00',
+    })
+
+    const text = new FabricText('Hello World!', {
+      left: 0,
+      top: 0,
+      originX: 'center',
+      originY: 'center',
+      fontSize: 32,
+      selectable: false,
+      evented: false,
+    })
+
+    const group = new Group([rect, text])
+
+    this.canvas.add(group)
+    this.canvas.centerObject(group)
   }
 
   _setCanvasDimension(display: Display | null) {
@@ -101,8 +127,8 @@ export class CanvasEngine {
 
     /* Set canvas dimensions */
     this.canvas.setDimensions({
-      width: this.virtualCanvasWidth,
-      height: this.virtualCanvasHeight,
+      width: this.virtualCanvasWidth / 4,
+      height: this.virtualCanvasHeight / 4,
     })
   }
 
@@ -141,7 +167,7 @@ export class CanvasEngine {
     return `${hour12}:${minuteStr}${meridiem}`
   }
 
-  _drawTimetableGrid() {
+  _drawTimetableGrid_() {
     const gridWidth = this.canvas.getWidth() - 200
     const gridHeight = this.canvas.getHeight() - 200
     this.gridOverlap = 0.01 * this.canvas.getWidth()
@@ -249,7 +275,12 @@ export class CanvasEngine {
   }
 
   export() {
-    console.log('Exporting canvas...')
+    const dataUrl = this.canvas.toDataURL({
+      format: 'png',
+      quality: 3,
+      multiplier: 3,
+    })
+    return dataUrl
   }
 
   dispose() {

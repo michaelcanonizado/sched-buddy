@@ -26,7 +26,13 @@ export default function SchedulePage() {
       return
     }
 
-    canvasEngine?.export()
+    const dataUrl = canvasEngine.export()
+    if (!dataUrl) return
+
+    const link = document.createElement('a')
+    link.href = dataUrl
+    link.download = 'schedule.png'
+    link.click()
   }
 
   return (

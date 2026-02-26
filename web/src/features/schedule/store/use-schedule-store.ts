@@ -1,4 +1,4 @@
-import { Display } from '@/features/display/lib/displays'
+import displays, { Display } from '@/features/display/lib/displays'
 import { create } from 'zustand'
 import { Subject } from '../lib/mock-data'
 import { persist } from 'zustand/middleware'
@@ -24,7 +24,7 @@ export const useScheduleStore = create<ScheduleStoreState>()(
   persist(
     (set, get) => ({
       subjects: [],
-      display: null,
+      display: displays[0],
       hasHydrated: false,
       orientation: 'portrait',
       actions: {

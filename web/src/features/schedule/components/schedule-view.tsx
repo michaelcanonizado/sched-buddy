@@ -54,7 +54,8 @@ export default function ScheduleView() {
       return
 
     const { clientWidth, clientHeight } = canvasContainerRef.current
-    canvasEngine.render(scheduleState, clientWidth, clientHeight)
+    canvasEngine.render(scheduleState)
+    canvasEngine.resize(clientWidth, clientHeight)
   }, [hasContextHydrated, scheduleState, canvasEngine])
 
   /* Attach the resize listener */

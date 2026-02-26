@@ -63,31 +63,24 @@ export class CanvasEngine {
     }
   }
 
-  render(
-    state: ScheduleStoreState,
-    containerWidth: number,
-    containerHeight: number,
-  ) {
+  render(state: ScheduleStoreState) {
     this.canvas.clear()
     this._setCanvasDimension(state.display)
-    this.resize(containerWidth, containerHeight)
     this._drawTimetableGrid()
     this.canvas.backgroundColor = '#ff0000'
     this.canvas.requestRenderAll()
   }
 
-  _drawTimetableGrid() {
+  _drawTimetableGrid_() {
     console.log('Adding rect')
-    const currentCanvasWidth = this.canvas.getWidth()
-    const currentCanvasHeight = this.canvas.getHeight()
 
     const rect = new Rect({
       originX: 'center',
       originY: 'center',
       left: 0,
       top: 0,
-      width: 200,
-      height: 200,
+      width: 500,
+      height: 500,
       fill: '#00ff00',
     })
 
@@ -127,8 +120,8 @@ export class CanvasEngine {
 
     /* Set canvas dimensions */
     this.canvas.setDimensions({
-      width: this.virtualCanvasWidth / 4,
-      height: this.virtualCanvasHeight / 4,
+      width: this.virtualCanvasWidth,
+      height: this.virtualCanvasHeight,
     })
   }
 
@@ -167,9 +160,9 @@ export class CanvasEngine {
     return `${hour12}:${minuteStr}${meridiem}`
   }
 
-  _drawTimetableGrid_() {
-    const gridWidth = this.canvas.getWidth() - 200
-    const gridHeight = this.canvas.getHeight() - 200
+  _drawTimetableGrid() {
+    const gridWidth = this.VIRTUAL_TIMETABLE_WIDTH
+    const gridHeight = this.VIRTUAL_TIMETABLE_HEIGHT
     this.gridOverlap = 0.01 * this.canvas.getWidth()
 
     const numberOfDays = this.daysOfTheWeek.length
@@ -264,14 +257,21 @@ export class CanvasEngine {
       },
     )
 
+    const zoom = this.canvas.getZoom()
+    const vpt = this.canvas.viewportTransform
+    const canvasCenterX = (this.canvas.getWidth() / 2 - vpt[4]) / zoom
+    const canvasCenterY = (this.canvas.getHeight() / 2 - vpt[5]) / zoom
+
     const timetableGroup = new Group([background, gridLinesGroup], {
-      selectable: false,
-      left: this.canvas.getWidth() / 2,
-      top: this.canvas.getHeight() / 2,
       originX: 'center',
       originY: 'center',
+      left: canvasCenterX,
+      top: canvasCenterY,
     })
+
     this.canvas.add(timetableGroup)
+    timetableGroup.scaleToWidth(this.canvas.getWidth() / this.canvas.getZoom())
+    timetableGroup.setCoords()
   }
 
   export() {

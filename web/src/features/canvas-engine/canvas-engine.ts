@@ -1,6 +1,6 @@
 import { Canvas, FabricText, Group, Path, Rect } from 'fabric'
 import { ScheduleStoreState } from '../schedule/store/use-schedule-store'
-import { Days, Time } from '../schedule/lib/mock-data'
+import { Day, Time } from '../schedule/lib/mock-data'
 import { Display } from '../display/lib/displays'
 
 export class CanvasEngine {
@@ -9,7 +9,7 @@ export class CanvasEngine {
   private gridEndTime: Time = 17 * 60 + 0
   private timeResolution = 30
   private gridOverlap = 0
-  private daysOfTheWeek: Days[] = [
+  private daysOfTheWeek: Day[] = [
     'monday',
     'tuesday',
     'wednesday',
@@ -131,7 +131,7 @@ export class CanvasEngine {
     })
   }
 
-  _calculateNumberOfXAxisGridLines(
+  _calculateNumberOfYAxisGridLines(
     start: Time,
     end: Time,
     resolution: number,
@@ -173,51 +173,20 @@ export class CanvasEngine {
 
     const numberOfDays = this.daysOfTheWeek.length
     /* Offset by 1 because somehow the last line doesnt show */
-    const yAxisLinesGap = (gridWidth - 1) / numberOfDays
+    const xAxisLinesGap = (gridWidth - 1) / numberOfDays
 
-    const numberOfXAxisLines = this._calculateNumberOfXAxisGridLines(
+    const numberOfYAxisLines = this._calculateNumberOfYAxisGridLines(
       this.gridStartTime,
       this.gridEndTime,
       this.timeResolution,
     )
-    const xAxisLinesGap = (gridHeight - 1) / numberOfXAxisLines
+    const yAxisLinesGap = (gridHeight - 1) / numberOfYAxisLines
 
-    /* yAxis lines */
-    const yAxisElements = []
+    /* X Axis lines (days) */
+    const xAxisElements = []
     for (let i = 0; i <= numberOfDays; i++) {
       const line = new Path(
-        `M ${yAxisLinesGap * i} ${-this.gridOverlap} L ${yAxisLinesGap * i} ${gridHeight + this.gridOverlap}`,
-        {
-          stroke: '#000000',
-          strokeWidth: 1,
-          selectable: false,
-          evented: false,
-        },
-      )
-      yAxisElements.push(line)
-
-      if (i < numberOfDays) {
-        const day =
-          this.daysOfTheWeek[i].charAt(0).toUpperCase() +
-          this.daysOfTheWeek[i].slice(1).toLowerCase()
-        const label = new FabricText(day, {
-          left: yAxisLinesGap * i + yAxisLinesGap / 2,
-          top: -this.gridOverlap - 2,
-          fontSize: 16,
-          selectable: false,
-          evented: false,
-        })
-        yAxisElements.push(label)
-      }
-    }
-    const yAxisLinesGroup = new Group(yAxisElements, {})
-
-    /* Horisontal lines */
-    const xAxisElements = []
-    let currentTimeLabel = this.gridStartTime
-    for (let i = 0; i <= numberOfXAxisLines; i++) {
-      const line = new Path(
-        `M ${-this.gridOverlap} ${xAxisLinesGap * i} L ${gridWidth + this.gridOverlap} ${xAxisLinesGap * i}`,
+        `M ${xAxisLinesGap * i} ${-this.gridOverlap} L ${xAxisLinesGap * i} ${gridHeight + this.gridOverlap}`,
         {
           stroke: '#000000',
           strokeWidth: 1,
@@ -227,24 +196,55 @@ export class CanvasEngine {
       )
       xAxisElements.push(line)
 
+      if (i < numberOfDays) {
+        const day =
+          this.daysOfTheWeek[i].charAt(0).toUpperCase() +
+          this.daysOfTheWeek[i].slice(1).toLowerCase()
+        const label = new FabricText(day, {
+          left: xAxisLinesGap * i + xAxisLinesGap / 2,
+          top: -this.gridOverlap - 2,
+          fontSize: 16,
+          selectable: false,
+          evented: false,
+        })
+        xAxisElements.push(label)
+      }
+    }
+    const daysAxisLinesGroup = new Group(xAxisElements, {})
+
+    /* Y Axis lines (time) */
+    const yAxisElements = []
+    let currentTimeLabel = this.gridStartTime
+    for (let i = 0; i <= numberOfYAxisLines; i++) {
+      const line = new Path(
+        `M ${-this.gridOverlap} ${yAxisLinesGap * i} L ${gridWidth + this.gridOverlap} ${yAxisLinesGap * i}`,
+        {
+          stroke: '#000000',
+          strokeWidth: 1,
+          selectable: false,
+          evented: false,
+        },
+      )
+      yAxisElements.push(line)
+
       const label = new FabricText(
         this._timeGenerateLabel(currentTimeLabel, '12'),
         {
           left: -(this.gridOverlap + 5),
-          top: xAxisLinesGap * i,
+          top: yAxisLinesGap * i,
           originX: 'right',
           fontSize: 16,
           selectable: false,
           evented: false,
         },
       )
-      xAxisElements.push(label)
+      yAxisElements.push(label)
       currentTimeLabel = this._timeIncrement(
         currentTimeLabel,
         this.timeResolution,
       )
     }
-    const xAxisLinesGroup = new Group(xAxisElements, {})
+    const yAxisLinesGroup = new Group(yAxisElements, {})
 
     const background = new Rect({
       width: gridWidth + 110,
@@ -272,7 +272,7 @@ export class CanvasEngine {
     this.cellsGroup = cellsContainer
 
     const gridLinesGroup = new Group(
-      [yAxisLinesGroup, xAxisLinesGroup, cellsContainer],
+      [daysAxisLinesGroup, yAxisLinesGroup, cellsContainer],
       {
         left: background.getScaledWidth() - 10,
         top: background.getScaledHeight() - 10,
@@ -297,10 +297,10 @@ export class CanvasEngine {
     this.canvas.add(timetableGroup)
     this.timetableGroup = timetableGroup
 
-    this.cellWidth = yAxisLinesGap
-    this.cellHeight = xAxisLinesGap
+    this.cellWidth = xAxisLinesGap
+    this.cellHeight = yAxisLinesGap
     this.totalDays = numberOfDays
-    this.totalRows = numberOfXAxisLines
+    this.totalRows = numberOfYAxisLines
   }
 
   export() {

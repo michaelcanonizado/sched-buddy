@@ -3,13 +3,20 @@ import { ScheduleStoreState } from '../schedule/store/use-schedule-store'
 import { Day, Time } from '../schedule/lib/mock-data'
 import { Display } from '../display/lib/displays'
 
+type GridBounds = {
+  timeResolution: number
+  startTime: number
+  endTime: number
+  days: Day[]
+}
+
 export class CanvasEngine {
   private canvas: Canvas
-  private gridStartTime: Time = 11 * 60 + 0
-  private gridEndTime: Time = 17 * 60 + 0
-  private timeResolution = 30
-  private gridOverlap = 0
-  private daysOfTheWeek: Day[] = [
+
+  private DEFAULT_TIME_RESOLUTION = 30
+  private DEFAULT_START_TIME = 8 * 60
+  private DEFAULT_END_TIME = 17 * 60
+  private DEFAULT_DAYS: Day[] = [
     'monday',
     'tuesday',
     'wednesday',
@@ -21,19 +28,14 @@ export class CanvasEngine {
   private timetableGroup: Group | null = null
   private cellWidth = 0
   private cellHeight = 0
-  private totalDays = 0
-  private totalRows = 0
 
   private VIRTUAL_TIMETABLE_WIDTH = 1100
   private VIRTUAL_TIMETABLE_HEIGHT = 800
 
-  private virtualCanvasWidth = this.VIRTUAL_TIMETABLE_WIDTH
-  private virtualCanvasHeight = this.VIRTUAL_TIMETABLE_HEIGHT
-
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = new Canvas(canvas, {
-      width: this.virtualCanvasWidth,
-      height: this.virtualCanvasHeight,
+      width: this.VIRTUAL_TIMETABLE_WIDTH,
+      height: this.VIRTUAL_TIMETABLE_HEIGHT,
       backgroundColor: '#ff0000',
     })
   }
@@ -44,8 +46,8 @@ export class CanvasEngine {
     /* Determine whether to go with width-first or height-first scaling.
     Whichever prevents an overflow. */
     /* Try height-first scaling, and see if the width overflows the container */
-    const tempScale = containerHeight / this.virtualCanvasHeight
-    const tempScaledWidth = this.virtualCanvasWidth * tempScale
+    const tempScale = containerHeight / this.canvas.getHeight()
+    const tempScaledWidth = this.canvas.getWidth() * tempScale
     /* If it doesn't overflow, stick with height-first scaling, else go with width-first. */
     if (tempScaledWidth < containerWidth) {
       /* Height-first scaling */
@@ -72,8 +74,12 @@ export class CanvasEngine {
 
   render(state: ScheduleStoreState) {
     this.canvas.clear()
+
+    const bounds = this._computeGridBounds(state)
+    console.log('Bounds: ', bounds)
+
     this._setCanvasDimension(state.display)
-    this._drawTimetableGrid()
+    this._drawTimetableGrid(bounds)
     this._drawCells()
 
     this.timetableGroup!.scaleToWidth(
@@ -81,6 +87,64 @@ export class CanvasEngine {
     )
     this.canvas.backgroundColor = '#ff0000'
     this.canvas.requestRenderAll()
+  }
+
+  _computeGridBounds(state: ScheduleStoreState): GridBounds {
+    if (state.subjects.length === 0) {
+      return {
+        timeResolution: this.DEFAULT_TIME_RESOLUTION,
+        startTime: this.DEFAULT_START_TIME,
+        endTime: this.DEFAULT_END_TIME,
+        days: this.DEFAULT_DAYS,
+      }
+    }
+
+    const minTime = Math.min(
+      this.DEFAULT_START_TIME,
+      ...state.subjects.flatMap((s) => s.meetings.map((m) => m.startTime)),
+    )
+
+    const maxTime = Math.max(
+      this.DEFAULT_END_TIME,
+      ...state.subjects.flatMap((s) => s.meetings.map((m) => m.endTime)),
+    )
+
+    const WEEK_DAYS: Day[] = [
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
+    ]
+
+    let minIndex = Infinity
+    let maxIndex = -Infinity
+
+    for (const subject of state.subjects) {
+      for (const meeting of subject.meetings) {
+        for (const day of meeting.days) {
+          const index = WEEK_DAYS.indexOf(day)
+          if (index !== -1) {
+            minIndex = Math.min(minIndex, index)
+            maxIndex = Math.max(maxIndex, index)
+          }
+        }
+      }
+    }
+
+    const subjectDays =
+      minIndex <= maxIndex ? WEEK_DAYS.slice(minIndex, maxIndex + 1) : []
+
+    const days = Array.from(new Set([...this.DEFAULT_DAYS, ...subjectDays]))
+
+    return {
+      timeResolution: this.DEFAULT_TIME_RESOLUTION,
+      startTime: minTime,
+      endTime: maxTime,
+      days,
+    }
   }
 
   _drawCells() {
@@ -91,11 +155,9 @@ export class CanvasEngine {
 
     const cellsContainerBounding = this.cellsGroup.getBoundingRect()
 
-    const gridStrokeWidth = 1
-
     const rect = new Rect({
-      width: this.cellWidth - gridStrokeWidth,
-      height: this.cellHeight - gridStrokeWidth,
+      width: this.cellWidth,
+      height: this.cellHeight,
       fill: '#00ff00',
       originX: 'left',
       originY: 'top',
@@ -107,28 +169,17 @@ export class CanvasEngine {
   }
 
   _setCanvasDimension(display: Display | null) {
-    /* Two types of canvas size:
-    1) Logical
-    2) Viewport
-    
-    Logical/virtual size is the base canvas size. Responsiveness
-    is done by scaling the canvas (viewport size). */
-
-    /* Determine the virtual dimensions */
     if (!display) {
-      this.virtualCanvasWidth = this.VIRTUAL_TIMETABLE_WIDTH
-      this.virtualCanvasHeight = this.VIRTUAL_TIMETABLE_HEIGHT
-      return
+      this.canvas.setDimensions({
+        width: this.VIRTUAL_TIMETABLE_WIDTH,
+        height: this.VIRTUAL_TIMETABLE_HEIGHT,
+      })
     } else {
-      this.virtualCanvasWidth = display.dimensions.width
-      this.virtualCanvasHeight = display.dimensions.height
+      this.canvas.setDimensions({
+        width: display.dimensions.width,
+        height: display.dimensions.height,
+      })
     }
-
-    /* Set canvas dimensions */
-    this.canvas.setDimensions({
-      width: this.virtualCanvasWidth,
-      height: this.virtualCanvasHeight,
-    })
   }
 
   _calculateNumberOfYAxisGridLines(
@@ -166,19 +217,27 @@ export class CanvasEngine {
     return `${hour12}:${minuteStr}${meridiem}`
   }
 
-  _drawTimetableGrid() {
+  _drawTimetableGrid(bounds: GridBounds) {
     const gridWidth = this.VIRTUAL_TIMETABLE_WIDTH
     const gridHeight = this.VIRTUAL_TIMETABLE_HEIGHT
-    this.gridOverlap = 0.01 * this.canvas.getWidth()
+    const gridOverlap = 0.01 * this.canvas.getWidth()
+    const gridStrokeWidth = 2
+    const gridStrokeColor = '#000000'
+    const timetableBackgroundColor = '#f2f2f2'
+    const labelFontSize = 16
 
-    const numberOfDays = this.daysOfTheWeek.length
-    /* Offset by 1 because somehow the last line doesnt show */
+    const startTime = bounds.startTime
+    const endTime = bounds.endTime
+    const timeResolution = bounds.timeResolution
+    const days = bounds.days
+
+    const numberOfDays = bounds.days.length
     const xAxisLinesGap = (gridWidth - 1) / numberOfDays
 
     const numberOfYAxisLines = this._calculateNumberOfYAxisGridLines(
-      this.gridStartTime,
-      this.gridEndTime,
-      this.timeResolution,
+      startTime,
+      endTime,
+      timeResolution,
     )
     const yAxisLinesGap = (gridHeight - 1) / numberOfYAxisLines
 
@@ -186,10 +245,10 @@ export class CanvasEngine {
     const xAxisElements = []
     for (let i = 0; i <= numberOfDays; i++) {
       const line = new Path(
-        `M ${xAxisLinesGap * i} ${-this.gridOverlap} L ${xAxisLinesGap * i} ${gridHeight + this.gridOverlap}`,
+        `M ${xAxisLinesGap * i} ${-gridOverlap} L ${xAxisLinesGap * i} ${gridHeight + gridOverlap}`,
         {
-          stroke: '#000000',
-          strokeWidth: 1,
+          stroke: gridStrokeColor,
+          strokeWidth: gridStrokeWidth,
           selectable: false,
           evented: false,
         },
@@ -198,29 +257,28 @@ export class CanvasEngine {
 
       if (i < numberOfDays) {
         const day =
-          this.daysOfTheWeek[i].charAt(0).toUpperCase() +
-          this.daysOfTheWeek[i].slice(1).toLowerCase()
+          days[i].charAt(0).toUpperCase() + days[i].slice(1).toLowerCase()
         const label = new FabricText(day, {
           left: xAxisLinesGap * i + xAxisLinesGap / 2,
-          top: -this.gridOverlap - 2,
-          fontSize: 16,
+          top: -gridOverlap - 2,
+          fontSize: labelFontSize,
           selectable: false,
           evented: false,
         })
         xAxisElements.push(label)
       }
     }
-    const daysAxisLinesGroup = new Group(xAxisElements, {})
+    const xAxisLinesGroup = new Group(xAxisElements, {})
 
     /* Y Axis lines (time) */
     const yAxisElements = []
-    let currentTimeLabel = this.gridStartTime
+    let currentTimeLabel = startTime
     for (let i = 0; i <= numberOfYAxisLines; i++) {
       const line = new Path(
-        `M ${-this.gridOverlap} ${yAxisLinesGap * i} L ${gridWidth + this.gridOverlap} ${yAxisLinesGap * i}`,
+        `M ${-gridOverlap} ${yAxisLinesGap * i} L ${gridWidth + gridOverlap} ${yAxisLinesGap * i}`,
         {
-          stroke: '#000000',
-          strokeWidth: 1,
+          stroke: gridStrokeColor,
+          strokeWidth: gridStrokeWidth,
           selectable: false,
           evented: false,
         },
@@ -230,26 +288,23 @@ export class CanvasEngine {
       const label = new FabricText(
         this._timeGenerateLabel(currentTimeLabel, '12'),
         {
-          left: -(this.gridOverlap + 5),
+          left: -(gridOverlap + 5),
           top: yAxisLinesGap * i,
           originX: 'right',
-          fontSize: 16,
+          fontSize: labelFontSize,
           selectable: false,
           evented: false,
         },
       )
       yAxisElements.push(label)
-      currentTimeLabel = this._timeIncrement(
-        currentTimeLabel,
-        this.timeResolution,
-      )
+      currentTimeLabel = this._timeIncrement(currentTimeLabel, timeResolution)
     }
     const yAxisLinesGroup = new Group(yAxisElements, {})
 
     const background = new Rect({
       width: gridWidth + 110,
       height: gridHeight + 60,
-      fill: '#f2f2f2',
+      fill: timetableBackgroundColor,
       left: 0,
       top: 0,
       originX: 'left',
@@ -259,7 +314,6 @@ export class CanvasEngine {
     const cellsContainerBackground = new Rect({
       width: gridWidth,
       height: gridHeight,
-      // fill: '#ffff00',
       fill: 'transparent',
     })
 
@@ -272,7 +326,7 @@ export class CanvasEngine {
     this.cellsGroup = cellsContainer
 
     const gridLinesGroup = new Group(
-      [daysAxisLinesGroup, yAxisLinesGroup, cellsContainer],
+      [xAxisLinesGroup, yAxisLinesGroup, cellsContainer],
       {
         left: background.getScaledWidth() - 10,
         top: background.getScaledHeight() - 10,
@@ -297,10 +351,8 @@ export class CanvasEngine {
     this.canvas.add(timetableGroup)
     this.timetableGroup = timetableGroup
 
-    this.cellWidth = xAxisLinesGap
-    this.cellHeight = yAxisLinesGap
-    this.totalDays = numberOfDays
-    this.totalRows = numberOfYAxisLines
+    this.cellWidth = xAxisLinesGap - gridStrokeWidth
+    this.cellHeight = yAxisLinesGap - gridStrokeWidth
   }
 
   export() {

@@ -85,7 +85,7 @@ export default function ScheduleView() {
         // 'border border-red-500',
       )}
     >
-      <canvas ref={canvasElementRef} className='rounded-lg border' />
+      <canvas ref={canvasElementRef} className='rounded-lg' />
     </div>
   )
 }

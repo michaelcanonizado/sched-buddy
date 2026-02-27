@@ -11,7 +11,10 @@ type GridBounds = {
 }
 
 export class CanvasEngine {
-  private canvas: Canvas
+  private CANVAS: Canvas
+
+  private VIRTUAL_TIMETABLE_WIDTH = 1100
+  private VIRTUAL_TIMETABLE_HEIGHT = 800
 
   private DEFAULT_TIME_RESOLUTION = 30
   private DEFAULT_START_TIME = 8 * 60
@@ -25,15 +28,11 @@ export class CanvasEngine {
   ]
 
   private cellsGroup: Group | null = null
-  private timetableGroup: Group | null = null
   private cellWidth = 0
   private cellHeight = 0
 
-  private VIRTUAL_TIMETABLE_WIDTH = 1100
-  private VIRTUAL_TIMETABLE_HEIGHT = 800
-
   constructor(canvas: HTMLCanvasElement) {
-    this.canvas = new Canvas(canvas, {
+    this.CANVAS = new Canvas(canvas, {
       width: this.VIRTUAL_TIMETABLE_WIDTH,
       height: this.VIRTUAL_TIMETABLE_HEIGHT,
       backgroundColor: '#ff0000',
@@ -42,38 +41,38 @@ export class CanvasEngine {
 
   resize(containerWidth: number, containerHeight: number) {
     /* Resize logic source: https://jsfiddle.net/robsch/g8x9mjvt/ */
-    if (!this.canvas) return
+    if (!this.CANVAS) return
     /* Determine whether to go with width-first or height-first scaling.
     Whichever prevents an overflow. */
     /* Try height-first scaling, and see if the width overflows the container */
-    const tempScale = containerHeight / this.canvas.getHeight()
-    const tempScaledWidth = this.canvas.getWidth() * tempScale
+    const tempScale = containerHeight / this.CANVAS.getHeight()
+    const tempScaledWidth = this.CANVAS.getWidth() * tempScale
     /* If it doesn't overflow, stick with height-first scaling, else go with width-first. */
     if (tempScaledWidth < containerWidth) {
       /* Height-first scaling */
-      const ratio = this.canvas.getHeight() / this.canvas.getWidth()
-      const scale = containerHeight / this.canvas.getHeight()
-      const zoom = this.canvas.getZoom() * scale
-      this.canvas.setDimensions({
+      const ratio = this.CANVAS.getHeight() / this.CANVAS.getWidth()
+      const scale = containerHeight / this.CANVAS.getHeight()
+      const zoom = this.CANVAS.getZoom() * scale
+      this.CANVAS.setDimensions({
         width: containerHeight / ratio,
         height: containerHeight,
       })
-      this.canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0])
+      this.CANVAS.setViewportTransform([zoom, 0, 0, zoom, 0, 0])
     } else {
       /* Width-first scaling */
-      const ratio = this.canvas.getWidth() / this.canvas.getHeight()
-      const scale = containerWidth / this.canvas.getWidth()
-      const zoom = this.canvas.getZoom() * scale
-      this.canvas.setDimensions({
+      const ratio = this.CANVAS.getWidth() / this.CANVAS.getHeight()
+      const scale = containerWidth / this.CANVAS.getWidth()
+      const zoom = this.CANVAS.getZoom() * scale
+      this.CANVAS.setDimensions({
         width: containerWidth,
         height: containerWidth / ratio,
       })
-      this.canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0])
+      this.CANVAS.setViewportTransform([zoom, 0, 0, zoom, 0, 0])
     }
   }
 
   render(state: ScheduleStoreState) {
-    this.canvas.clear()
+    this.CANVAS.clear()
 
     const bounds = this._computeGridBounds(state)
     console.log('Bounds: ', bounds)
@@ -82,11 +81,8 @@ export class CanvasEngine {
     this._drawTimetableGrid(bounds)
     this._drawCells()
 
-    this.timetableGroup!.scaleToWidth(
-      this.canvas.getWidth() / this.canvas.getZoom(),
-    )
-    this.canvas.backgroundColor = '#ff0000'
-    this.canvas.requestRenderAll()
+    this.CANVAS.backgroundColor = '#ff0000'
+    this.CANVAS.requestRenderAll()
   }
 
   _computeGridBounds(state: ScheduleStoreState): GridBounds {
@@ -170,12 +166,12 @@ export class CanvasEngine {
 
   _setCanvasDimension(display: Display | null) {
     if (!display) {
-      this.canvas.setDimensions({
+      this.CANVAS.setDimensions({
         width: this.VIRTUAL_TIMETABLE_WIDTH,
         height: this.VIRTUAL_TIMETABLE_HEIGHT,
       })
     } else {
-      this.canvas.setDimensions({
+      this.CANVAS.setDimensions({
         width: display.dimensions.width,
         height: display.dimensions.height,
       })
@@ -220,7 +216,7 @@ export class CanvasEngine {
   _drawTimetableGrid(bounds: GridBounds) {
     const gridWidth = this.VIRTUAL_TIMETABLE_WIDTH
     const gridHeight = this.VIRTUAL_TIMETABLE_HEIGHT
-    const gridOverlap = 0.01 * this.canvas.getWidth()
+    const gridOverlap = 0.01 * this.CANVAS.getWidth()
     const gridStrokeWidth = 2
     const gridStrokeColor = '#000000'
     const timetableBackgroundColor = '#f2f2f2'
@@ -241,7 +237,7 @@ export class CanvasEngine {
     )
     const yAxisLinesGap = (gridHeight - 1) / numberOfYAxisLines
 
-    /* X Axis lines (days) */
+    /* Draw the X Axis elements (days) */
     const xAxisElements = []
     for (let i = 0; i <= numberOfDays; i++) {
       const line = new Path(
@@ -270,7 +266,7 @@ export class CanvasEngine {
     }
     const xAxisLinesGroup = new Group(xAxisElements, {})
 
-    /* Y Axis lines (time) */
+    /* Draw the Y Axis elements (time) */
     const yAxisElements = []
     let currentTimeLabel = startTime
     for (let i = 0; i <= numberOfYAxisLines; i++) {
@@ -301,7 +297,9 @@ export class CanvasEngine {
     }
     const yAxisLinesGroup = new Group(yAxisElements, {})
 
+    /* Background of the timetable */
     const background = new Rect({
+      /* The space for the X and Y axis labels could probably be calculated dynamically based on the labelFontSize */
       width: gridWidth + 110,
       height: gridHeight + 60,
       fill: timetableBackgroundColor,
@@ -311,21 +309,20 @@ export class CanvasEngine {
       originY: 'top',
     })
 
+    /* Insert the group that will hold the subject cells, making it span the whole grid (excluding the offsets) */
     const cellsContainerBackground = new Rect({
       width: gridWidth,
       height: gridHeight,
       fill: 'transparent',
     })
-
     const cellsContainer = new Group([cellsContainerBackground], {
       left: 0,
       top: 0,
       originX: 'left',
       originY: 'top',
     })
-    this.cellsGroup = cellsContainer
 
-    const gridLinesGroup = new Group(
+    const gridGroup = new Group(
       [xAxisLinesGroup, yAxisLinesGroup, cellsContainer],
       {
         left: background.getScaledWidth() - 10,
@@ -335,28 +332,30 @@ export class CanvasEngine {
       },
     )
 
-    const zoom = this.canvas.getZoom()
-    const vpt = this.canvas.viewportTransform
-    const canvasCenterX = (this.canvas.getWidth() / 2 - vpt[4]) / zoom
-    const canvasCenterY = (this.canvas.getHeight() / 2 - vpt[5]) / zoom
+    /* Temporarily center the timetable in the canvas */
+    const zoom = this.CANVAS.getZoom()
+    const vpt = this.CANVAS.viewportTransform
+    const canvasCenterX = (this.CANVAS.getWidth() / 2 - vpt[4]) / zoom
+    const canvasCenterY = (this.CANVAS.getHeight() / 2 - vpt[5]) / zoom
 
-    const timetableGroup = new Group([background, gridLinesGroup], {
+    const timetableGroup = new Group([background, gridGroup], {
       originX: 'center',
       originY: 'center',
       left: canvasCenterX,
       top: canvasCenterY,
       selectable: true,
     })
+    /* Temporarily make the timetable span the whole canvas width */
+    timetableGroup.scaleToWidth(this.CANVAS.getWidth() / this.CANVAS.getZoom())
+    this.CANVAS.add(timetableGroup)
 
-    this.canvas.add(timetableGroup)
-    this.timetableGroup = timetableGroup
-
+    this.cellsGroup = cellsContainer
     this.cellWidth = xAxisLinesGap - gridStrokeWidth
     this.cellHeight = yAxisLinesGap - gridStrokeWidth
   }
 
   export() {
-    const dataUrl = this.canvas.toDataURL({
+    const dataUrl = this.CANVAS.toDataURL({
       format: 'png',
       quality: 3,
       multiplier: 3,
@@ -365,6 +364,6 @@ export class CanvasEngine {
   }
 
   dispose() {
-    this.canvas.dispose()
+    this.CANVAS.dispose()
   }
 }

@@ -1,6 +1,6 @@
 import displays, { Display } from '@/features/display/lib/displays'
 import { create } from 'zustand'
-import { Subject } from '../lib/mock-data'
+import { scheduleData, Subject } from '../lib/mock-data'
 import { persist } from 'zustand/middleware'
 
 type DisplayOrientation = 'portrait' | 'landscape'
@@ -23,18 +23,18 @@ export type ScheduleStoreState = {
 export const useScheduleStore = create<ScheduleStoreState>()(
   persist(
     (set, get) => ({
-      subjects: [],
+      subjects: scheduleData,
       display: displays[0],
       hasHydrated: false,
       orientation: 'portrait',
       actions: {
         addSubject: () => {
-          const subject: Subject = {
-            title: 'Computer Programming 1',
-            color: 'abc',
-            meetings: [],
-          }
-          set((state) => ({ subjects: [...state.subjects, subject] }))
+          // const subject: Subject = {
+          //   title: 'Computer Programming 1',
+          //   color: 'abc',
+          //   meetings: [],
+          // }
+          // set((state) => ({ subjects: [...state.subjects, subject] }))
         },
         setDisplay: (display) => set({ display }),
         setOrientation: (orientation) => set({ orientation }),

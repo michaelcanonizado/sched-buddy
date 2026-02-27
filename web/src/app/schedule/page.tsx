@@ -46,7 +46,6 @@ export default function SchedulePage() {
           <Button
             variant='outline'
             onClick={() => {
-              console.log('btn click')
               addSubject()
             }}
           >

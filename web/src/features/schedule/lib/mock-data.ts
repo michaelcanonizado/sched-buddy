@@ -26,15 +26,120 @@ export type Subject = {
 
 export const scheduleData: Subject[] = [
   {
-    title: 'Operating Systems',
+    title: 'Data Mining',
     color: '#FFE37D',
     meetings: [
       {
-        days: ['tuesday', 'thursday'],
+        days: ['monday'],
+        startTime: 600,
+        endTime: 720,
+        instructor: 'Sy, C.',
+        location: 'BUCS-101',
+      },
+      {
+        days: ['wednesday'],
+        startTime: 780,
+        endTime: 1140,
+        instructor: 'Sy, C.',
+        location: 'BUCS-215',
+      },
+    ],
+  },
+  {
+    title: 'Information Assurance and Security',
+    color: '#C8F7C5',
+    meetings: [
+      {
+        days: ['tuesday'],
+        startTime: 780,
+        endTime: 870,
+        instructor: 'Brogada, M.',
+        location: 'BUCS-302',
+      },
+    ],
+  },
+  {
+    title: 'Human Computer Interaction',
+    color: '#E08283',
+    meetings: [
+      {
+        days: ['tuesday'],
+        startTime: 1020,
+        endTime: 1140,
+        instructor: 'Canon, M.',
+        location: 'BUCS-118',
+      },
+    ],
+  },
+  {
+    title: 'Networks and Communications',
+    color: '#99CCCC',
+    meetings: [
+      {
+        days: ['monday'],
+        startTime: 780,
+        endTime: 960,
+        instructor: 'Brogada, M.',
+        location: 'BUCS-404',
+      },
+    ],
+  },
+  {
+    title: 'Science, Technology, and Society',
+    color: '#CC99CC',
+    meetings: [
+      {
+        days: ['thursday'],
         startTime: 540,
-        endTime: 750,
-        instructor: 'Canon, M',
-        location: 'CS-02-201',
+        endTime: 720,
+        instructor: 'Conda-Botin, K.',
+        location: 'BUCS-207',
+      },
+    ],
+  },
+  {
+    title: 'Networks and Communiations',
+    color: '#C4DA87',
+    meetings: [
+      {
+        days: ['thursday', 'saturday'],
+        startTime: 780,
+        endTime: 900,
+        instructor: 'Brogada, M.',
+        location: 'BUCS-320',
+      },
+    ],
+  },
+  {
+    title: 'Ethics',
+    color: '#F7B891',
+    meetings: [
+      {
+        days: ['thursday'],
+        startTime: 1020,
+        endTime: 1200,
+        instructor: 'Orpano, J.',
+        location: 'BUCS-112',
+      },
+    ],
+  },
+  {
+    title: 'Software Engineering 2',
+    color: '#FFDDFF',
+    meetings: [
+      {
+        days: ['friday'],
+        startTime: 540,
+        endTime: 720,
+        instructor: 'Maceda, L.',
+        location: 'BUCS-401',
+      },
+      {
+        days: ['friday'],
+        startTime: 780,
+        endTime: 1140,
+        instructor: 'Maceda, L.',
+        location: 'BUCS-219',
       },
     ],
   },

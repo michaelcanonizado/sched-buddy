@@ -1,4 +1,4 @@
-export type Days =
+export type Day =
   | 'monday'
   | 'tuesday'
   | 'wednesday'
@@ -11,7 +11,7 @@ export type Days =
 export type Time = number
 
 export type Meeting = {
-  days: Days[]
+  days: Day[]
   startTime: Time
   endTime: Time
   instructor: string

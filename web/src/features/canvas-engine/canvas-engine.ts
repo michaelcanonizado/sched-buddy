@@ -1,6 +1,6 @@
 import { Canvas, FabricText, Group, Path, Rect } from 'fabric'
 import { ScheduleStoreState } from '../schedule/store/use-schedule-store'
-import { Time } from '../schedule/lib/mock-data'
+import { Days, Time } from '../schedule/lib/mock-data'
 import { Display } from '../display/lib/displays'
 
 export class CanvasEngine {
@@ -9,12 +9,12 @@ export class CanvasEngine {
   private gridEndTime: Time = 17 * 60 + 0
   private timeResolution = 30
   private gridOverlap = 0
-  private daysOfTheWeek = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
+  private daysOfTheWeek: Days[] = [
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
   ]
 
   private cellsGroup: Group | null = null
@@ -197,7 +197,10 @@ export class CanvasEngine {
       yAxisElements.push(line)
 
       if (i < numberOfDays) {
-        const label = new FabricText(this.daysOfTheWeek[i], {
+        const day =
+          this.daysOfTheWeek[i].charAt(0).toUpperCase() +
+          this.daysOfTheWeek[i].slice(1).toLowerCase()
+        const label = new FabricText(day, {
           left: yAxisLinesGap * i + yAxisLinesGap / 2,
           top: -this.gridOverlap - 2,
           fontSize: 16,

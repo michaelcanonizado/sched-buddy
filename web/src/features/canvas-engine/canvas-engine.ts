@@ -75,10 +75,9 @@ export class CanvasEngine {
     this.CANVAS.clear()
 
     const bounds = this._computeGridBounds(state)
-    console.log('Bounds: ', bounds)
 
     this._setCanvasDimension(state.display)
-    this._drawTimetableGrid(bounds)
+    this._drawTimetable(bounds)
     this._drawCells()
 
     this.CANVAS.backgroundColor = '#ff0000'
@@ -213,7 +212,7 @@ export class CanvasEngine {
     return `${hour12}:${minuteStr}${meridiem}`
   }
 
-  _drawTimetableGrid(bounds: GridBounds) {
+  _drawTimetable(bounds: GridBounds) {
     const gridWidth = this.VIRTUAL_TIMETABLE_WIDTH
     const gridHeight = this.VIRTUAL_TIMETABLE_HEIGHT
     const gridOverlap = 0.01 * this.CANVAS.getWidth()

@@ -177,11 +177,7 @@ export class CanvasEngine {
     }
   }
 
-  _calculateNumberOfYAxisGridLines(
-    start: Time,
-    end: Time,
-    resolution: number,
-  ): number {
+  _calculateNumberOfRows(start: Time, end: Time, resolution: number): number {
     return (end - start) / resolution
   }
 
@@ -227,20 +223,20 @@ export class CanvasEngine {
     const days = bounds.days
 
     const numberOfDays = bounds.days.length
-    const xAxisLinesGap = (gridWidth - 1) / numberOfDays
+    const columnWidth = (gridWidth - 1) / numberOfDays
 
-    const numberOfYAxisLines = this._calculateNumberOfYAxisGridLines(
+    const numberOfRows = this._calculateNumberOfRows(
       startTime,
       endTime,
       timeResolution,
     )
-    const yAxisLinesGap = (gridHeight - 1) / numberOfYAxisLines
+    const rowHeight = (gridHeight - 1) / numberOfRows
 
-    /* Draw the X Axis elements (days) */
-    const xAxisElements = []
+    /* Draw the column elements (days) */
+    const columnElements = []
     for (let i = 0; i <= numberOfDays; i++) {
       const line = new Path(
-        `M ${xAxisLinesGap * i} ${-gridOverlap} L ${xAxisLinesGap * i} ${gridHeight + gridOverlap}`,
+        `M ${columnWidth * i} ${-gridOverlap} L ${columnWidth * i} ${gridHeight + gridOverlap}`,
         {
           stroke: gridStrokeColor,
           strokeWidth: gridStrokeWidth,
@@ -248,29 +244,29 @@ export class CanvasEngine {
           evented: false,
         },
       )
-      xAxisElements.push(line)
+      columnElements.push(line)
 
       if (i < numberOfDays) {
         const day =
           days[i].charAt(0).toUpperCase() + days[i].slice(1).toLowerCase()
         const label = new FabricText(day, {
-          left: xAxisLinesGap * i + xAxisLinesGap / 2,
+          left: columnWidth * i + columnWidth / 2,
           top: -gridOverlap - 2,
           fontSize: labelFontSize,
           selectable: false,
           evented: false,
         })
-        xAxisElements.push(label)
+        columnElements.push(label)
       }
     }
-    const xAxisLinesGroup = new Group(xAxisElements, {})
+    const columnGroup = new Group(columnElements, {})
 
-    /* Draw the Y Axis elements (time) */
-    const yAxisElements = []
+    /* Draw the row elements (time) */
+    const rowElements = []
     let currentTimeLabel = startTime
-    for (let i = 0; i <= numberOfYAxisLines; i++) {
+    for (let i = 0; i <= numberOfRows; i++) {
       const line = new Path(
-        `M ${-gridOverlap} ${yAxisLinesGap * i} L ${gridWidth + gridOverlap} ${yAxisLinesGap * i}`,
+        `M ${-gridOverlap} ${rowHeight * i} L ${gridWidth + gridOverlap} ${rowHeight * i}`,
         {
           stroke: gridStrokeColor,
           strokeWidth: gridStrokeWidth,
@@ -278,27 +274,27 @@ export class CanvasEngine {
           evented: false,
         },
       )
-      yAxisElements.push(line)
+      rowElements.push(line)
 
       const label = new FabricText(
         this._timeGenerateLabel(currentTimeLabel, '12'),
         {
           left: -(gridOverlap + 5),
-          top: yAxisLinesGap * i,
+          top: rowHeight * i,
           originX: 'right',
           fontSize: labelFontSize,
           selectable: false,
           evented: false,
         },
       )
-      yAxisElements.push(label)
+      rowElements.push(label)
       currentTimeLabel = this._timeIncrement(currentTimeLabel, timeResolution)
     }
-    const yAxisLinesGroup = new Group(yAxisElements, {})
+    const rowGroup = new Group(rowElements, {})
 
     /* Background of the timetable */
     const background = new Rect({
-      /* The space for the X and Y axis labels could probably be calculated dynamically based on the labelFontSize */
+      /* The space for the row and column labels could probably be calculated dynamically based on the labelFontSize */
       width: gridWidth + 110,
       height: gridHeight + 60,
       fill: timetableBackgroundColor,
@@ -321,15 +317,12 @@ export class CanvasEngine {
       originY: 'top',
     })
 
-    const gridGroup = new Group(
-      [xAxisLinesGroup, yAxisLinesGroup, cellsContainer],
-      {
-        left: background.getScaledWidth() - 10,
-        top: background.getScaledHeight() - 10,
-        originX: 'right',
-        originY: 'bottom',
-      },
-    )
+    const gridGroup = new Group([columnGroup, rowGroup, cellsContainer], {
+      left: background.getScaledWidth() - 10,
+      top: background.getScaledHeight() - 10,
+      originX: 'right',
+      originY: 'bottom',
+    })
 
     /* Temporarily center the timetable in the canvas */
     const zoom = this.CANVAS.getZoom()
@@ -349,8 +342,8 @@ export class CanvasEngine {
     this.CANVAS.add(timetableGroup)
 
     this.cellsGroup = cellsContainer
-    this.cellWidth = xAxisLinesGap - gridStrokeWidth
-    this.cellHeight = yAxisLinesGap - gridStrokeWidth
+    this.cellWidth = columnWidth - gridStrokeWidth
+    this.cellHeight = rowHeight - gridStrokeWidth
   }
 
   export() {

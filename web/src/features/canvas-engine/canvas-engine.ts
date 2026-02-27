@@ -17,6 +17,13 @@ export class CanvasEngine {
     'Friday',
   ]
 
+  private cellsGroup: Group | null = null
+  private timetableGroup: Group | null = null
+  private cellWidth = 0
+  private cellHeight = 0
+  private totalDays = 0
+  private totalRows = 0
+
   private VIRTUAL_TIMETABLE_WIDTH = 1100
   private VIRTUAL_TIMETABLE_HEIGHT = 800
 
@@ -67,37 +74,36 @@ export class CanvasEngine {
     this.canvas.clear()
     this._setCanvasDimension(state.display)
     this._drawTimetableGrid()
+    this._drawCells()
+
+    this.timetableGroup!.scaleToWidth(
+      this.canvas.getWidth() / this.canvas.getZoom(),
+    )
     this.canvas.backgroundColor = '#ff0000'
     this.canvas.requestRenderAll()
   }
 
-  _drawTimetableGrid_() {
-    console.log('Adding rect')
+  _drawCells() {
+    if (!this.cellsGroup) {
+      console.warn('cellsContainer is NULL!')
+      return
+    }
+
+    const cellsContainerBounding = this.cellsGroup.getBoundingRect()
+
+    const gridStrokeWidth = 1
 
     const rect = new Rect({
-      originX: 'center',
-      originY: 'center',
-      left: 0,
-      top: 0,
-      width: 500,
-      height: 500,
+      width: this.cellWidth - gridStrokeWidth,
+      height: this.cellHeight - gridStrokeWidth,
       fill: '#00ff00',
+      originX: 'left',
+      originY: 'top',
+      left: cellsContainerBounding.left,
+      top: cellsContainerBounding.top,
     })
 
-    const text = new FabricText('Hello World!', {
-      left: 0,
-      top: 0,
-      originX: 'center',
-      originY: 'center',
-      fontSize: 32,
-      selectable: false,
-      evented: false,
-    })
-
-    const group = new Group([rect, text])
-
-    this.canvas.add(group)
-    this.canvas.centerObject(group)
+    this.cellsGroup.add(rect)
   }
 
   _setCanvasDimension(display: Display | null) {
@@ -125,7 +131,7 @@ export class CanvasEngine {
     })
   }
 
-  calculateNumberOfHorizontalGridLines(
+  _calculateNumberOfXAxisGridLines(
     start: Time,
     end: Time,
     resolution: number,
@@ -167,20 +173,20 @@ export class CanvasEngine {
 
     const numberOfDays = this.daysOfTheWeek.length
     /* Offset by 1 because somehow the last line doesnt show */
-    const verticalLinesGap = (gridWidth - 1) / numberOfDays
+    const yAxisLinesGap = (gridWidth - 1) / numberOfDays
 
-    const numberOfHorizontalLines = this.calculateNumberOfHorizontalGridLines(
+    const numberOfXAxisLines = this._calculateNumberOfXAxisGridLines(
       this.gridStartTime,
       this.gridEndTime,
       this.timeResolution,
     )
-    const horizontalLinesGap = (gridHeight - 1) / numberOfHorizontalLines
+    const xAxisLinesGap = (gridHeight - 1) / numberOfXAxisLines
 
-    /* Vertical lines */
-    const verticalElements = []
+    /* yAxis lines */
+    const yAxisElements = []
     for (let i = 0; i <= numberOfDays; i++) {
       const line = new Path(
-        `M ${verticalLinesGap * i} ${-this.gridOverlap} L ${verticalLinesGap * i} ${gridHeight + this.gridOverlap}`,
+        `M ${yAxisLinesGap * i} ${-this.gridOverlap} L ${yAxisLinesGap * i} ${gridHeight + this.gridOverlap}`,
         {
           stroke: '#000000',
           strokeWidth: 1,
@@ -188,27 +194,27 @@ export class CanvasEngine {
           evented: false,
         },
       )
-      verticalElements.push(line)
+      yAxisElements.push(line)
 
       if (i < numberOfDays) {
         const label = new FabricText(this.daysOfTheWeek[i], {
-          left: verticalLinesGap * i + verticalLinesGap / 2,
+          left: yAxisLinesGap * i + yAxisLinesGap / 2,
           top: -this.gridOverlap - 2,
           fontSize: 16,
           selectable: false,
           evented: false,
         })
-        verticalElements.push(label)
+        yAxisElements.push(label)
       }
     }
-    const verticalLinesGroup = new Group(verticalElements, {})
+    const yAxisLinesGroup = new Group(yAxisElements, {})
 
     /* Horisontal lines */
-    const horizontalElements = []
+    const xAxisElements = []
     let currentTimeLabel = this.gridStartTime
-    for (let i = 0; i <= numberOfHorizontalLines; i++) {
+    for (let i = 0; i <= numberOfXAxisLines; i++) {
       const line = new Path(
-        `M ${-this.gridOverlap} ${horizontalLinesGap * i} L ${gridWidth + this.gridOverlap} ${horizontalLinesGap * i}`,
+        `M ${-this.gridOverlap} ${xAxisLinesGap * i} L ${gridWidth + this.gridOverlap} ${xAxisLinesGap * i}`,
         {
           stroke: '#000000',
           strokeWidth: 1,
@@ -216,26 +222,26 @@ export class CanvasEngine {
           evented: false,
         },
       )
-      horizontalElements.push(line)
+      xAxisElements.push(line)
 
       const label = new FabricText(
         this._timeGenerateLabel(currentTimeLabel, '12'),
         {
           left: -(this.gridOverlap + 5),
-          top: horizontalLinesGap * i,
+          top: xAxisLinesGap * i,
           originX: 'right',
           fontSize: 16,
           selectable: false,
           evented: false,
         },
       )
-      horizontalElements.push(label)
+      xAxisElements.push(label)
       currentTimeLabel = this._timeIncrement(
         currentTimeLabel,
         this.timeResolution,
       )
     }
-    const horizontalLinesGroup = new Group(horizontalElements, {})
+    const xAxisLinesGroup = new Group(xAxisElements, {})
 
     const background = new Rect({
       width: gridWidth + 110,
@@ -247,8 +253,23 @@ export class CanvasEngine {
       originY: 'top',
     })
 
+    const cellsContainerBackground = new Rect({
+      width: gridWidth,
+      height: gridHeight,
+      // fill: '#ffff00',
+      fill: 'transparent',
+    })
+
+    const cellsContainer = new Group([cellsContainerBackground], {
+      left: 0,
+      top: 0,
+      originX: 'left',
+      originY: 'top',
+    })
+    this.cellsGroup = cellsContainer
+
     const gridLinesGroup = new Group(
-      [verticalLinesGroup, horizontalLinesGroup],
+      [yAxisLinesGroup, xAxisLinesGroup, cellsContainer],
       {
         left: background.getScaledWidth() - 10,
         top: background.getScaledHeight() - 10,
@@ -267,11 +288,16 @@ export class CanvasEngine {
       originY: 'center',
       left: canvasCenterX,
       top: canvasCenterY,
+      selectable: true,
     })
 
     this.canvas.add(timetableGroup)
-    timetableGroup.scaleToWidth(this.canvas.getWidth() / this.canvas.getZoom())
-    timetableGroup.setCoords()
+    this.timetableGroup = timetableGroup
+
+    this.cellWidth = yAxisLinesGap
+    this.cellHeight = xAxisLinesGap
+    this.totalDays = numberOfDays
+    this.totalRows = numberOfXAxisLines
   }
 
   export() {

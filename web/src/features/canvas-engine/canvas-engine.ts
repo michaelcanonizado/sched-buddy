@@ -10,6 +10,14 @@ type GridBounds = {
   days: Day[]
 }
 
+type GridLayout = {
+  cellWidth: number
+  cellHeight: number
+  gridWidth: number
+  gridHeight: number
+  strokeWidth: number
+}
+
 export class CanvasEngine {
   private CANVAS: Canvas
 
@@ -27,7 +35,8 @@ export class CanvasEngine {
     'friday',
   ]
 
-  private cellsGroup: Group | null = null
+  private timetableGroup: Group | null = null
+  private cellGroup: Group | null = null
   private cellWidth = 0
   private cellHeight = 0
 
@@ -74,12 +83,14 @@ export class CanvasEngine {
   render(state: ScheduleStoreState) {
     this.CANVAS.clear()
 
-    const bounds = this._computeGridBounds(state)
-
+    const gridBounds = this._computeGridBounds(state)
     this._setCanvasDimension(state.display)
-    this._drawTimetable(bounds)
-    this._drawCells()
+    const gridLayout = this._drawTimetable(gridBounds)
+    this._drawCells(gridBounds, gridLayout)
 
+    this.timetableGroup!.scaleToWidth(
+      this.CANVAS.getWidth() / this.CANVAS.getZoom(),
+    )
     this.CANVAS.backgroundColor = '#ff0000'
     this.CANVAS.requestRenderAll()
   }
@@ -142,25 +153,95 @@ export class CanvasEngine {
     }
   }
 
-  _drawCells() {
-    if (!this.cellsGroup) {
+  _drawCells(gridBounds: GridBounds, gridLayout: GridLayout) {
+    if (!this.cellGroup) {
       console.warn('cellsContainer is NULL!')
       return
     }
 
-    const cellsContainerBounding = this.cellsGroup.getBoundingRect()
+    const cellsContainerBounding = this.cellGroup.getBoundingRect()
+    /* Adjust the left and top values to include the strokes of the grid */
+    const actualCellGroupLeft =
+      cellsContainerBounding.left - gridLayout.strokeWidth / 2
+    const actualCellGroupTop =
+      cellsContainerBounding.top - gridLayout.strokeWidth / 2
 
-    const rect = new Rect({
-      width: this.cellWidth,
-      height: this.cellHeight,
-      fill: '#00ff00',
-      originX: 'left',
-      originY: 'top',
-      left: cellsContainerBounding.left,
-      top: cellsContainerBounding.top,
+    /* Sample subject values */
+    const day: Day = 'monday'
+    const startTime = 780
+    const endTime = 900
+    const timeResolution = gridBounds.timeResolution
+
+    const { width, height, left, top } = this._calculateSubjectLayout({
+      startTime,
+      endTime,
+      day,
+      timeResolution,
+      gridBounds,
+      gridLayout,
+      cellGroup: {
+        left: actualCellGroupLeft,
+        top: actualCellGroupTop,
+      },
     })
 
-    this.cellsGroup.add(rect)
+    const subjectCell = new Rect({
+      width: width,
+      height: height,
+      fill: '#ffff00',
+      originX: 'left',
+      originY: 'top',
+      rx: 5,
+      ry: 5,
+      stroke: '#ff0000',
+      strokeWidth: gridLayout.strokeWidth,
+      left: left,
+      top: top,
+    })
+    this.cellGroup.add(subjectCell)
+  }
+
+  _calculateSubjectLayout({
+    startTime,
+    endTime,
+    day,
+    timeResolution,
+    gridBounds,
+    gridLayout,
+    cellGroup,
+  }: {
+    startTime: number
+    endTime: number
+    day: Day
+    timeResolution: number
+    gridBounds: GridBounds
+    gridLayout: GridLayout
+    cellGroup: {
+      left: number
+      top: number
+    }
+  }): {
+    width: number
+    height: number
+    left: number
+    top: number
+  } {
+    const width = gridLayout.cellWidth
+    const height =
+      gridLayout.cellHeight * ((endTime - startTime) / timeResolution)
+    const left =
+      cellGroup.left + gridLayout.cellWidth * gridBounds.days.indexOf(day)
+    const top =
+      cellGroup.top +
+      gridLayout.cellHeight *
+        ((startTime - gridBounds.startTime) / timeResolution)
+
+    return {
+      width,
+      height,
+      left,
+      top,
+    }
   }
 
   _setCanvasDimension(display: Display | null) {
@@ -208,11 +289,11 @@ export class CanvasEngine {
     return `${hour12}:${minuteStr}${meridiem}`
   }
 
-  _drawTimetable(bounds: GridBounds) {
+  _drawTimetable(bounds: GridBounds): GridLayout {
     const gridWidth = this.VIRTUAL_TIMETABLE_WIDTH
     const gridHeight = this.VIRTUAL_TIMETABLE_HEIGHT
     const gridOverlap = 10
-    const gridStrokeWidth = 2
+    const gridStrokeWidth = 4
     const gridStrokeColor = '#000000'
     const timetableBackgroundColor = '#f2f2f2'
     const timetablePadding = 18
@@ -349,16 +430,17 @@ export class CanvasEngine {
     const cellsContainerBackground = new Rect({
       width: gridWidth,
       height: gridHeight,
+      // fill: '#f2ff0f',
       fill: 'transparent',
     })
-    const cellsGroup = new Group([cellsContainerBackground], {
+    const cellGroup = new Group([cellsContainerBackground], {
       left: 0,
       top: 0,
       originX: 'left',
       originY: 'top',
     })
 
-    const gridGroup = new Group([columnGroup, rowGroup, cellsGroup], {
+    const gridGroup = new Group([columnGroup, rowGroup, cellGroup], {
       left: timetableBackground.getScaledWidth() - timetablePadding,
       top: timetableBackground.getScaledHeight() - timetablePadding,
       originX: 'right',
@@ -379,12 +461,19 @@ export class CanvasEngine {
       selectable: true,
     })
     /* Temporarily make the timetable span the whole canvas width */
-    timetableGroup.scaleToWidth(this.CANVAS.getWidth() / this.CANVAS.getZoom())
+
     this.CANVAS.add(timetableGroup)
 
-    this.cellsGroup = cellsGroup
-    this.cellWidth = columnWidth - gridStrokeWidth
-    this.cellHeight = rowHeight - gridStrokeWidth
+    this.timetableGroup = timetableGroup
+    this.cellGroup = cellGroup
+
+    return {
+      cellWidth: columnWidth,
+      cellHeight: rowHeight,
+      gridWidth: gridWidth,
+      gridHeight: gridHeight,
+      strokeWidth: gridStrokeWidth,
+    }
   }
 
   export() {

@@ -211,11 +211,17 @@ export class CanvasEngine {
   _drawTimetable(bounds: GridBounds) {
     const gridWidth = this.VIRTUAL_TIMETABLE_WIDTH
     const gridHeight = this.VIRTUAL_TIMETABLE_HEIGHT
-    const gridOverlap = 0.01 * this.CANVAS.getWidth()
+    const gridOverlap = 10
     const gridStrokeWidth = 2
     const gridStrokeColor = '#000000'
     const timetableBackgroundColor = '#f2f2f2'
-    const labelFontSize = 16
+    const timetablePadding = 18
+    const timeFormat = '12'
+    const labelFont = 'Arial'
+    const labelFontSize = 20
+    const labelFontWeight = 500
+    const rowLabelGap = 5
+    const columnLabelGap = 0
 
     const startTime = bounds.startTime
     const endTime = bounds.endTime
@@ -231,6 +237,27 @@ export class CanvasEngine {
       timeResolution,
     )
     const rowHeight = (gridHeight - 1) / numberOfRows
+
+    /* Create temporary labels to get the dimensions of the labels. 
+    This allows the timetable background to dynamically span the whole
+    timetable without the labels overflowing on large font sizes */
+    const tempRowLabel = new FabricText('99:99XX', {
+      fontFamily: labelFont,
+      fontSize: labelFontSize,
+      fontWeight: labelFontWeight,
+    })
+    tempRowLabel.initDimensions()
+    const rowLabelWidth = tempRowLabel.getScaledWidth()
+
+    const tempColumnLabel = new FabricText('WEDNESDAY', {
+      fontFamily: labelFont,
+      fontSize: labelFontSize,
+      fontWeight: labelFontWeight,
+      lineHeight: 1,
+    })
+    tempColumnLabel.initDimensions()
+    /* Calculate a rough estimate of the text height so the line-height is not taken */
+    const columnLabelHeight = tempColumnLabel.fontSize * tempColumnLabel.scaleY
 
     /* Draw the column elements (days) */
     const columnElements = []
@@ -251,8 +278,11 @@ export class CanvasEngine {
           days[i].charAt(0).toUpperCase() + days[i].slice(1).toLowerCase()
         const label = new FabricText(day, {
           left: columnWidth * i + columnWidth / 2,
-          top: -gridOverlap - 2,
+          top: -(gridOverlap + columnLabelGap),
+          originY: 'bottom',
+          fontFamily: labelFont,
           fontSize: labelFontSize,
+          fontWeight: labelFontWeight,
           selectable: false,
           evented: false,
         })
@@ -277,12 +307,14 @@ export class CanvasEngine {
       rowElements.push(line)
 
       const label = new FabricText(
-        this._timeGenerateLabel(currentTimeLabel, '12'),
+        this._timeGenerateLabel(currentTimeLabel, timeFormat),
         {
-          left: -(gridOverlap + 5),
+          left: -(gridOverlap + rowLabelGap),
           top: rowHeight * i,
           originX: 'right',
+          fontFamily: labelFont,
           fontSize: labelFontSize,
+          fontWeight: labelFontWeight,
           selectable: false,
           evented: false,
         },
@@ -292,11 +324,19 @@ export class CanvasEngine {
     }
     const rowGroup = new Group(rowElements, {})
 
-    /* Background of the timetable */
-    const background = new Rect({
-      /* The space for the row and column labels could probably be calculated dynamically based on the labelFontSize */
-      width: gridWidth + 110,
-      height: gridHeight + 60,
+    /* Determine the size of the tiemtable background such that it 
+    encapsulates all elements without overflow */
+    const leftSpacing = timetablePadding + rowLabelWidth + rowLabelGap
+    const totalGridWidth = gridOverlap + gridWidth + gridOverlap
+    const rightSpacing = timetablePadding
+
+    const topSpacing = timetablePadding + columnLabelHeight + columnLabelGap
+    const totalGridHeight = gridOverlap + gridHeight + gridOverlap
+    const bottomSpacing = timetablePadding
+
+    const timetableBackground = new Rect({
+      width: leftSpacing + totalGridWidth + rightSpacing,
+      height: topSpacing + totalGridHeight + bottomSpacing,
       fill: timetableBackgroundColor,
       left: 0,
       top: 0,
@@ -304,22 +344,23 @@ export class CanvasEngine {
       originY: 'top',
     })
 
-    /* Insert the group that will hold the subject cells, making it span the whole grid (excluding the offsets) */
+    /* Insert the group that will hold the subject cells, making it
+    span the whole grid (excluding gridOverlap) */
     const cellsContainerBackground = new Rect({
       width: gridWidth,
       height: gridHeight,
       fill: 'transparent',
     })
-    const cellsContainer = new Group([cellsContainerBackground], {
+    const cellsGroup = new Group([cellsContainerBackground], {
       left: 0,
       top: 0,
       originX: 'left',
       originY: 'top',
     })
 
-    const gridGroup = new Group([columnGroup, rowGroup, cellsContainer], {
-      left: background.getScaledWidth() - 10,
-      top: background.getScaledHeight() - 10,
+    const gridGroup = new Group([columnGroup, rowGroup, cellsGroup], {
+      left: timetableBackground.getScaledWidth() - timetablePadding,
+      top: timetableBackground.getScaledHeight() - timetablePadding,
       originX: 'right',
       originY: 'bottom',
     })
@@ -330,7 +371,7 @@ export class CanvasEngine {
     const canvasCenterX = (this.CANVAS.getWidth() / 2 - vpt[4]) / zoom
     const canvasCenterY = (this.CANVAS.getHeight() / 2 - vpt[5]) / zoom
 
-    const timetableGroup = new Group([background, gridGroup], {
+    const timetableGroup = new Group([timetableBackground, gridGroup], {
       originX: 'center',
       originY: 'center',
       left: canvasCenterX,
@@ -341,7 +382,7 @@ export class CanvasEngine {
     timetableGroup.scaleToWidth(this.CANVAS.getWidth() / this.CANVAS.getZoom())
     this.CANVAS.add(timetableGroup)
 
-    this.cellsGroup = cellsContainer
+    this.cellsGroup = cellsGroup
     this.cellWidth = columnWidth - gridStrokeWidth
     this.cellHeight = rowHeight - gridStrokeWidth
   }

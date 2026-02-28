@@ -86,7 +86,7 @@ export class CanvasEngine {
     const gridBounds = this._computeGridBounds(state)
     this._setCanvasDimension(state.display)
     const gridLayout = this._drawTimetable(gridBounds)
-    this._drawCells(gridBounds, gridLayout)
+    this._drawCells(state, gridBounds, gridLayout)
 
     this.timetableGroup!.scaleToWidth(
       this.CANVAS.getWidth() / this.CANVAS.getZoom(),
@@ -153,11 +153,16 @@ export class CanvasEngine {
     }
   }
 
-  _drawCells(gridBounds: GridBounds, gridLayout: GridLayout) {
+  _drawCells(
+    state: ScheduleStoreState,
+    gridBounds: GridBounds,
+    gridLayout: GridLayout,
+  ) {
     if (!this.cellGroup) {
       console.warn('cellsContainer is NULL!')
       return
     }
+    const cellGroup = this.cellGroup
 
     const cellsContainerBounding = this.cellGroup.getBoundingRect()
     /* Adjust the left and top values to include the strokes of the grid */
@@ -166,46 +171,50 @@ export class CanvasEngine {
     const actualCellGroupTop =
       cellsContainerBounding.top - gridLayout.strokeWidth / 2
 
-    /* Sample subject values */
-    const day: Day = 'monday'
-    const startTime = 780
-    const endTime = 900
-    const timeResolution = gridBounds.timeResolution
+    state.subjects.forEach((subject) => {
+      const subjectFill = subject.color
+      // const subjectTitle = subject.title
 
-    const { width, height, left, top } = this._calculateSubjectLayout({
-      startTime,
-      endTime,
-      day,
-      timeResolution,
-      gridBounds,
-      gridLayout,
-      cellGroup: {
-        left: actualCellGroupLeft,
-        top: actualCellGroupTop,
-      },
-    })
+      subject.meetings.forEach((meeting) => {
+        const startTime = meeting.startTime
+        const endTime = meeting.endTime
 
-    const subjectCell = new Rect({
-      width: width,
-      height: height,
-      fill: '#ffff00',
-      originX: 'left',
-      originY: 'top',
-      rx: 5,
-      ry: 5,
-      stroke: '#ff0000',
-      strokeWidth: gridLayout.strokeWidth,
-      left: left,
-      top: top,
+        meeting.days.forEach((day) => {
+          const { width, height, left, top } = this._calculateSubjectLayout({
+            startTime,
+            endTime,
+            day,
+            gridBounds,
+            gridLayout,
+            cellGroup: {
+              left: actualCellGroupLeft,
+              top: actualCellGroupTop,
+            },
+          })
+
+          const subjectCell = new Rect({
+            width: width,
+            height: height,
+            fill: subjectFill,
+            originX: 'left',
+            originY: 'top',
+            rx: 10,
+            ry: 10,
+            stroke: '#000000',
+            strokeWidth: gridLayout.strokeWidth,
+            left: left,
+            top: top,
+          })
+          cellGroup.add(subjectCell)
+        })
+      })
     })
-    this.cellGroup.add(subjectCell)
   }
 
   _calculateSubjectLayout({
     startTime,
     endTime,
     day,
-    timeResolution,
     gridBounds,
     gridLayout,
     cellGroup,
@@ -213,7 +222,6 @@ export class CanvasEngine {
     startTime: number
     endTime: number
     day: Day
-    timeResolution: number
     gridBounds: GridBounds
     gridLayout: GridLayout
     cellGroup: {
@@ -226,15 +234,22 @@ export class CanvasEngine {
     left: number
     top: number
   } {
+    const dayIndex = gridBounds.days.indexOf(day)
+    if (dayIndex === -1) {
+      throw new Error(
+        'Unknown day found! Day of subject doesnt exist in gridBounds.days',
+      )
+    }
+
     const width = gridLayout.cellWidth
     const height =
-      gridLayout.cellHeight * ((endTime - startTime) / timeResolution)
-    const left =
-      cellGroup.left + gridLayout.cellWidth * gridBounds.days.indexOf(day)
+      gridLayout.cellHeight *
+      ((endTime - startTime) / gridBounds.timeResolution)
+    const left = cellGroup.left + gridLayout.cellWidth * dayIndex
     const top =
       cellGroup.top +
       gridLayout.cellHeight *
-        ((startTime - gridBounds.startTime) / timeResolution)
+        ((startTime - gridBounds.startTime) / gridBounds.timeResolution)
 
     return {
       width,
@@ -293,7 +308,7 @@ export class CanvasEngine {
     const gridWidth = this.VIRTUAL_TIMETABLE_WIDTH
     const gridHeight = this.VIRTUAL_TIMETABLE_HEIGHT
     const gridOverlap = 10
-    const gridStrokeWidth = 4
+    const gridStrokeWidth = 2
     const gridStrokeColor = '#000000'
     const timetableBackgroundColor = '#f2f2f2'
     const timetablePadding = 18

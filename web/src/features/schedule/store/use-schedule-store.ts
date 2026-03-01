@@ -18,8 +18,8 @@ export type TimeResolution = 30 | 60
 export type Settings = {
   timeFormat: TimeFormat
   timeResolution: TimeResolution
-  showWeekends: boolean
-  startOfTheWeek: Extract<Day, 'sunday' | 'monday'>
+  showWeekend: boolean
+  startOfWeek: Extract<Day, 'sunday' | 'monday'>
 }
 
 export type ScheduleStoreState = {
@@ -36,9 +36,9 @@ export const useScheduleStore = create<ScheduleStoreState>()(
     (set, get) => ({
       settings: {
         timeFormat: '12',
-        startOfTheWeek: 'monday',
+        startOfWeek: 'monday',
         timeResolution: 30,
-        showWeekends: false,
+        showWeekend: false,
       },
       subjects: scheduleData,
       display: displays[0],

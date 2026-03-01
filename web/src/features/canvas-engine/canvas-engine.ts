@@ -1,6 +1,7 @@
 import { Canvas, FabricText, Group, Path, Rect, Textbox } from 'fabric'
 import {
   ScheduleStoreState,
+  Settings,
   TimeFormat,
 } from '../schedule/store/use-schedule-store'
 import { Day, Time } from '../schedule/lib/mock-data'
@@ -30,13 +31,6 @@ export class CanvasEngine {
   private DEFAULT_TIME_RESOLUTION = 30
   private DEFAULT_START_TIME = 8 * 60
   private DEFAULT_END_TIME = 17 * 60
-  private DEFAULT_DAYS: Day[] = [
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-  ]
 
   private timetableGroup: Group | null = null
   private cellGroup: Group | null = null
@@ -98,7 +92,70 @@ export class CanvasEngine {
     this.CANVAS.requestRenderAll()
   }
 
+  _getTimetableDays(
+    subjects: ScheduleStoreState['subjects'],
+    startOfWeek: Settings['startOfWeek'],
+    showWeekends: Settings['showWeekend'],
+  ): Day[] {
+    const DAYS: Day[] = [
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
+    ]
+
+    /* Rotate the week so it starts at the set startOfWeek */
+    const startIndex = DAYS.indexOf(startOfWeek)
+    const rotatedWeek = [
+      ...DAYS.slice(startIndex),
+      ...DAYS.slice(0, startIndex),
+    ]
+
+    if (showWeekends) return rotatedWeek
+
+    /* Determine the weekends based on startOfWeek */
+    const weekends: Day[] = []
+    if (startOfWeek === 'monday') {
+      weekends.push('saturday')
+      weekends.push('sunday')
+    }
+    if (startOfWeek === 'sunday') {
+      weekends.push('friday')
+      weekends.push('saturday')
+    }
+
+    const uniqueSubjectDays = new Set<Day>()
+    for (const subject of subjects) {
+      for (const meeting of subject.meetings) {
+        for (const day of meeting.days) {
+          uniqueSubjectDays.add(day)
+        }
+      }
+    }
+
+    /* In the case where user has the setting: showWeekend=false, but has a subject on a weekend, show the weekend regardless. */
+    const hasSubjectOnAWeekend = weekends.some((day) =>
+      uniqueSubjectDays.has(day),
+    )
+    if (hasSubjectOnAWeekend) return rotatedWeek
+
+    return rotatedWeek.filter((day) => !weekends.includes(day))
+  }
+
   _computeGridBounds(state: ScheduleStoreState): GridBounds {
+    if (!state.settings) {
+      throw new Error('state.settings is NULL!')
+    }
+
+    const timetableDays = this._getTimetableDays(
+      state.subjects,
+      state.settings.startOfWeek,
+      state.settings.showWeekend,
+    )
+
     if (state.subjects.length === 0) {
       return {
         gridWidth: this.DEFAULT_GRID_WIDTH,
@@ -106,10 +163,11 @@ export class CanvasEngine {
         timeResolution: this.DEFAULT_TIME_RESOLUTION,
         startTime: this.DEFAULT_START_TIME,
         endTime: this.DEFAULT_END_TIME,
-        days: this.DEFAULT_DAYS,
+        days: timetableDays,
       }
     }
 
+    /* Determine the start and end times of the timetable */
     const minTime = Math.min(
       this.DEFAULT_START_TIME,
       ...state.subjects.flatMap((s) => s.meetings.map((m) => m.startTime)),
@@ -120,43 +178,13 @@ export class CanvasEngine {
       ...state.subjects.flatMap((s) => s.meetings.map((m) => m.endTime)),
     )
 
-    const WEEK_DAYS: Day[] = [
-      'monday',
-      'tuesday',
-      'wednesday',
-      'thursday',
-      'friday',
-      'saturday',
-      'sunday',
-    ]
-
-    let minIndex = Infinity
-    let maxIndex = -Infinity
-
-    for (const subject of state.subjects) {
-      for (const meeting of subject.meetings) {
-        for (const day of meeting.days) {
-          const index = WEEK_DAYS.indexOf(day)
-          if (index !== -1) {
-            minIndex = Math.min(minIndex, index)
-            maxIndex = Math.max(maxIndex, index)
-          }
-        }
-      }
-    }
-
-    const subjectDays =
-      minIndex <= maxIndex ? WEEK_DAYS.slice(minIndex, maxIndex + 1) : []
-
-    const days = Array.from(new Set([...this.DEFAULT_DAYS, ...subjectDays]))
-
     return {
       gridWidth: this.DEFAULT_GRID_WIDTH,
       gridHeight: this.DEFAULT_GRID_HEIGHT,
       timeResolution: this.DEFAULT_TIME_RESOLUTION,
       startTime: minTime,
       endTime: maxTime,
-      days,
+      days: timetableDays,
     }
   }
 

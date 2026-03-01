@@ -102,7 +102,7 @@ export const scheduleData: Subject[] = [
     color: '#C4DA87',
     meetings: [
       {
-        days: ['thursday', 'sunday'],
+        days: ['thursday'],
         startTime: 780,
         endTime: 900,
         instructor: 'Brogada, M.',

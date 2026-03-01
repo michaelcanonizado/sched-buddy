@@ -1,4 +1,4 @@
-import { Canvas, FabricText, Group, Path, Rect } from 'fabric'
+import { Canvas, FabricText, Group, Path, Rect, Textbox } from 'fabric'
 import { ScheduleStoreState } from '../schedule/store/use-schedule-store'
 import { Day, Time } from '../schedule/lib/mock-data'
 import { Display } from '../display/lib/displays'
@@ -171,10 +171,9 @@ export class CanvasEngine {
     const actualCellGroupTop =
       cellsContainerBounding.top - gridLayout.strokeWidth / 2
 
-    state.subjects.forEach((subject) => {
-      const subjectFill = subject.color
-      // const subjectTitle = subject.title
+    const cellPadding = 10
 
+    state.subjects.forEach((subject) => {
       subject.meetings.forEach((meeting) => {
         const startTime = meeting.startTime
         const endTime = meeting.endTime
@@ -192,20 +191,43 @@ export class CanvasEngine {
             },
           })
 
-          const subjectCell = new Rect({
-            width: width,
-            height: height,
-            fill: subjectFill,
-            originX: 'left',
-            originY: 'top',
+          const subjectBackground = new Rect({
+            width,
+            height,
+            fill: subject.color,
             rx: 10,
             ry: 10,
             stroke: '#000000',
             strokeWidth: gridLayout.strokeWidth,
-            left: left,
-            top: top,
+            originX: 'left',
+            originY: 'top',
+            left: 0,
+            top: 0,
           })
-          cellGroup.add(subjectCell)
+
+          const subjectTitle = new Textbox(subject.title, {
+            width: width - cellPadding * 2,
+            left: cellPadding,
+            top: height / 2,
+            originX: 'left',
+            originY: 'center',
+            textAlign: 'center',
+            fontSize: 16,
+            fontWeight: 600,
+            fontFamily: 'Arial',
+            backgroundColor: '#00ff0f',
+          })
+
+          const subjectGroup = new Group([subjectBackground, subjectTitle], {
+            left,
+            top,
+            originX: 'left',
+            originY: 'top',
+            selectable: false,
+            evented: false,
+          })
+
+          cellGroup.add(subjectGroup)
         })
       })
     })
@@ -473,7 +495,9 @@ export class CanvasEngine {
       originY: 'center',
       left: canvasCenterX,
       top: canvasCenterY,
+      // selectable: true,
       selectable: true,
+      evented: true,
     })
     /* Temporarily make the timetable span the whole canvas width */
 

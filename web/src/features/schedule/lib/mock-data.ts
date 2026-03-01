@@ -11,6 +11,7 @@ export type Day =
 export type Time = number
 
 export type Meeting = {
+  id: string
   days: Day[]
   startTime: Time
   endTime: Time
@@ -19,6 +20,7 @@ export type Meeting = {
 }
 
 export type Subject = {
+  id: string
   title: string
   color: string
   meetings: Meeting[]
@@ -26,10 +28,12 @@ export type Subject = {
 
 export const scheduleData: Subject[] = [
   {
+    id: '1',
     title: 'Data Mining',
     color: '#FFE37D',
     meetings: [
       {
+        id: '1',
         days: ['monday'],
         startTime: 600,
         endTime: 720,
@@ -37,6 +41,7 @@ export const scheduleData: Subject[] = [
         location: 'BUCS-101',
       },
       {
+        id: '2',
         days: ['wednesday'],
         startTime: 780,
         endTime: 1140,
@@ -46,10 +51,12 @@ export const scheduleData: Subject[] = [
     ],
   },
   {
+    id: '2',
     title: 'Information Assurance and Security',
     color: '#C8F7C5',
     meetings: [
       {
+        id: '3',
         days: ['tuesday'],
         startTime: 780,
         endTime: 870,
@@ -59,10 +66,12 @@ export const scheduleData: Subject[] = [
     ],
   },
   {
+    id: '3',
     title: 'Human Computer Interaction',
     color: '#E08283',
     meetings: [
       {
+        id: '4',
         days: ['tuesday'],
         startTime: 1020,
         endTime: 1140,
@@ -72,10 +81,12 @@ export const scheduleData: Subject[] = [
     ],
   },
   {
+    id: '4',
     title: 'Networks and Communications',
     color: '#99CCCC',
     meetings: [
       {
+        id: '5',
         days: ['monday'],
         startTime: 780,
         endTime: 960,
@@ -85,10 +96,12 @@ export const scheduleData: Subject[] = [
     ],
   },
   {
+    id: '5',
     title: 'Science, Technology, and Society',
     color: '#CC99CC',
     meetings: [
       {
+        id: '6',
         days: ['thursday'],
         startTime: 540,
         endTime: 720,
@@ -98,10 +111,12 @@ export const scheduleData: Subject[] = [
     ],
   },
   {
+    id: '6',
     title: 'Networks and Communiations',
     color: '#C4DA87',
     meetings: [
       {
+        id: '7',
         days: ['thursday'],
         startTime: 780,
         endTime: 900,
@@ -111,10 +126,12 @@ export const scheduleData: Subject[] = [
     ],
   },
   {
+    id: '7',
     title: 'Ethics',
     color: '#F7B891',
     meetings: [
       {
+        id: '8',
         days: ['thursday'],
         startTime: 1020,
         endTime: 1200,
@@ -124,10 +141,12 @@ export const scheduleData: Subject[] = [
     ],
   },
   {
+    id: '8',
     title: 'Software Engineering 2',
     color: '#FFDDFF',
     meetings: [
       {
+        id: '9',
         days: ['friday'],
         startTime: 540,
         endTime: 720,
@@ -135,6 +154,7 @@ export const scheduleData: Subject[] = [
         location: 'BUCS-401',
       },
       {
+        id: '1a',
         days: ['friday'],
         startTime: 780,
         endTime: 1140,

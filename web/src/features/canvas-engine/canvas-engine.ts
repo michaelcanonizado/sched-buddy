@@ -28,7 +28,6 @@ export class CanvasEngine {
   private DEFAULT_GRID_WIDTH = 1100
   private DEFAULT_GRID_HEIGHT = 800
 
-  private DEFAULT_TIME_RESOLUTION = 30
   private DEFAULT_START_TIME = 8 * 60
   private DEFAULT_END_TIME = 17 * 60
 
@@ -145,6 +144,23 @@ export class CanvasEngine {
     return rotatedWeek.filter((day) => !weekends.includes(day))
   }
 
+  _getTimetableStartAndEndTime(state: ScheduleStoreState) {
+    const minTime = Math.min(
+      this.DEFAULT_START_TIME,
+      ...state.subjects.flatMap((s) => s.meetings.map((m) => m.startTime)),
+    )
+
+    const maxTime = Math.max(
+      this.DEFAULT_END_TIME,
+      ...state.subjects.flatMap((s) => s.meetings.map((m) => m.endTime)),
+    )
+
+    return {
+      startTime: minTime,
+      endTime: maxTime,
+    }
+  }
+
   _computeGridBounds(state: ScheduleStoreState): GridBounds {
     if (!state.settings) {
       throw new Error('state.settings is NULL!')
@@ -160,7 +176,7 @@ export class CanvasEngine {
       return {
         gridWidth: this.DEFAULT_GRID_WIDTH,
         gridHeight: this.DEFAULT_GRID_HEIGHT,
-        timeResolution: this.DEFAULT_TIME_RESOLUTION,
+        timeResolution: state.settings.timeResolution,
         startTime: this.DEFAULT_START_TIME,
         endTime: this.DEFAULT_END_TIME,
         days: timetableDays,
@@ -168,22 +184,14 @@ export class CanvasEngine {
     }
 
     /* Determine the start and end times of the timetable */
-    const minTime = Math.min(
-      this.DEFAULT_START_TIME,
-      ...state.subjects.flatMap((s) => s.meetings.map((m) => m.startTime)),
-    )
-
-    const maxTime = Math.max(
-      this.DEFAULT_END_TIME,
-      ...state.subjects.flatMap((s) => s.meetings.map((m) => m.endTime)),
-    )
+    const { startTime, endTime } = this._getTimetableStartAndEndTime(state)
 
     return {
       gridWidth: this.DEFAULT_GRID_WIDTH,
       gridHeight: this.DEFAULT_GRID_HEIGHT,
-      timeResolution: this.DEFAULT_TIME_RESOLUTION,
-      startTime: minTime,
-      endTime: maxTime,
+      timeResolution: state.settings.timeResolution,
+      startTime,
+      endTime,
       days: timetableDays,
     }
   }

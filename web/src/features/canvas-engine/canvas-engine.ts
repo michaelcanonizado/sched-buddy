@@ -1,9 +1,14 @@
 import { Canvas, FabricText, Group, Path, Rect, Textbox } from 'fabric'
-import { ScheduleStoreState } from '../schedule/store/use-schedule-store'
+import {
+  ScheduleStoreState,
+  TimeFormat,
+} from '../schedule/store/use-schedule-store'
 import { Day, Time } from '../schedule/lib/mock-data'
 import { Display } from '../display/lib/displays'
 
 type GridBounds = {
+  gridWidth: number
+  gridHeight: number
   timeResolution: number
   startTime: number
   endTime: number
@@ -13,16 +18,14 @@ type GridBounds = {
 type GridLayout = {
   cellWidth: number
   cellHeight: number
-  gridWidth: number
-  gridHeight: number
   strokeWidth: number
 }
 
 export class CanvasEngine {
   private CANVAS: Canvas
 
-  private VIRTUAL_TIMETABLE_WIDTH = 1100
-  private VIRTUAL_TIMETABLE_HEIGHT = 800
+  private DEFAULT_GRID_WIDTH = 1100
+  private DEFAULT_GRID_HEIGHT = 800
 
   private DEFAULT_TIME_RESOLUTION = 30
   private DEFAULT_START_TIME = 8 * 60
@@ -42,8 +45,8 @@ export class CanvasEngine {
 
   constructor(canvas: HTMLCanvasElement) {
     this.CANVAS = new Canvas(canvas, {
-      width: this.VIRTUAL_TIMETABLE_WIDTH,
-      height: this.VIRTUAL_TIMETABLE_HEIGHT,
+      width: this.DEFAULT_GRID_WIDTH,
+      height: this.DEFAULT_GRID_HEIGHT,
       backgroundColor: '#ff0000',
     })
   }
@@ -98,6 +101,8 @@ export class CanvasEngine {
   _computeGridBounds(state: ScheduleStoreState): GridBounds {
     if (state.subjects.length === 0) {
       return {
+        gridWidth: this.DEFAULT_GRID_WIDTH,
+        gridHeight: this.DEFAULT_GRID_HEIGHT,
         timeResolution: this.DEFAULT_TIME_RESOLUTION,
         startTime: this.DEFAULT_START_TIME,
         endTime: this.DEFAULT_END_TIME,
@@ -146,6 +151,8 @@ export class CanvasEngine {
     const days = Array.from(new Set([...this.DEFAULT_DAYS, ...subjectDays]))
 
     return {
+      gridWidth: this.DEFAULT_GRID_WIDTH,
+      gridHeight: this.DEFAULT_GRID_HEIGHT,
       timeResolution: this.DEFAULT_TIME_RESOLUTION,
       startTime: minTime,
       endTime: maxTime,
@@ -284,8 +291,8 @@ export class CanvasEngine {
   _setCanvasDimension(display: Display | null) {
     if (!display) {
       this.CANVAS.setDimensions({
-        width: this.VIRTUAL_TIMETABLE_WIDTH,
-        height: this.VIRTUAL_TIMETABLE_HEIGHT,
+        width: this.DEFAULT_GRID_WIDTH,
+        height: this.DEFAULT_GRID_HEIGHT,
       })
     } else {
       this.CANVAS.setDimensions({
@@ -303,7 +310,7 @@ export class CanvasEngine {
     return time + incrementInMinutes
   }
 
-  _timeGenerateLabel(totalMinutes: number, format: '12' | '24'): string {
+  _timeGenerateLabel(totalMinutes: number, format: TimeFormat): string {
     if (totalMinutes < 0 || totalMinutes > 1439) {
       console.warn('Invalid time value: ', totalMinutes)
     }
@@ -327,8 +334,8 @@ export class CanvasEngine {
   }
 
   _drawTimetable(bounds: GridBounds): GridLayout {
-    const gridWidth = this.VIRTUAL_TIMETABLE_WIDTH
-    const gridHeight = this.VIRTUAL_TIMETABLE_HEIGHT
+    const gridWidth = bounds.gridWidth
+    const gridHeight = bounds.gridHeight
     const gridOverlap = 10
     const gridStrokeWidth = 2
     const gridStrokeColor = '#000000'
@@ -509,8 +516,6 @@ export class CanvasEngine {
     return {
       cellWidth: columnWidth,
       cellHeight: rowHeight,
-      gridWidth: gridWidth,
-      gridHeight: gridHeight,
       strokeWidth: gridStrokeWidth,
     }
   }

@@ -1,6 +1,6 @@
 import displays, { Display } from '@/features/display/lib/displays'
 import { create } from 'zustand'
-import { scheduleData, Subject } from '../lib/mock-data'
+import { Day, scheduleData, Subject } from '../lib/mock-data'
 import { persist } from 'zustand/middleware'
 
 type DisplayOrientation = 'portrait' | 'landscape'
@@ -12,7 +12,18 @@ type ScheduleStoreActions = {
   setHasHydrated: () => void
 }
 
+export type TimeFormat = '12' | '24'
+export type TimeResolution = 30 | 60
+
+export type Settings = {
+  timeFormat: TimeFormat
+  timeResolution: TimeResolution
+  showWeekends: boolean
+  startOfTheWeek: Extract<Day, 'sunday' | 'monday'>
+}
+
 export type ScheduleStoreState = {
+  settings: Settings | null
   subjects: Subject[]
   display: Display | null
   orientation: DisplayOrientation
@@ -23,6 +34,12 @@ export type ScheduleStoreState = {
 export const useScheduleStore = create<ScheduleStoreState>()(
   persist(
     (set, get) => ({
+      settings: {
+        timeFormat: '12',
+        startOfTheWeek: 'monday',
+        timeResolution: 30,
+        showWeekends: false,
+      },
       subjects: scheduleData,
       display: displays[0],
       hasHydrated: false,

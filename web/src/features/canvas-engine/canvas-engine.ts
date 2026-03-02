@@ -7,19 +7,31 @@ import {
 import { Day, Time } from '../schedule/lib/mock-data'
 import { Display } from '../display/lib/displays'
 
+type TimetableStyle = {
+  grid: {
+    overlap: number
+    strokeColor: string
+    strokeWidth: number
+    font: string
+    fontSize: number
+    fontWeight: number
+    rowLabelGap: number
+    columnLabelGap: number
+  }
+  backgroundColor: string
+  margin: 18
+}
+
 type GridBounds = {
   gridWidth: number
   gridHeight: number
   timeResolution: number
+  timeFormat: TimeFormat
   startTime: number
   endTime: number
   days: Day[]
-}
-
-type GridLayout = {
   cellWidth: number
   cellHeight: number
-  strokeWidth: number
 }
 
 export class CanvasEngine {
@@ -33,8 +45,6 @@ export class CanvasEngine {
 
   private timetableGroup: Group | null = null
   private cellGroup: Group | null = null
-  private cellWidth = 0
-  private cellHeight = 0
 
   constructor(canvas: HTMLCanvasElement) {
     this.CANVAS = new Canvas(canvas, {
@@ -77,12 +87,30 @@ export class CanvasEngine {
   }
 
   render(state: ScheduleStoreState) {
+    const defaultTimetableStyle: TimetableStyle = {
+      grid: {
+        overlap: 10,
+        strokeWidth: 4,
+        strokeColor: '#000000',
+
+        font: 'Arial',
+        fontSize: 20,
+        fontWeight: 500,
+
+        rowLabelGap: 5,
+        columnLabelGap: 0,
+      },
+
+      backgroundColor: '#f2f2f2',
+      margin: 18,
+    }
+    const gridBounds = this._computeGridBounds(state)
+
     this.CANVAS.clear()
 
-    const gridBounds = this._computeGridBounds(state)
     this._setCanvasDimension(state.display)
-    const gridLayout = this._drawTimetable(gridBounds)
-    this._drawCells(state, gridBounds, gridLayout)
+    this._drawTimetable(defaultTimetableStyle, gridBounds)
+    this._drawCells(state, defaultTimetableStyle, gridBounds)
 
     this.timetableGroup!.scaleToWidth(
       this.CANVAS.getWidth() / this.CANVAS.getZoom(),
@@ -161,6 +189,16 @@ export class CanvasEngine {
     }
   }
 
+  _getTimetableGridWidthAndHeight(state: ScheduleStoreState): {
+    gridWidth: number
+    gridHeight: number
+  } {
+    return {
+      gridWidth: this.DEFAULT_GRID_WIDTH,
+      gridHeight: this.DEFAULT_GRID_HEIGHT,
+    }
+  }
+
   _computeGridBounds(state: ScheduleStoreState): GridBounds {
     if (!state.settings) {
       throw new Error('state.settings is NULL!')
@@ -177,29 +215,51 @@ export class CanvasEngine {
         gridWidth: this.DEFAULT_GRID_WIDTH,
         gridHeight: this.DEFAULT_GRID_HEIGHT,
         timeResolution: state.settings.timeResolution,
+        timeFormat: state.settings.timeFormat,
         startTime: this.DEFAULT_START_TIME,
         endTime: this.DEFAULT_END_TIME,
         days: timetableDays,
+        cellWidth: (this.DEFAULT_GRID_WIDTH - 1) / timetableDays.length,
+        cellHeight: this._calculateNumberOfRows(
+          this.DEFAULT_START_TIME,
+          this.DEFAULT_END_TIME,
+          state.settings.timeResolution,
+        ),
       }
     }
 
     /* Determine the start and end times of the timetable */
     const { startTime, endTime } = this._getTimetableStartAndEndTime(state)
 
+    const { gridWidth, gridHeight } =
+      this._getTimetableGridWidthAndHeight(state)
+
+    const cellWidth = (gridWidth - 1) / timetableDays.length
+
+    const numberOfRows = this._calculateNumberOfRows(
+      startTime,
+      endTime,
+      state.settings.timeResolution,
+    )
+    const cellHeight = (gridHeight - 1) / numberOfRows
+
     return {
-      gridWidth: this.DEFAULT_GRID_WIDTH,
-      gridHeight: this.DEFAULT_GRID_HEIGHT,
+      gridWidth,
+      gridHeight,
       timeResolution: state.settings.timeResolution,
       startTime,
       endTime,
       days: timetableDays,
+      timeFormat: state.settings.timeFormat,
+      cellWidth,
+      cellHeight,
     }
   }
 
   _drawCells(
     state: ScheduleStoreState,
+    style: TimetableStyle,
     gridBounds: GridBounds,
-    gridLayout: GridLayout,
   ) {
     if (!this.cellGroup) {
       console.warn('cellsContainer is NULL!')
@@ -210,9 +270,9 @@ export class CanvasEngine {
     const cellsContainerBounding = this.cellGroup.getBoundingRect()
     /* Adjust the left and top values to include the strokes of the grid */
     const actualCellGroupLeft =
-      cellsContainerBounding.left - gridLayout.strokeWidth / 2
+      cellsContainerBounding.left - style.grid.strokeWidth / 2
     const actualCellGroupTop =
-      cellsContainerBounding.top - gridLayout.strokeWidth / 2
+      cellsContainerBounding.top - style.grid.strokeWidth / 2
 
     const cellPadding = 10
 
@@ -227,7 +287,6 @@ export class CanvasEngine {
             endTime,
             day,
             gridBounds,
-            gridLayout,
             cellGroup: {
               left: actualCellGroupLeft,
               top: actualCellGroupTop,
@@ -241,7 +300,7 @@ export class CanvasEngine {
             rx: 10,
             ry: 10,
             stroke: '#000000',
-            strokeWidth: gridLayout.strokeWidth,
+            strokeWidth: style.grid.strokeWidth,
             originX: 'left',
             originY: 'top',
             left: 0,
@@ -281,14 +340,12 @@ export class CanvasEngine {
     endTime,
     day,
     gridBounds,
-    gridLayout,
     cellGroup,
   }: {
     startTime: number
     endTime: number
     day: Day
     gridBounds: GridBounds
-    gridLayout: GridLayout
     cellGroup: {
       left: number
       top: number
@@ -306,14 +363,14 @@ export class CanvasEngine {
       )
     }
 
-    const width = gridLayout.cellWidth
+    const width = gridBounds.cellWidth
     const height =
-      gridLayout.cellHeight *
+      gridBounds.cellHeight *
       ((endTime - startTime) / gridBounds.timeResolution)
-    const left = cellGroup.left + gridLayout.cellWidth * dayIndex
+    const left = cellGroup.left + gridBounds.cellWidth * dayIndex
     const top =
       cellGroup.top +
-      gridLayout.cellHeight *
+      gridBounds.cellHeight *
         ((startTime - gridBounds.startTime) / gridBounds.timeResolution)
 
     return {
@@ -369,27 +426,33 @@ export class CanvasEngine {
     return `${hour12}:${minuteStr}${meridiem}`
   }
 
-  _drawTimetable(bounds: GridBounds): GridLayout {
-    const gridWidth = bounds.gridWidth
-    const gridHeight = bounds.gridHeight
-    const gridOverlap = 10
-    const gridStrokeWidth = 2
-    const gridStrokeColor = '#000000'
-    const timetableBackgroundColor = '#f2f2f2'
-    const timetablePadding = 18
-    const timeFormat = '12'
-    const labelFont = 'Arial'
-    const labelFontSize = 20
-    const labelFontWeight = 500
-    const rowLabelGap = 5
-    const columnLabelGap = 0
+  _drawTimetable(style: TimetableStyle, bounds: GridBounds) {
+    const {
+      backgroundColor,
+      margin,
+      grid: {
+        overlap: gridOverlap,
+        strokeColor: gridStrokeColor,
+        strokeWidth: gridStrokeWidth,
+        font: gridFont,
+        fontSize: gridFontSize,
+        fontWeight: gridFontWeight,
+        rowLabelGap: gridRowLabelGap,
+        columnLabelGap: gridColumnLabelGap,
+      },
+    } = style
 
-    const startTime = bounds.startTime
-    const endTime = bounds.endTime
-    const timeResolution = bounds.timeResolution
-    const days = bounds.days
+    const {
+      gridWidth,
+      gridHeight,
+      startTime,
+      endTime,
+      timeResolution,
+      timeFormat,
+      days,
+    } = bounds
 
-    const numberOfDays = bounds.days.length
+    const numberOfDays = days.length
     const columnWidth = (gridWidth - 1) / numberOfDays
 
     const numberOfRows = this._calculateNumberOfRows(
@@ -403,17 +466,17 @@ export class CanvasEngine {
     This allows the timetable background to dynamically span the whole
     timetable without the labels overflowing on large font sizes */
     const tempRowLabel = new FabricText('99:99XX', {
-      fontFamily: labelFont,
-      fontSize: labelFontSize,
-      fontWeight: labelFontWeight,
+      fontFamily: gridFont,
+      fontSize: gridFontSize,
+      fontWeight: gridFontWeight,
     })
     tempRowLabel.initDimensions()
     const rowLabelWidth = tempRowLabel.getScaledWidth()
 
     const tempColumnLabel = new FabricText('WEDNESDAY', {
-      fontFamily: labelFont,
-      fontSize: labelFontSize,
-      fontWeight: labelFontWeight,
+      fontFamily: gridFont,
+      fontSize: gridFontSize,
+      fontWeight: gridFontWeight,
       lineHeight: 1,
     })
     tempColumnLabel.initDimensions()
@@ -439,11 +502,11 @@ export class CanvasEngine {
           days[i].charAt(0).toUpperCase() + days[i].slice(1).toLowerCase()
         const label = new FabricText(day, {
           left: columnWidth * i + columnWidth / 2,
-          top: -(gridOverlap + columnLabelGap),
+          top: -(gridOverlap + gridColumnLabelGap),
           originY: 'bottom',
-          fontFamily: labelFont,
-          fontSize: labelFontSize,
-          fontWeight: labelFontWeight,
+          fontFamily: gridFont,
+          fontSize: gridFontSize,
+          fontWeight: gridFontWeight,
           selectable: false,
           evented: false,
         })
@@ -470,12 +533,12 @@ export class CanvasEngine {
       const label = new FabricText(
         this._timeGenerateLabel(currentTimeLabel, timeFormat),
         {
-          left: -(gridOverlap + rowLabelGap),
+          left: -(gridOverlap + gridRowLabelGap),
           top: rowHeight * i,
           originX: 'right',
-          fontFamily: labelFont,
-          fontSize: labelFontSize,
-          fontWeight: labelFontWeight,
+          fontFamily: gridFont,
+          fontSize: gridFontSize,
+          fontWeight: gridFontWeight,
           selectable: false,
           evented: false,
         },
@@ -487,18 +550,18 @@ export class CanvasEngine {
 
     /* Determine the size of the tiemtable background such that it 
     encapsulates all elements without overflow */
-    const leftSpacing = timetablePadding + rowLabelWidth + rowLabelGap
+    const leftSpacing = margin + rowLabelWidth + gridRowLabelGap
     const totalGridWidth = gridOverlap + gridWidth + gridOverlap
-    const rightSpacing = timetablePadding
+    const rightSpacing = margin
 
-    const topSpacing = timetablePadding + columnLabelHeight + columnLabelGap
+    const topSpacing = margin + columnLabelHeight + gridColumnLabelGap
     const totalGridHeight = gridOverlap + gridHeight + gridOverlap
-    const bottomSpacing = timetablePadding
+    const bottomSpacing = margin
 
     const timetableBackground = new Rect({
       width: leftSpacing + totalGridWidth + rightSpacing,
       height: topSpacing + totalGridHeight + bottomSpacing,
-      fill: timetableBackgroundColor,
+      fill: backgroundColor,
       left: 0,
       top: 0,
       originX: 'left',
@@ -521,8 +584,8 @@ export class CanvasEngine {
     })
 
     const gridGroup = new Group([columnGroup, rowGroup, cellGroup], {
-      left: timetableBackground.getScaledWidth() - timetablePadding,
-      top: timetableBackground.getScaledHeight() - timetablePadding,
+      left: timetableBackground.getScaledWidth() - margin,
+      top: timetableBackground.getScaledHeight() - margin,
       originX: 'right',
       originY: 'bottom',
     })
@@ -542,18 +605,11 @@ export class CanvasEngine {
       selectable: true,
       evented: true,
     })
-    /* Temporarily make the timetable span the whole canvas width */
 
     this.CANVAS.add(timetableGroup)
 
     this.timetableGroup = timetableGroup
     this.cellGroup = cellGroup
-
-    return {
-      cellWidth: columnWidth,
-      cellHeight: rowHeight,
-      strokeWidth: gridStrokeWidth,
-    }
   }
 
   export() {

@@ -52,14 +52,15 @@ export const scheduleData: Subject[] = [
   },
   {
     id: '2',
-    title: 'Information Assurance and Security',
+    title:
+      'Information Assurance and Security Information Assurance and Security Information Assurance and Security',
     color: '#C8F7C5',
     meetings: [
       {
         id: '3',
         days: ['tuesday'],
         startTime: 780,
-        endTime: 870,
+        endTime: 900,
         instructor: 'Brogada, M.',
         location: 'BUCS-302',
       },
@@ -90,6 +91,14 @@ export const scheduleData: Subject[] = [
         days: ['monday'],
         startTime: 780,
         endTime: 960,
+        instructor: 'Brogada, M.',
+        location: 'BUCS-404',
+      },
+      {
+        id: '5',
+        days: ['tuesday'],
+        startTime: 420,
+        endTime: 540,
         instructor: 'Brogada, M.',
         location: 'BUCS-404',
       },

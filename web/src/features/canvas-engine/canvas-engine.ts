@@ -14,7 +14,7 @@ import {
   Settings,
   TimeFormat,
 } from '../schedule/store/use-schedule-store'
-import { Day, Time } from '../schedule/lib/mock-data'
+import { Day, Meeting, Time } from '../schedule/lib/mock-data'
 import { Display } from '../display/lib/displays'
 
 type TimetableStyle = {
@@ -58,6 +58,13 @@ type GridBounds = {
   days: Day[]
   cellWidth: number
   cellHeight: number
+}
+
+type MeetingWithContent = Meeting & {
+  contentHeight: number
+  meetingHeight: number
+  isOverflow: boolean
+  newMeetingHeight: number
 }
 
 export class CanvasEngine {
@@ -149,7 +156,16 @@ export class CanvasEngine {
 
     this._setCanvasDimension(state.display)
     this._drawTimetable(defaultTimetableStyle, gridBounds)
-    this._drawCells(state, defaultTimetableStyle, gridBounds)
+
+    if (!this.cellGroup) {
+      throw new Error("CellGroup was not generated! Can't draw subjects.")
+    }
+    this._drawSubjectMeetings(
+      state.subjects,
+      defaultTimetableStyle,
+      gridBounds,
+      this.cellGroup,
+    )
 
     this.timetableGroup!.scaleToWidth(
       this.CANVAS.getWidth() / this.CANVAS.getZoom(),
@@ -228,141 +244,6 @@ export class CanvasEngine {
     }
   }
 
-  _getTimetableGridHeight(
-    subjects: ScheduleStoreState['subjects'],
-    style: TimetableStyle,
-    cellWidth: number,
-    startTime: number,
-    endTime: number,
-    timeResolution: TimeResolution,
-  ) {
-    const baseCellContentStyles: TOptions<TextboxProps> = {
-      width: cellWidth - style.grid.cell.gap * 2,
-      textAlign: 'center',
-      originX: 'left',
-      originY: 'top',
-      left: 0,
-      backgroundColor: '#00ff00',
-      lineHeight: style.grid.cell.lineHeight,
-      fontFamily: style.grid.font,
-      fontSize: style.grid.fontSize,
-      fontWeight: style.grid.fontWeight,
-    }
-
-    const numberOfGridRows = this._calculateNumberOfRows(
-      startTime,
-      endTime,
-      timeResolution,
-    )
-
-    const subjectMeetingWithMaxContentHeight = {
-      contentHeight: 0,
-      subjectHeight: 0,
-      startTime: 0,
-      endTime: 0,
-    }
-
-    subjects.forEach((subject) => {
-      subject.meetings.forEach((meeting) => {
-        let topOffset = 0
-        const subjectTitle = new Textbox(subject.title, {
-          ...baseCellContentStyles,
-          fontSize: style.grid.cell.heading.fontSize,
-          fontWeight: style.grid.cell.heading.fontWeight,
-          top: topOffset,
-        })
-
-        subjectTitle.initDimensions()
-        topOffset += subjectTitle.getScaledHeight() + style.grid.cell.gap
-        const subjectInstructor = new Textbox(meeting.instructor, {
-          ...baseCellContentStyles,
-          fontSize: style.grid.cell.subheading.fontSize,
-          fontWeight: style.grid.cell.subheading.fontWeight,
-          top: topOffset,
-        })
-
-        subjectInstructor.initDimensions()
-        topOffset += subjectInstructor.getScaledHeight() + style.grid.cell.gap
-        const subjectTime = new Textbox(
-          `${this._timeGenerateLabel(meeting.startTime, '12')}-${this._timeGenerateLabel(meeting.endTime, '12')}`,
-          {
-            ...baseCellContentStyles,
-            fontSize: style.grid.cell.body.fontSize,
-            fontWeight: style.grid.cell.body.fontWeight,
-            top: topOffset,
-          },
-        )
-
-        subjectTime.initDimensions()
-        topOffset += subjectTime.getScaledHeight() + style.grid.cell.gap
-        const subjectLocation = new Textbox(meeting.location, {
-          ...baseCellContentStyles,
-          fontSize: style.grid.cell.body.fontSize,
-          fontWeight: style.grid.cell.body.fontWeight,
-          top: topOffset,
-        })
-
-        const subjectContent = new Group(
-          [subjectTitle, subjectInstructor, subjectTime, subjectLocation],
-          {
-            left: 0,
-            top: 0,
-            originX: 'left',
-            originY: 'top',
-            fill: '#4287f5',
-          },
-        )
-
-        const subjectContentHeight = subjectContent.getScaledHeight()
-        /* Find the subject with the most content */
-        if (
-          subjectContentHeight >
-          subjectMeetingWithMaxContentHeight.contentHeight
-        ) {
-          /* Get the subject height  */
-          const cellHeight = (this.DEFAULT_GRID_HEIGHT - 1) / numberOfGridRows
-          const subjectHeight =
-            cellHeight *
-            ((meeting.endTime - meeting.startTime) / timeResolution)
-
-          subjectMeetingWithMaxContentHeight.contentHeight =
-            subjectContentHeight
-          subjectMeetingWithMaxContentHeight.subjectHeight = subjectHeight
-          subjectMeetingWithMaxContentHeight.startTime = meeting.startTime
-          subjectMeetingWithMaxContentHeight.endTime = meeting.endTime
-        }
-      })
-    })
-
-    console.log(subjectMeetingWithMaxContentHeight)
-
-    /* If the subject with the most content doesn't overflow its
-    subject height, dont adjust the grid height */
-    if (
-      subjectMeetingWithMaxContentHeight.contentHeight <
-      subjectMeetingWithMaxContentHeight.subjectHeight
-    ) {
-      return this.DEFAULT_GRID_HEIGHT
-    }
-
-    const actualSubjectHeight =
-      subjectMeetingWithMaxContentHeight.contentHeight + style.grid.cell.gap * 2
-    const newCellHeight =
-      actualSubjectHeight /
-      ((subjectMeetingWithMaxContentHeight.endTime -
-        subjectMeetingWithMaxContentHeight.startTime) /
-        timeResolution)
-
-    const newGridHeight = newCellHeight * numberOfGridRows + 1
-
-    console.log(`nch: ${newCellHeight}, ngh: ${newGridHeight}`)
-
-    // cellHeight * numberOfRows + 1 = this.DEFAULT_GRID_HEIGHT
-
-    return newGridHeight
-    // return this.DEFAULT_GRID_HEIGHT
-  }
-
   _computeGridBounds(
     state: ScheduleStoreState,
     style: TimetableStyle,
@@ -377,77 +258,92 @@ export class CanvasEngine {
       state.settings.showWeekend,
     )
 
+    const gridBounds = {
+      gridWidth: this.DEFAULT_GRID_WIDTH,
+      gridHeight: this.DEFAULT_GRID_HEIGHT,
+      timeResolution: state.settings.timeResolution,
+      timeFormat: state.settings.timeFormat,
+      startTime: this.DEFAULT_START_TIME,
+      endTime: this.DEFAULT_END_TIME,
+      days: timetableDays,
+      cellWidth: (this.DEFAULT_GRID_WIDTH - 1) / timetableDays.length,
+      cellHeight: this._calculateNumberOfRows(
+        this.DEFAULT_START_TIME,
+        this.DEFAULT_END_TIME,
+        state.settings.timeResolution,
+      ),
+    }
+
     if (state.subjects.length === 0) {
-      return {
-        gridWidth: this.DEFAULT_GRID_WIDTH,
-        gridHeight: this.DEFAULT_GRID_HEIGHT,
-        timeResolution: state.settings.timeResolution,
-        timeFormat: state.settings.timeFormat,
-        startTime: this.DEFAULT_START_TIME,
-        endTime: this.DEFAULT_END_TIME,
-        days: timetableDays,
-        cellWidth: (this.DEFAULT_GRID_WIDTH - 1) / timetableDays.length,
-        cellHeight: this._calculateNumberOfRows(
-          this.DEFAULT_START_TIME,
-          this.DEFAULT_END_TIME,
-          state.settings.timeResolution,
-        ),
-      }
+      return gridBounds
     }
 
     /* Determine the start and end times of the timetable */
     const { startTime, endTime } = this._getTimetableStartAndEndTime(state)
-
-    const gridWidth = this.DEFAULT_GRID_WIDTH
-    const cellWidth = (gridWidth - 1) / timetableDays.length
-
-    const gridHeight = this._getTimetableGridHeight(
-      state.subjects,
-      style,
-      cellWidth,
-      startTime,
-      endTime,
-      state.settings.timeResolution,
-    )
+    gridBounds.startTime = startTime
+    gridBounds.endTime = endTime
 
     const numberOfRows = this._calculateNumberOfRows(
       startTime,
       endTime,
       state.settings.timeResolution,
     )
-    const cellHeight = (gridHeight - 1) / numberOfRows
 
-    return {
-      gridWidth,
-      gridHeight,
-      timeResolution: state.settings.timeResolution,
-      startTime,
-      endTime,
-      days: timetableDays,
-      timeFormat: state.settings.timeFormat,
-      cellWidth,
-      cellHeight,
-    }
+    gridBounds.cellWidth = (gridBounds.gridWidth - 1) / gridBounds.days.length
+
+    const gridHeight = this._getTimetableGridHeight(
+      state.subjects,
+      style,
+      gridBounds,
+    )
+    gridBounds.gridHeight = gridHeight
+    gridBounds.cellHeight = (gridHeight - 1) / numberOfRows
+
+    return gridBounds
   }
 
-  _drawCells(
-    state: ScheduleStoreState,
+  _getTimetableGridHeight(
+    subjects: ScheduleStoreState['subjects'],
     style: TimetableStyle,
     gridBounds: GridBounds,
   ) {
-    if (!this.cellGroup) {
-      console.warn('cellsContainer is NULL!')
-      return
+    const numberOfGridRows = this._calculateNumberOfRows(
+      gridBounds.startTime,
+      gridBounds.endTime,
+      gridBounds.timeResolution,
+    )
+
+    const meetingWithMaxContent = this._drawSubjectMeetings(
+      subjects,
+      style,
+      gridBounds,
+      new Group(),
+    )
+
+    /* If the subject with the most content doesn't overflow its
+    subject height, dont adjust the grid height */
+    if (
+      !meetingWithMaxContent ||
+      meetingWithMaxContent.contentHeight < meetingWithMaxContent.meetingHeight
+    ) {
+      return this.DEFAULT_GRID_HEIGHT
     }
-    const cellGroup = this.cellGroup
 
-    const cellsContainerBounding = this.cellGroup.getBoundingRect()
-    /* Adjust the left and top values to include the strokes of the grid */
-    const actualCellGroupLeft =
-      cellsContainerBounding.left - style.grid.strokeWidth / 2
-    const actualCellGroupTop =
-      cellsContainerBounding.top - style.grid.strokeWidth / 2
+    const newCellHeight =
+      meetingWithMaxContent.newMeetingHeight /
+      ((meetingWithMaxContent.endTime - meetingWithMaxContent.startTime) /
+        gridBounds.timeResolution)
+    const newGridHeight = newCellHeight * numberOfGridRows + 1
 
+    return newGridHeight
+  }
+
+  _drawSubjectMeetings(
+    subjects: ScheduleStoreState['subjects'],
+    style: TimetableStyle,
+    gridBounds: GridBounds,
+    containerGroup: Group,
+  ): MeetingWithContent | null {
     const baseCellContentStyles: TOptions<TextboxProps> = {
       textAlign: 'center',
       originX: 'left',
@@ -457,24 +353,31 @@ export class CanvasEngine {
       fontFamily: style.grid.font,
     }
 
-    state.subjects.forEach((subject) => {
+    const containerBounding = containerGroup.getBoundingRect()
+    /* Adjust the left and top values to include the strokes of the grid */
+    const containerLeft = containerBounding.left - style.grid.strokeWidth / 2
+    const containerTop = containerBounding.top - style.grid.strokeWidth / 2
+
+    let meetingWithMaxContent: MeetingWithContent | null = null
+
+    subjects.forEach((subject) => {
       subject.meetings.forEach((meeting) => {
         const startTime = meeting.startTime
         const endTime = meeting.endTime
 
         meeting.days.forEach((day) => {
-          const { width, height, left, top, contentWidth } =
-            this._calculateSubjectLayout({
-              startTime,
-              endTime,
-              day,
-              gridBounds,
-              cellGroup: {
-                left: actualCellGroupLeft,
-                top: actualCellGroupTop,
-              },
-              style,
-            })
+          const { width, height, left, top } = this._calculateSubjectLayout({
+            startTime,
+            endTime,
+            day,
+            gridBounds,
+            cellGroup: {
+              left: containerLeft,
+              top: containerTop,
+            },
+            style,
+          })
+          const contentWidth = width - style.grid.cell.gap * 2
 
           let topOffset = 0
           const subjectTitle = new Textbox(subject.title, {
@@ -518,6 +421,7 @@ export class CanvasEngine {
             top: topOffset,
           })
 
+          subjectTime.initDimensions()
           topOffset += subjectLocation.getScaledHeight()
 
           const subjectContent = new Group(
@@ -532,11 +436,6 @@ export class CanvasEngine {
               evented: false,
             },
           )
-
-          if (meeting.id === '3') {
-            console.log('_drawCells(): ', subjectContent.getScaledHeight())
-            console.log(`l: ${left}, t: ${top}`)
-          }
 
           const subjectBackground = new Rect({
             width,
@@ -561,10 +460,27 @@ export class CanvasEngine {
             evented: false,
           })
 
-          cellGroup.add(subjectGroup)
+          containerGroup.add(subjectGroup)
+
+          const subjectContentHeight = subjectContent.getScaledHeight()
+          /* Find the subject with the most content */
+          if (
+            !meetingWithMaxContent ||
+            subjectContentHeight > meetingWithMaxContent.contentHeight
+          ) {
+            meetingWithMaxContent = {
+              ...meeting,
+              contentHeight: subjectContentHeight,
+              meetingHeight: height,
+              isOverflow: subjectContentHeight > height,
+              newMeetingHeight: subjectContentHeight + style.grid.cell.gap * 2,
+            }
+          }
         })
       })
     })
+
+    return meetingWithMaxContent
   }
 
   _calculateSubjectLayout({
@@ -573,7 +489,6 @@ export class CanvasEngine {
     day,
     gridBounds,
     cellGroup,
-    style,
   }: {
     startTime: number
     endTime: number
@@ -589,7 +504,6 @@ export class CanvasEngine {
     height: number
     left: number
     top: number
-    contentWidth: number
   } {
     const dayIndex = gridBounds.days.indexOf(day)
     if (dayIndex === -1) {
@@ -607,14 +521,12 @@ export class CanvasEngine {
       cellGroup.top +
       gridBounds.cellHeight *
         ((startTime - gridBounds.startTime) / gridBounds.timeResolution)
-    const contentWidth = width - style.grid.cell.gap * 2
 
     return {
       width,
       height,
       left,
       top,
-      contentWidth,
     }
   }
 

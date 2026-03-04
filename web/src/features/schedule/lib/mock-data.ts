@@ -53,7 +53,7 @@ export const scheduleData: Subject[] = [
   {
     id: '2',
     title:
-      'Information Assurance and Security Information Assurance and Security Information Assurance and Security',
+      'Information Assurance and Security Information Assurance and Security',
     color: '#C8F7C5',
     meetings: [
       {

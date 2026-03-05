@@ -1,4 +1,3 @@
-import { TimeResolution } from './../schedule/store/use-schedule-store'
 import {
   Canvas,
   FabricText,
@@ -28,19 +27,22 @@ type TimetableStyle = {
     rowLabelGap: number
     columnLabelGap: number
     cell: {
-      gap: number
+      margin: number
       lineHeight: number
       heading: {
         fontSize: number
         fontWeight: number
+        marginBottom: number
       }
       subheading: {
         fontSize: number
         fontWeight: number
+        marginBottom: number
       }
       body: {
         fontSize: number
         fontWeight: number
+        marginBottom: number
       }
     }
   }
@@ -133,19 +135,22 @@ export class CanvasEngine {
         rowLabelGap: 5,
         columnLabelGap: 0,
         cell: {
-          gap: 12,
+          margin: 12,
           lineHeight: 0.8,
           heading: {
             fontSize: 18,
             fontWeight: 600,
+            marginBottom: 10,
           },
           subheading: {
             fontSize: 14,
             fontWeight: 600,
+            marginBottom: 5,
           },
           body: {
             fontSize: 12,
             fontWeight: 500,
+            marginBottom: 0,
           },
         },
       },
@@ -378,7 +383,7 @@ export class CanvasEngine {
             style,
           })
           /* Apply cell margin */
-          const contentWidth = width - style.grid.cell.gap * 2
+          const contentWidth = width - style.grid.cell.margin * 2
 
           let topOffset = 0
           const subjectTitle = new Textbox(subject.title, {
@@ -388,8 +393,10 @@ export class CanvasEngine {
             fontWeight: style.grid.cell.heading.fontWeight,
             top: topOffset,
           })
+          topOffset +=
+            subjectTitle.getScaledHeight() +
+            style.grid.cell.heading.marginBottom
 
-          topOffset += subjectTitle.getScaledHeight() + style.grid.cell.gap
           const subjectInstructor = new Textbox(meeting.instructor, {
             ...baseCellContentStyles,
             width: contentWidth,
@@ -397,8 +404,10 @@ export class CanvasEngine {
             fontWeight: style.grid.cell.subheading.fontWeight,
             top: topOffset,
           })
+          topOffset +=
+            subjectInstructor.getScaledHeight() +
+            style.grid.cell.subheading.marginBottom
 
-          topOffset += subjectInstructor.getScaledHeight() + style.grid.cell.gap
           const subjectTime = new Textbox(
             `${this._timeGenerateLabel(meeting.startTime, '12')}-${this._timeGenerateLabel(meeting.endTime, '12')}`,
             {
@@ -409,8 +418,9 @@ export class CanvasEngine {
               top: topOffset,
             },
           )
+          topOffset +=
+            subjectTime.getScaledHeight() + style.grid.cell.body.marginBottom
 
-          topOffset += subjectTime.getScaledHeight() + style.grid.cell.gap
           const subjectLocation = new Textbox(meeting.location, {
             ...baseCellContentStyles,
             width: contentWidth,
@@ -418,13 +428,12 @@ export class CanvasEngine {
             fontWeight: style.grid.cell.body.fontWeight,
             top: topOffset,
           })
-
           topOffset += subjectLocation.getScaledHeight()
 
           const subjectContent = new Group(
             [subjectTitle, subjectInstructor, subjectTime, subjectLocation],
             {
-              left: style.grid.cell.gap,
+              left: style.grid.cell.margin,
               fill: '#4287f5',
               top: height / 2 - topOffset / 2,
               originX: 'left',
@@ -470,7 +479,8 @@ export class CanvasEngine {
               contentHeight: subjectContentHeight,
               meetingHeight: height,
               isOverflow: subjectContentHeight > height,
-              newMeetingHeight: subjectContentHeight + style.grid.cell.gap * 2,
+              newMeetingHeight:
+                subjectContentHeight + style.grid.cell.margin * 2,
             }
           }
         })

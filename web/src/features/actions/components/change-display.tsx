@@ -8,10 +8,10 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { TabletSmartphone } from 'lucide-react'
-import displays from '../lib/displays'
+import displays from '@/features/display/lib/displays'
 import { useScheduleActions } from '@/features/schedule/store/use-schedule-store'
 
-export default function ChangeDisplayDialog() {
+export default function ChangeDisplay() {
   const { setDisplay } = useScheduleActions()
 
   return (

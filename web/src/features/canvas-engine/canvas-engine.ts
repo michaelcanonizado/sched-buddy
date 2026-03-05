@@ -184,6 +184,7 @@ export class CanvasEngine {
     const canvasCenterX = (this.CANVAS.getWidth() / 2 - vpt[4]) / zoom
     const canvasCenterY = (this.CANVAS.getHeight() / 2 - vpt[5]) / zoom
     timetableGroup.set({ left: canvasCenterX, top: canvasCenterY })
+    timetableGroup.setCoords()
 
     this.CANVAS.backgroundColor = '#ff0000'
     this.CANVAS.requestRenderAll()
@@ -549,11 +550,13 @@ export class CanvasEngine {
         width: timetableGroup.getScaledWidth(),
         height: timetableGroup.getScaledHeight(),
       })
+      timetableGroup.set({ selectable: false, evented: false })
     } else {
       this.CANVAS.setDimensions({
         width: display.dimensions.width,
         height: display.dimensions.height,
       })
+      timetableGroup.set({ selectable: true, evented: true })
     }
   }
 

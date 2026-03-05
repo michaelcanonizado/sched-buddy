@@ -2,12 +2,14 @@
 
 import Container from '@/components/container'
 import { Button } from '@/components/ui/button'
+import AddSubject from '@/features/actions/components/add-subject'
+import ChangeDisplay from '@/features/actions/components/change-display'
+import DeleteSubject from '@/features/actions/components/delete-subject'
+import EditSubject from '@/features/actions/components/edit-subject'
 import { useCanvasEngine } from '@/features/canvas-engine/use-canvas-engine-store'
-import ChangeDisplayDialog from '@/features/display/components/change-display-dialog'
 import ScheduleView from '@/features/schedule/components/schedule-view'
 import { useScheduleActions } from '@/features/schedule/store/use-schedule-store'
 import {
-  CalendarPlusIcon,
   FolderUpIcon,
   ImageDownIcon,
   PencilIcon,
@@ -17,7 +19,6 @@ import {
 } from 'lucide-react'
 
 export default function SchedulePage() {
-  const { addSubject } = useScheduleActions()
   const canvasEngine = useCanvasEngine()
 
   const onExport = () => {
@@ -42,23 +43,10 @@ export default function SchedulePage() {
           <Button variant='outline'>
             <ScanQrCodeIcon /> Scan COR
           </Button>
-          <ChangeDisplayDialog />
-          <Button
-            variant='outline'
-            onClick={() => {
-              addSubject()
-            }}
-          >
-            <CalendarPlusIcon /> Add Course
-          </Button>
-          <Button variant='outline'>
-            <PencilIcon />
-            Edit Course
-          </Button>
-          <Button variant='outline'>
-            <Trash2Icon />
-            Delete Course
-          </Button>
+          <ChangeDisplay />
+          <AddSubject />
+          <EditSubject />
+          <DeleteSubject />
           <Button variant='outline' onClick={onExport}>
             <ImageDownIcon />
             Export

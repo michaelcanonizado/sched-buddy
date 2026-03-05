@@ -23,7 +23,7 @@ export type Settings = {
 }
 
 export type ScheduleStoreState = {
-  settings: Settings | null
+  settings: Settings
   subjects: Subject[]
   display: Display | null
   orientation: DisplayOrientation

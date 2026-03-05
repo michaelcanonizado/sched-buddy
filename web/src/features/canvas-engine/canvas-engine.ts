@@ -78,9 +78,6 @@ export class CanvasEngine {
   private DEFAULT_START_TIME = 8 * 60
   private DEFAULT_END_TIME = 17 * 60
 
-  private timetableGroup: Group | null = null
-  private cellGroup: Group | null = null
-
   constructor(canvas: HTMLCanvasElement) {
     this.CANVAS = new Canvas(canvas, {
       width: this.DEFAULT_GRID_WIDTH,
@@ -162,31 +159,31 @@ export class CanvasEngine {
     const gridBounds = this._computeGridBounds(state, defaultTimetableStyle)
 
     /* Draw timetable */
-    this._drawTimetable(defaultTimetableStyle, gridBounds)
+    const { timetableGroup, meetingGroup } = this._drawTimetable(
+      defaultTimetableStyle,
+      gridBounds,
+    )
 
-    if (!this.cellGroup) {
-      throw new Error("CellGroup was not generated! Can't draw subjects.")
-    }
     /* Draw the subject meetings on top of the timetable */
     this._drawSubjectMeetings(
       state.subjects,
       defaultTimetableStyle,
       gridBounds,
-      this.cellGroup,
+      meetingGroup,
     )
 
     /* Set the dimensions of the canvas */
-    this._setCanvasDimension(state.display)
+    this._setCanvasDimension(timetableGroup, state.display)
 
     /* Temporarily scale the timetable to the width of the canvas and center it */
-    this.timetableGroup!.scaleToWidth(
+    timetableGroup.scaleToWidth(
       this.CANVAS.getWidth() / this.CANVAS.getZoom() + 8,
     )
     const zoom = this.CANVAS.getZoom()
     const vpt = this.CANVAS.viewportTransform
     const canvasCenterX = (this.CANVAS.getWidth() / 2 - vpt[4]) / zoom
     const canvasCenterY = (this.CANVAS.getHeight() / 2 - vpt[5]) / zoom
-    this.timetableGroup?.set({ left: canvasCenterX, top: canvasCenterY })
+    timetableGroup.set({ left: canvasCenterX, top: canvasCenterY })
 
     this.CANVAS.backgroundColor = '#ff0000'
     this.CANVAS.requestRenderAll()
@@ -266,10 +263,6 @@ export class CanvasEngine {
     state: ScheduleStoreState,
     style: TimetableStyle,
   ): GridBounds {
-    if (!state.settings) {
-      throw new Error('state.settings is NULL!')
-    }
-
     const timetableDays = this._getTimetableDays(
       state.subjects,
       state.settings.startOfWeek,
@@ -550,15 +543,11 @@ export class CanvasEngine {
     }
   }
 
-  _setCanvasDimension(display: Display | null) {
-    if (!this.timetableGroup) {
-      throw new Error('this.timetableGroup is not set! Cannot resize canvas')
-    }
-
+  _setCanvasDimension(timetableGroup: Group, display: Display | null) {
     if (!display) {
       this.CANVAS.setDimensions({
-        width: this.timetableGroup.getScaledWidth(),
-        height: this.timetableGroup.getScaledHeight(),
+        width: timetableGroup.getScaledWidth(),
+        height: timetableGroup.getScaledHeight(),
       })
     } else {
       this.CANVAS.setDimensions({
@@ -599,7 +588,10 @@ export class CanvasEngine {
     return `${hour12}:${minuteStr}${meridiem}`
   }
 
-  _drawTimetable(style: TimetableStyle, bounds: GridBounds) {
+  _drawTimetable(
+    style: TimetableStyle,
+    bounds: GridBounds,
+  ): { timetableGroup: Group; meetingGroup: Group } {
     const {
       backgroundColor,
       margin,
@@ -743,20 +735,20 @@ export class CanvasEngine {
 
     /* Insert the group that will hold the subject cells, making it
     span the whole grid (excluding gridOverlap) */
-    const cellsContainerBackground = new Rect({
+    const meetingGroupBackground = new Rect({
       width: gridWidth,
       height: gridHeight,
       // fill: '#f2ff0f',
       fill: 'transparent',
     })
-    const cellGroup = new Group([cellsContainerBackground], {
+    const meetingGroup = new Group([meetingGroupBackground], {
       left: 0,
       top: 0,
       originX: 'left',
       originY: 'top',
     })
 
-    const gridGroup = new Group([columnGroup, rowGroup, cellGroup], {
+    const gridGroup = new Group([columnGroup, rowGroup, meetingGroup], {
       left: timetableBackground.getScaledWidth() - margin,
       top: timetableBackground.getScaledHeight() - margin,
       originX: 'right',
@@ -774,8 +766,10 @@ export class CanvasEngine {
 
     this.CANVAS.add(timetableGroup)
 
-    this.timetableGroup = timetableGroup
-    this.cellGroup = cellGroup
+    return {
+      timetableGroup,
+      meetingGroup,
+    }
   }
 
   export() {

@@ -157,14 +157,17 @@ export class CanvasEngine {
       backgroundColor: '#f2f2f2',
       margin: 18,
     }
+
+    /* Determine the bounds the timetable will follow */
     const gridBounds = this._computeGridBounds(state, defaultTimetableStyle)
 
-    this._setCanvasDimension(state.display)
+    /* Draw timetable */
     this._drawTimetable(defaultTimetableStyle, gridBounds)
 
     if (!this.cellGroup) {
       throw new Error("CellGroup was not generated! Can't draw subjects.")
     }
+    /* Draw the subject meetings on top of the timetable */
     this._drawSubjectMeetings(
       state.subjects,
       defaultTimetableStyle,
@@ -172,9 +175,19 @@ export class CanvasEngine {
       this.cellGroup,
     )
 
+    /* Set the dimensions of the canvas */
+    this._setCanvasDimension(state.display)
+
+    /* Temporarily scale the timetable to the width of the canvas and center it */
     this.timetableGroup!.scaleToWidth(
-      this.CANVAS.getWidth() / this.CANVAS.getZoom(),
+      this.CANVAS.getWidth() / this.CANVAS.getZoom() + 8,
     )
+    const zoom = this.CANVAS.getZoom()
+    const vpt = this.CANVAS.viewportTransform
+    const canvasCenterX = (this.CANVAS.getWidth() / 2 - vpt[4]) / zoom
+    const canvasCenterY = (this.CANVAS.getHeight() / 2 - vpt[5]) / zoom
+    this.timetableGroup?.set({ left: canvasCenterX, top: canvasCenterY })
+
     this.CANVAS.backgroundColor = '#ff0000'
     this.CANVAS.requestRenderAll()
   }
@@ -538,10 +551,14 @@ export class CanvasEngine {
   }
 
   _setCanvasDimension(display: Display | null) {
+    if (!this.timetableGroup) {
+      throw new Error('this.timetableGroup is not set! Cannot resize canvas')
+    }
+
     if (!display) {
       this.CANVAS.setDimensions({
-        width: this.DEFAULT_GRID_WIDTH,
-        height: this.DEFAULT_GRID_HEIGHT,
+        width: this.timetableGroup.getScaledWidth(),
+        height: this.timetableGroup.getScaledHeight(),
       })
     } else {
       this.CANVAS.setDimensions({
@@ -746,18 +763,11 @@ export class CanvasEngine {
       originY: 'bottom',
     })
 
-    /* Temporarily center the timetable in the canvas */
-    const zoom = this.CANVAS.getZoom()
-    const vpt = this.CANVAS.viewportTransform
-    const canvasCenterX = (this.CANVAS.getWidth() / 2 - vpt[4]) / zoom
-    const canvasCenterY = (this.CANVAS.getHeight() / 2 - vpt[5]) / zoom
-
     const timetableGroup = new Group([timetableBackground, gridGroup], {
       originX: 'center',
       originY: 'center',
-      left: canvasCenterX,
-      top: canvasCenterY,
-      // selectable: true,
+      left: 0,
+      top: 0,
       selectable: true,
       evented: true,
     })

@@ -306,7 +306,7 @@ export class CanvasEngine {
     subjects: ScheduleStoreState['subjects'],
     style: TimetableStyle,
     gridBounds: GridBounds,
-  ) {
+  ): number {
     const numberOfGridRows = this._calculateNumberOfRows(
       gridBounds.startTime,
       gridBounds.endTime,
@@ -320,8 +320,6 @@ export class CanvasEngine {
       new Group(),
     )
 
-    /* If the subject with the most content doesn't overflow its
-    subject height, dont adjust the grid height */
     if (
       !meetingWithMaxContent ||
       meetingWithMaxContent.contentHeight < meetingWithMaxContent.meetingHeight
@@ -329,6 +327,7 @@ export class CanvasEngine {
       return this.DEFAULT_GRID_HEIGHT
     }
 
+    /* If the subject meeting's content overflows its dedicated cells, adjust the grid height such that the cells fit the content */
     const newCellHeight =
       meetingWithMaxContent.newMeetingHeight /
       ((meetingWithMaxContent.endTime - meetingWithMaxContent.startTime) /
@@ -354,10 +353,11 @@ export class CanvasEngine {
     }
 
     const containerBounding = containerGroup.getBoundingRect()
-    /* Adjust the left and top values to include the strokes of the grid */
+    /* Adjust the left and top values to exclude the strokes of the grid */
     const containerLeft = containerBounding.left - style.grid.strokeWidth / 2
     const containerTop = containerBounding.top - style.grid.strokeWidth / 2
 
+    /* Find the subject with the max content */
     let meetingWithMaxContent: MeetingWithContent | null = null
 
     subjects.forEach((subject) => {
@@ -377,6 +377,7 @@ export class CanvasEngine {
             },
             style,
           })
+          /* Apply cell margin */
           const contentWidth = width - style.grid.cell.gap * 2
 
           let topOffset = 0
@@ -388,7 +389,6 @@ export class CanvasEngine {
             top: topOffset,
           })
 
-          subjectTitle.initDimensions()
           topOffset += subjectTitle.getScaledHeight() + style.grid.cell.gap
           const subjectInstructor = new Textbox(meeting.instructor, {
             ...baseCellContentStyles,
@@ -398,7 +398,6 @@ export class CanvasEngine {
             top: topOffset,
           })
 
-          subjectInstructor.initDimensions()
           topOffset += subjectInstructor.getScaledHeight() + style.grid.cell.gap
           const subjectTime = new Textbox(
             `${this._timeGenerateLabel(meeting.startTime, '12')}-${this._timeGenerateLabel(meeting.endTime, '12')}`,
@@ -411,7 +410,6 @@ export class CanvasEngine {
             },
           )
 
-          subjectTime.initDimensions()
           topOffset += subjectTime.getScaledHeight() + style.grid.cell.gap
           const subjectLocation = new Textbox(meeting.location, {
             ...baseCellContentStyles,
@@ -421,7 +419,6 @@ export class CanvasEngine {
             top: topOffset,
           })
 
-          subjectTime.initDimensions()
           topOffset += subjectLocation.getScaledHeight()
 
           const subjectContent = new Group(

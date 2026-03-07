@@ -14,7 +14,7 @@ import {
   TimeFormat,
 } from '../schedule/store/use-schedule-store'
 import { Day, Meeting, Time } from '../schedule/lib/mock-data'
-import { Display } from '../display/lib/displays'
+import { Display } from '../schedule/lib/displays'
 
 type TimetableStyle = {
   grid: {

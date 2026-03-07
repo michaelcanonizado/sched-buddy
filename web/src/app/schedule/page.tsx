@@ -2,20 +2,17 @@
 
 import Container from '@/components/container'
 import { Button } from '@/components/ui/button'
-import AddSubject from '@/features/actions/components/add-subject'
-import ChangeDisplay from '@/features/actions/components/change-display'
-import DeleteSubject from '@/features/actions/components/delete-subject'
-import EditSubject from '@/features/actions/components/edit-subject'
+import AddSubject from '@/features/schedule/components/add-subject'
+import ChangeDisplay from '@/features/schedule/components/change-display'
+import DeleteSubject from '@/features/schedule/components/delete-subject'
+import EditSubject from '@/features/schedule/components/edit-subject'
 import { useCanvasEngine } from '@/features/canvas-engine/use-canvas-engine-store'
 import ScheduleView from '@/features/schedule/components/schedule-view'
-import { useScheduleActions } from '@/features/schedule/store/use-schedule-store'
 import {
   FolderUpIcon,
   ImageDownIcon,
-  PencilIcon,
   PlusIcon,
   ScanQrCodeIcon,
-  Trash2Icon,
 } from 'lucide-react'
 
 export default function SchedulePage() {

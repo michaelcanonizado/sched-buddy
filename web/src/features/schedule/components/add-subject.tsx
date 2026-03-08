@@ -135,17 +135,20 @@ function AddSubject() {
                   key={field.id}
                   className='w-full overflow-hidden rounded-md border-2'
                 >
-                  <div className='flex items-center justify-between bg-teal-700 p-2'>
+                  <div className='flex items-center justify-between bg-teal-700 px-2'>
                     <TextBody className='text-white'>
                       Meeting Time {index + 1}
                     </TextBody>
                     {meetings.length > 1 && (
                       <Button
                         type='button'
+                        variant='ghost'
+                        size='icon'
+                        className='border-none'
                         onClick={() => removeMeeting(index)}
                         aria-label={`Remove meeting ${index + 1}`}
                       >
-                        <XIcon />
+                        <XIcon className='stroke-white' />
                       </Button>
                     )}
                   </div>

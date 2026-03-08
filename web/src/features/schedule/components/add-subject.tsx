@@ -95,103 +95,106 @@ function AddSubject() {
         </DialogHeader>
 
         <form id='add-subject' onSubmit={form.handleSubmit(onSubmit)}>
-          {/* General Subject Details */}
-          <FieldSet>
-            <FieldLegend>Add Subject</FieldLegend>
-            <FieldDescription>Description</FieldDescription>
-            <FieldGroup>
-              <Controller
-                name='title'
-                control={form.control}
-                render={({ field, fieldState }) => {
-                  return (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor='add-subject_title'>
-                        Subject Title
-                      </FieldLabel>
-                      <FieldDescription>Description</FieldDescription>
-                      <Input
-                        {...field}
-                        id='add-subject_title'
-                        placeholder='Lorem Ipsum'
-                        autoComplete='off'
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )
-                }}
-              />
-            </FieldGroup>
-          </FieldSet>
+          <div className='flex max-h-[500px] flex-col gap-4 overflow-y-scroll'>
+            {/* General Subject Details */}
+            <FieldSet>
+              <FieldLegend>Add Subject</FieldLegend>
+              <FieldDescription>Description</FieldDescription>
+              <FieldGroup>
+                <Controller
+                  name='title'
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                    return (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor='add-subject_title'>
+                          Subject Title
+                        </FieldLabel>
+                        <FieldDescription>Description</FieldDescription>
+                        <Input
+                          {...field}
+                          id='add-subject_title'
+                          placeholder='Lorem Ipsum'
+                          autoComplete='off'
+                          aria-invalid={fieldState.invalid}
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )
+                  }}
+                />
+              </FieldGroup>
+            </FieldSet>
 
-          {/* Meeting details */}
-          <div className='flex flex-col gap-4'>
-            {meetings.map((field, index) => {
-              return (
-                <FieldSet
-                  key={field.id}
-                  className='w-full overflow-hidden rounded-md border-2'
-                >
-                  <div className='flex items-center justify-between bg-teal-700 px-2'>
-                    <TextBody className='text-white'>
-                      Meeting Time {index + 1}
-                    </TextBody>
-                    {meetings.length > 1 && (
-                      <Button
-                        type='button'
-                        variant='ghost'
-                        size='icon'
-                        className='border-none'
-                        onClick={() => removeMeeting(index)}
-                        aria-label={`Remove meeting ${index + 1}`}
-                      >
-                        <XIcon className='stroke-white' />
-                      </Button>
-                    )}
-                  </div>
-                  <FieldGroup className='m-2 w-auto overflow-hidden rounded-md bg-teal-200 p-2'>
-                    <Controller
-                      name={`meetings.${index}.instructor`}
-                      control={form.control}
-                      render={({ field: controllerField, fieldState }) => {
-                        return (
-                          <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel
-                              htmlFor={`add-subject_meeting-instructor-${index}`}
-                            >
-                              Instructor
-                            </FieldLabel>
-                            <Input
-                              {...controllerField}
-                              id={`add-subject_meeting-instructor-${index}`}
-                              placeholder='Professor X'
-                              autoComplete='off'
-                              aria-invalid={fieldState.invalid}
-                            />
-                            {fieldState.invalid && (
-                              <FieldError errors={[fieldState.error]} />
-                            )}
-                          </Field>
-                        )
-                      }}
-                    />
-                  </FieldGroup>
-                </FieldSet>
-              )
-            })}
+            {/* Meeting details */}
+
+            <div className='flex flex-col gap-2'>
+              {meetings.map((field, index) => {
+                return (
+                  <FieldSet
+                    key={field.id}
+                    className='w-full overflow-hidden rounded-md border-2'
+                  >
+                    <div className='flex items-center justify-between bg-teal-700 px-2'>
+                      <TextBody className='text-white'>
+                        Meeting Time {index + 1}
+                      </TextBody>
+                      {meetings.length > 1 && (
+                        <Button
+                          type='button'
+                          variant='ghost'
+                          size='icon'
+                          className='border-none'
+                          onClick={() => removeMeeting(index)}
+                          aria-label={`Remove meeting ${index + 1}`}
+                        >
+                          <XIcon className='stroke-white' />
+                        </Button>
+                      )}
+                    </div>
+                    <FieldGroup className='m-2 w-auto overflow-hidden rounded-md bg-teal-200 p-2'>
+                      <Controller
+                        name={`meetings.${index}.instructor`}
+                        control={form.control}
+                        render={({ field: controllerField, fieldState }) => {
+                          return (
+                            <Field data-invalid={fieldState.invalid}>
+                              <FieldLabel
+                                htmlFor={`add-subject_meeting-instructor-${index}`}
+                              >
+                                Instructor
+                              </FieldLabel>
+                              <Input
+                                {...controllerField}
+                                id={`add-subject_meeting-instructor-${index}`}
+                                placeholder='Professor X'
+                                autoComplete='off'
+                                aria-invalid={fieldState.invalid}
+                              />
+                              {fieldState.invalid && (
+                                <FieldError errors={[fieldState.error]} />
+                              )}
+                            </Field>
+                          )
+                        }}
+                      />
+                    </FieldGroup>
+                  </FieldSet>
+                )
+              })}
+            </div>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => appendMeeting(defaultMeeting)}
+              /* To limit a number of meetings */
+              // disabled={meetings.length >= 5}
+            >
+              Add Another Meeting
+            </Button>
           </div>
-          <Button
-            type='button'
-            variant='outline'
-            onClick={() => appendMeeting(defaultMeeting)}
-            /* To limit a number of meetings */
-            // disabled={meetings.length >= 5}
-          >
-            Add Meeting
-          </Button>
         </form>
 
         <DialogFooter>

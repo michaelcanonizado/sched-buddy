@@ -48,7 +48,8 @@ const addMeetingSchema = z.object({
 })
 
 const addSubjectSchema = z.object({
-  title: z.string().min(1, 'Subject title must be at least 1 character'),
+  title: z.string().min(1, 'Subject title is required'),
+  color: z.string().min(1, 'Color is required'),
   meetings: z.array(addMeetingSchema).min(1, 'Add at least one meeting.'),
 })
 
@@ -64,6 +65,8 @@ function AddSubject() {
     mode: 'onSubmit',
     defaultValues: {
       title: '',
+      // Add default colors to choose from
+      color: '',
       meetings: [defaultMeeting],
     },
   })
@@ -95,29 +98,69 @@ function AddSubject() {
         </DialogHeader>
 
         <form id='add-subject' onSubmit={form.handleSubmit(onSubmit)}>
-          <div className='flex max-h-[500px] flex-col gap-4 overflow-y-scroll'>
+          <FieldGroup className='flex max-h-[500px] flex-col gap-4 overflow-y-scroll'>
             {/* General Subject Details */}
             <FieldSet>
-              <FieldLegend>Add Subject</FieldLegend>
-              <FieldDescription>Description</FieldDescription>
               <FieldGroup>
                 <Controller
                   name='title'
                   control={form.control}
                   render={({ field, fieldState }) => {
                     return (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor='add-subject_title'>
-                          Subject Title
-                        </FieldLabel>
-                        <FieldDescription>Description</FieldDescription>
-                        <Input
-                          {...field}
-                          id='add-subject_title'
-                          placeholder='Lorem Ipsum'
-                          autoComplete='off'
-                          aria-invalid={fieldState.invalid}
-                        />
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation='horizontal'
+                        className='flex flex-col gap-2'
+                      >
+                        <div className='flex w-full flex-row gap-2'>
+                          <FieldLabel
+                            htmlFor='add-subject_title'
+                            className='whitespace-nowrap'
+                          >
+                            Subject Title
+                          </FieldLabel>
+
+                          <Input
+                            {...field}
+                            id='add-subject_title'
+                            placeholder='Lorem Ipsum'
+                            autoComplete='off'
+                            aria-invalid={fieldState.invalid}
+                          />
+                        </div>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )
+                  }}
+                />
+                <Controller
+                  name='color'
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                    return (
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation='horizontal'
+                        className='flex flex-col gap-2'
+                      >
+                        <div className='flex w-full flex-row gap-2'>
+                          <FieldLabel
+                            htmlFor='add-subject_color'
+                            className='whitespace-nowrap'
+                          >
+                            Color
+                          </FieldLabel>
+
+                          <Input
+                            {...field}
+                            id='add-subject_color'
+                            placeholder='#f4f4f4'
+                            autoComplete='off'
+                            aria-invalid={fieldState.invalid}
+                          />
+                        </div>
                         {fieldState.invalid && (
                           <FieldError errors={[fieldState.error]} />
                         )}
@@ -154,7 +197,7 @@ function AddSubject() {
                         </Button>
                       )}
                     </div>
-                    <FieldGroup className='m-2 w-auto overflow-hidden rounded-md bg-teal-200 p-2'>
+                    <FieldGroup className='m-2 w-auto overflow-hidden rounded-md border p-2'>
                       <Controller
                         name={`meetings.${index}.instructor`}
                         control={form.control}
@@ -162,13 +205,13 @@ function AddSubject() {
                           return (
                             <Field data-invalid={fieldState.invalid}>
                               <FieldLabel
-                                htmlFor={`add-subject_meeting-instructor-${index}`}
+                                htmlFor={`add-subject_meetings.${index}.instructor`}
                               >
                                 Instructor
                               </FieldLabel>
                               <Input
                                 {...controllerField}
-                                id={`add-subject_meeting-instructor-${index}`}
+                                id={`add-subject_meetings.${index}.instructor`}
                                 placeholder='Professor X'
                                 autoComplete='off'
                                 aria-invalid={fieldState.invalid}
@@ -180,6 +223,29 @@ function AddSubject() {
                           )
                         }}
                       />
+                      <div className='flex flex-row justify-between'>
+                        {days.map((day) => {
+                          return (
+                            <Field
+                              key={`add-subject_meetings.${index}.day.${day}`}
+                              orientation='vertical'
+                              className='items-center [&>*]:w-min'
+                            >
+                              <FieldLabel
+                                htmlFor={`add-subject_meetings.${index}.day.${day}`}
+                                className='font-normal hover:cursor-pointer'
+                                defaultChecked
+                              >
+                                {formatDay(day, 'title', true)}
+                              </FieldLabel>
+                              <Checkbox
+                                id={`add-subject_meetings.${index}.day.${day}`}
+                                className='size-4!'
+                              />
+                            </Field>
+                          )
+                        })}
+                      </div>
                     </FieldGroup>
                   </FieldSet>
                 )
@@ -194,7 +260,7 @@ function AddSubject() {
             >
               Add Another Meeting
             </Button>
-          </div>
+          </FieldGroup>
         </form>
 
         <DialogFooter>

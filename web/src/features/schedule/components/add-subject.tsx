@@ -53,8 +53,8 @@ const timeSchema = z.object({
 type Time = z.infer<typeof timeSchema>
 
 const addMeetingSchema = z.object({
-  instructor: z.string().min(1, 'Meeting instructor is required'),
-  location: z.string().min(1, 'Meeting instructor is required'),
+  instructor: z.string(),
+  location: z.string(),
   days: z.array(z.enum(days)).min(1, 'Add at least one day must be selected.'),
   startTime: timeSchema,
   endTime: timeSchema,
@@ -229,7 +229,7 @@ function AddSubject() {
                               <Input
                                 {...controllerField}
                                 id={`add-subject_meetings.${index}.instructor`}
-                                placeholder='Professor X'
+                                placeholder='optional'
                                 autoComplete='off'
                                 aria-invalid={fieldState.invalid}
                               />
@@ -255,7 +255,7 @@ function AddSubject() {
                               <Input
                                 {...controllerField}
                                 id={`add-subject_meetings.${index}.location`}
-                                placeholder='BUCS B2-201'
+                                placeholder='optional (ex BUCS B2-201)'
                                 autoComplete='off'
                                 aria-invalid={fieldState.invalid}
                               />
@@ -351,8 +351,6 @@ function AddSubject() {
                         name={`meetings.${index}.endTime`}
                         control={form.control}
                         render={({ field: controllerField, fieldState }) => {
-                          console.log(fieldState.invalid)
-                          console.log(fieldState.error)
                           return (
                             <Field
                               data-invalid={fieldState.invalid}

@@ -15,8 +15,9 @@ export type Meeting = {
   days: Day[]
   startTime: Time
   endTime: Time
-  instructor: string
-  location: string
+  instructor?: string
+  location?: string
+  type?: string
 }
 
 export type Subject = {
@@ -45,6 +46,7 @@ export const scheduleData: Subject[] = [
         days: ['wednesday'],
         startTime: 780,
         endTime: 1140,
+        type: 'Lab',
         instructor: 'Sy, C.',
         location: 'BUCS-215',
       },
@@ -76,6 +78,7 @@ export const scheduleData: Subject[] = [
         days: ['tuesday'],
         startTime: 1020,
         endTime: 1140,
+        type: 'Online Class',
         instructor: 'Canon, M.',
         location: 'BUCS-118',
       },
@@ -114,6 +117,7 @@ export const scheduleData: Subject[] = [
         days: ['thursday'],
         startTime: 540,
         endTime: 720,
+        type: 'Lecture',
         instructor: 'Conda-Botin, K.',
         location: 'BUCS-207',
       },

@@ -415,6 +415,18 @@ export class CanvasEngine {
             subjectInstructor.getScaledHeight() +
             style.grid.cell.subheading.marginBottom
 
+          /* SHOULD NOT BE SHOWN WHEN OPTIONAL LABELS ARE NULL */
+          const subjectTypeLabel = meeting.type ? meeting.type : 'no-type'
+          const subjectType = new Textbox(subjectTypeLabel, {
+            ...baseCellContentStyles,
+            width: contentWidth,
+            fontSize: style.grid.cell.body.fontSize,
+            fontWeight: style.grid.cell.body.fontWeight,
+            top: topOffset,
+          })
+          topOffset +=
+            subjectType.getScaledHeight() + style.grid.cell.body.marginBottom
+
           const subjectTime = new Textbox(
             `${this._timeGenerateLabel(meeting.startTime, '12')}-${this._timeGenerateLabel(meeting.endTime, '12')}`,
             {
@@ -438,7 +450,13 @@ export class CanvasEngine {
           topOffset += subjectLocation.getScaledHeight()
 
           const subjectContent = new Group(
-            [subjectTitle, subjectInstructor, subjectTime, subjectLocation],
+            [
+              subjectTitle,
+              subjectInstructor,
+              subjectType,
+              subjectTime,
+              subjectLocation,
+            ],
             {
               left: style.grid.cell.margin,
               fill: '#4287f5',

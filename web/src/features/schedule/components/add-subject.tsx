@@ -53,6 +53,7 @@ const timeSchema = z.object({
 type Time = z.infer<typeof timeSchema>
 
 const addMeetingSchema = z.object({
+  type: z.string(),
   instructor: z.string(),
   location: z.string(),
   days: z.array(z.enum(days)).min(1, 'Add at least one day must be selected.'),
@@ -67,6 +68,7 @@ const addSubjectSchema = z.object({
 })
 
 const defaultMeeting: z.infer<typeof addMeetingSchema> = {
+  type: '',
   instructor: '',
   location: '',
   days: [],
@@ -215,6 +217,32 @@ function AddSubject() {
                       )}
                     </div>
                     <FieldGroup className='m-2 w-auto overflow-hidden rounded-md border p-2'>
+                      <Controller
+                        name={`meetings.${index}.type`}
+                        control={form.control}
+                        render={({ field: controllerField, fieldState }) => {
+                          return (
+                            <Field data-invalid={fieldState.invalid}>
+                              <FieldLabel
+                                htmlFor={`add-subject_meetings.${index}.type`}
+                              >
+                                Type
+                              </FieldLabel>
+                              <Input
+                                {...controllerField}
+                                id={`add-subject_meetings.${index}.type`}
+                                placeholder='optional (ex. Lab, Lecture, Online Class)'
+                                autoComplete='off'
+                                aria-invalid={fieldState.invalid}
+                              />
+                              {fieldState.invalid && (
+                                <FieldError errors={[fieldState.error]} />
+                              )}
+                            </Field>
+                          )
+                        }}
+                      />
+
                       <Controller
                         name={`meetings.${index}.instructor`}
                         control={form.control}

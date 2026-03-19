@@ -56,7 +56,7 @@ const subjectFormSchema = z.object({
   color: z.string().min(1, 'Color is required'),
   meetings: z.array(meetingFormSchema).min(1, 'Add at least one meeting.'),
 })
-export type Subject = z.infer<typeof subjectFormSchema>
+export type SubjectFormValue = z.infer<typeof subjectFormSchema>
 
 const defaultMeeting: Meeting = {
   type: '',
@@ -73,10 +73,10 @@ function SubjectForm_({
   onSubmit,
 }: {
   formId: string
-  defaultValues: Subject
-  onSubmit: (data: Subject) => void
+  defaultValues: SubjectFormValue
+  onSubmit: (data: SubjectFormValue) => void
 }) {
-  const form = useForm<Subject>({
+  const form = useForm<SubjectFormValue>({
     resolver: zodResolver(subjectFormSchema),
     mode: 'onSubmit',
     defaultValues,

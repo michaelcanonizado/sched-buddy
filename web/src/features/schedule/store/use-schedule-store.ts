@@ -7,7 +7,7 @@ import { Day, Subject } from '../types'
 type DisplayOrientation = 'portrait' | 'landscape'
 
 type ScheduleStoreActions = {
-  addSubject: () => void
+  addSubject: (subject: Subject) => void
   setDisplay: (display: Display | null) => void
   setOrientation: (orientation: DisplayOrientation) => void
   setHasHydrated: () => void
@@ -43,13 +43,14 @@ export const useScheduleStore = create<ScheduleStoreState>()(
       hasHydrated: false,
       orientation: 'portrait',
       actions: {
-        addSubject: () => {
-          // const subject: Subject = {
-          //   title: 'Computer Programming 1',
-          //   color: 'abc',
-          //   meetings: [],
-          // }
-          // set((state) => ({ subjects: [...state.subjects, subject] }))
+        addSubject: (subject) => {
+          /* Assign ids. P.S. Checking for UUID collision is redundant. */
+          subject.id = crypto.randomUUID()
+          subject.meetings.forEach(
+            (meeting) => (meeting.id = crypto.randomUUID()),
+          )
+
+          set((state) => ({ subjects: [...state.subjects, subject] }))
         },
         setDisplay: (display) => set({ display }),
         setOrientation: (orientation) => set({ orientation }),

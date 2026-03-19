@@ -22,6 +22,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 import { Day } from '../types'
+import { ComponentClassNameProp } from '@/types'
 
 const days: Day[] = [
   'monday',

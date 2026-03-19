@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { ComponentClassNameAndChildrenProp } from '@/types'
 
 export default function Container({
   className,

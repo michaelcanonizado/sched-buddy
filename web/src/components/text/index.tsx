@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { ComponentClassNameAndChildrenProp } from '@/types'
 
 /*
 Minor Third is used

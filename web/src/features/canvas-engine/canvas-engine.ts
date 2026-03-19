@@ -13,7 +13,7 @@ import {
   Settings,
   TimeFormat,
 } from '../schedule/store/use-schedule-store'
-import { Day, Meeting, Time } from '../schedule/lib/mock-data'
+import { Day, Meeting, Time } from '../schedule/types'
 import { Display } from '../schedule/lib/displays'
 
 type TimetableStyle = {

@@ -1,7 +1,8 @@
 import displays, { Display } from '@/features/schedule/lib/displays'
 import { create } from 'zustand'
-import { Day, scheduleData, Subject } from '../lib/mock-data'
+import { scheduleData } from '../lib/mock-data'
 import { persist } from 'zustand/middleware'
+import { Day, Subject } from '../types'
 
 type DisplayOrientation = 'portrait' | 'landscape'
 

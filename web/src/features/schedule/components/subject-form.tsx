@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { XIcon } from 'lucide-react'
-import { Day } from '../lib/mock-data'
 import { Checkbox } from '@/components/ui/checkbox'
 import formatDay from '../lib/format-day'
 import { TextBody } from '@/components/text'
@@ -22,6 +21,7 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
+import { Day } from '../types'
 
 const days: Day[] = [
   'monday',

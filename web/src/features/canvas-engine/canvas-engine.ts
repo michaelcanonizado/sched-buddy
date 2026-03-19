@@ -11,7 +11,6 @@ import {
 import {
   ScheduleStoreState,
   Settings,
-  TimeFormat,
 } from '../schedule/store/use-schedule-store'
 import { Day, Meeting, Time } from '../schedule/types'
 import { Display } from '../schedule/lib/displays'
@@ -54,7 +53,7 @@ type GridBounds = {
   gridWidth: number
   gridHeight: number
   timeResolution: number
-  timeFormat: TimeFormat
+  timeFormat: Settings['timeFormat']
   startTime: number
   endTime: number
   days: Day[]
@@ -586,7 +585,10 @@ export class CanvasEngine {
     return time + incrementInMinutes
   }
 
-  _timeGenerateLabel(totalMinutes: number, format: TimeFormat): string {
+  _timeGenerateLabel(
+    totalMinutes: number,
+    format: Settings['timeFormat'],
+  ): string {
     if (totalMinutes < 0 || totalMinutes > 1439) {
       console.warn('Invalid time value: ', totalMinutes)
     }

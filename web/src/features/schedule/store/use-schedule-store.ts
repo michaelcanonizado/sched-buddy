@@ -13,12 +13,9 @@ type ScheduleStoreActions = {
   setHasHydrated: () => void
 }
 
-export type TimeFormat = '12' | '24'
-export type TimeResolution = 30 | 60
-
 export type Settings = {
-  timeFormat: TimeFormat
-  timeResolution: TimeResolution
+  timeFormat: '12' | '24'
+  timeResolution: 30 | 60
   showWeekend: boolean
   startOfWeek: Extract<Day, 'sunday' | 'monday'>
 }

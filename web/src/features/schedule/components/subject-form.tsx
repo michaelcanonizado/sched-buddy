@@ -67,7 +67,7 @@ const defaultMeeting: MeetingFormValue = {
   endTime: { hours: 0, minutes: 0, meridiem: 'am' },
 }
 
-function SubjectForm_({
+function SubjectForm({
   formId,
   defaultValues,
   onSubmit,
@@ -411,7 +411,7 @@ function SubjectForm_({
   )
 }
 
-export default SubjectForm_
+export default SubjectForm
 
 function TimeInput({
   value,

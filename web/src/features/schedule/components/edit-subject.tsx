@@ -3,29 +3,112 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { CalendarPlusIcon } from 'lucide-react'
+import { PencilIcon } from 'lucide-react'
+import SubjectForm, { SubjectFormValue } from './subject-form'
+import { Field } from '@/components/ui/field'
+import { useMemo, useState } from 'react'
+import {
+  useScheduleActions,
+  useScheduleStore,
+} from '../store/use-schedule-store'
+import { TextBody } from '@/components/text'
+import { cn } from '@/lib/utils'
+import { Subject } from '../types'
+import {
+  subjectFromFormValues,
+  subjectToFormValues,
+} from '../lib/subjectMapper'
 
 function EditSubject() {
+  const [open, setOpen] = useState(false)
+  const [selectedSubject, setSelectedSubject] = useState<null | Subject>(null)
+  const subjects = useScheduleStore((s) => s.subjects)
+  const { editSubject } = useScheduleActions()
+
+  const formId = 'edit-subject'
+
+  const selectedSubjectFormValues: SubjectFormValue | null = useMemo(() => {
+    if (!selectedSubject) return null
+
+    return subjectToFormValues(selectedSubject)
+  }, [selectedSubject])
+
+  function onSubjectSelect(subject: Subject) {
+    setSelectedSubject(subject)
+  }
+
+  function onSubmit(data: SubjectFormValue) {
+    if (!selectedSubject) return null
+
+    const newSubject = subjectFromFormValues(data, selectedSubject.id)
+
+    /* Persist changes */
+    editSubject(newSubject)
+
+    /* Programmatically close dialog on success */
+    setOpen(false)
+  }
+
+  function onOpenChange(open: boolean) {
+    setOpen(open)
+    /* On dialog close, clear the selected subject */
+    if (!open) setSelectedSubject(null)
+  }
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button variant='outline'>
-          <CalendarPlusIcon /> Edit Subject
+          <PencilIcon /> Edit Subject
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Subject</DialogTitle>
-          <DialogDescription>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi elit
-            odio, lacinia in mollis ac, condimentum quis ligula. Ut nisi erat,
-            condimentum eu pretium at
-          </DialogDescription>
+          <DialogTitle>Select a Subject to Edit</DialogTitle>
+          <DialogDescription></DialogDescription>
         </DialogHeader>
+
+        {!selectedSubject && !selectedSubjectFormValues ? (
+          <div className='max-h-[500px] overflow-y-scroll'>
+            <div className='flex flex-col gap-4'>
+              {subjects.map((subject) => {
+                return (
+                  <div
+                    onClick={() => onSubjectSelect(subject)}
+                    className={cn(
+                      'flex grow flex-col items-center justify-center rounded-md px-4 py-6 hover:cursor-pointer',
+                      'border-2 border-transparent transition-colors duration-300 hover:border-black',
+                    )}
+                    style={{ backgroundColor: subject.color }}
+                    key={subject.id}
+                  >
+                    <TextBody className='text-center'>{subject.title}</TextBody>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ) : (
+          <>
+            <SubjectForm
+              formId={formId}
+              defaultValues={selectedSubjectFormValues!}
+              onSubmit={onSubmit}
+            />
+            <DialogFooter>
+              <Field orientation='horizontal'>
+                <Button type='submit' form={formId}>
+                  Confirm
+                </Button>
+              </Field>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   )

@@ -8,6 +8,7 @@ type DisplayOrientation = 'portrait' | 'landscape'
 
 type ScheduleStoreActions = {
   addSubject: (subject: Subject) => void
+  editSubject: (subject: Subject) => void
   setDisplay: (display: Display | null) => void
   setOrientation: (orientation: DisplayOrientation) => void
   setHasHydrated: () => void
@@ -31,32 +32,36 @@ export type ScheduleStoreState = {
 
 export const useScheduleStore = create<ScheduleStoreState>()(
   persist(
-    (set, get) => ({
-      settings: {
-        timeFormat: '12',
-        startOfWeek: 'monday',
-        timeResolution: 30,
-        showWeekend: false,
-      },
-      subjects: scheduleData,
-      display: displays[0],
-      hasHydrated: false,
-      orientation: 'portrait',
-      actions: {
-        addSubject: (subject) => {
-          /* Assign ids. P.S. Checking for UUID collision is redundant. */
-          subject.id = crypto.randomUUID()
-          subject.meetings.forEach(
-            (meeting) => (meeting.id = crypto.randomUUID()),
-          )
-
-          set((state) => ({ subjects: [...state.subjects, subject] }))
+    (set, get) =>
+      ({
+        settings: {
+          timeFormat: '12',
+          startOfWeek: 'monday',
+          timeResolution: 30,
+          showWeekend: false,
         },
-        setDisplay: (display) => set({ display }),
-        setOrientation: (orientation) => set({ orientation }),
-        setHasHydrated: () => set({ hasHydrated: true }),
-      },
-    }),
+        subjects: scheduleData,
+        display: displays[0],
+        hasHydrated: false,
+        orientation: 'portrait',
+        actions: {
+          addSubject: (subject) => {
+            /* Assign ids. P.S. Checking for UUID collision is redundant. */
+            subject.id = crypto.randomUUID()
+            subject.meetings.forEach(
+              (meeting) => (meeting.id = crypto.randomUUID()),
+            )
+
+            set((state) => ({ subjects: [...state.subjects, subject] }))
+          },
+          editSubject: (subject) => {
+            console.log('Persisting edit on subject: ', subject)
+          },
+          setDisplay: (display) => set({ display }),
+          setOrientation: (orientation) => set({ orientation }),
+          setHasHydrated: () => set({ hasHydrated: true }),
+        },
+      }) as ScheduleStoreState,
     {
       name: 'sched-buddy-context',
       /* Fields to store in localStorage. Don't serialize actions! It cannot be serialized. */

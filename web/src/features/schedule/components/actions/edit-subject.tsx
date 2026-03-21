@@ -23,11 +23,11 @@ import {
   subjectFromFormValues,
   subjectToFormValues,
 } from '../../lib/subjectMapper'
+import SelectSubjectDialogContent from '../select-subject-dialog-content'
 
 function EditSubject() {
   const [open, setOpen] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<null | Subject>(null)
-  const subjects = useScheduleStore((s) => s.subjects)
   const { editSubject } = useScheduleActions()
 
   const formId = 'edit-subject'
@@ -67,49 +67,30 @@ function EditSubject() {
           <PencilIcon /> Edit Subject
         </Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Select a Subject to Edit</DialogTitle>
-          <DialogDescription></DialogDescription>
-        </DialogHeader>
 
-        {!selectedSubject && !selectedSubjectFormValues ? (
-          <div className='max-h-[500px] overflow-y-scroll'>
-            <div className='flex flex-col gap-4'>
-              {subjects.map((subject) => {
-                return (
-                  <div
-                    onClick={() => onSubjectSelect(subject)}
-                    className={cn(
-                      'flex grow flex-col items-center justify-center rounded-md px-4 py-6 hover:cursor-pointer',
-                      'border-2 border-transparent transition-colors duration-300 hover:border-black',
-                    )}
-                    style={{ backgroundColor: subject.color }}
-                    key={subject.id}
-                  >
-                    <TextBody className='text-center'>{subject.title}</TextBody>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        ) : (
-          <>
-            <SubjectForm
-              formId={formId}
-              defaultValues={selectedSubjectFormValues!}
-              onSubmit={onSubmit}
-            />
-            <DialogFooter>
-              <Field orientation='horizontal'>
-                <Button type='submit' form={formId}>
-                  Confirm
-                </Button>
-              </Field>
-            </DialogFooter>
-          </>
-        )}
-      </DialogContent>
+      {!selectedSubject && !selectedSubjectFormValues ? (
+        <SelectSubjectDialogContent onSelect={onSubjectSelect} />
+      ) : (
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Subject</DialogTitle>
+            <DialogDescription></DialogDescription>
+          </DialogHeader>
+
+          <SubjectForm
+            formId={formId}
+            defaultValues={selectedSubjectFormValues!}
+            onSubmit={onSubmit}
+          />
+          <DialogFooter>
+            <Field orientation='horizontal'>
+              <Button type='submit' form={formId}>
+                Confirm
+              </Button>
+            </Field>
+          </DialogFooter>
+        </DialogContent>
+      )}
     </Dialog>
   )
 }

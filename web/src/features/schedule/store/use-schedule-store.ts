@@ -9,6 +9,7 @@ type DisplayOrientation = 'portrait' | 'landscape'
 type ScheduleStoreActions = {
   addSubject: (subject: Subject) => void
   editSubject: (subject: Subject) => void
+  deleteSubject: (subject: Subject) => void
   setDisplay: (display: Display | null) => void
   setOrientation: (orientation: DisplayOrientation) => void
   setHasHydrated: () => void
@@ -72,6 +73,11 @@ export const useScheduleStore = create<ScheduleStoreState>()(
                 originalSubject.id === subject.id ? subject : originalSubject,
               ),
             })
+          },
+          deleteSubject: (subject) => {
+            set((state) => ({
+              subjects: state.subjects.filter((s) => s.id !== subject.id),
+            }))
           },
           setDisplay: (display) => set({ display }),
           setOrientation: (orientation) => set({ orientation }),

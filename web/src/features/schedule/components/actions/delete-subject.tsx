@@ -1,32 +1,57 @@
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
-  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { CalendarPlusIcon } from 'lucide-react'
+import { PencilIcon } from 'lucide-react'
+import { useState } from 'react'
+import { useScheduleActions } from '../../store/use-schedule-store'
+import { Subject } from '../../types'
+import SelectSubjectDialogContent from '../select-subject-dialog-content'
 
 function DeleteSubject() {
+  const [open, setOpen] = useState(false)
+  const [selectedSubject, setSelectedSubject] = useState<null | Subject>(null)
+  const { deleteSubject } = useScheduleActions()
+
+  function onSubmit() {
+    if (!selectedSubject) return null
+    deleteSubject(selectedSubject)
+    setSelectedSubject(null)
+    setOpen(false)
+  }
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant='outline'>
-          <CalendarPlusIcon /> Delete Subject
+          <PencilIcon /> Delete Subject
         </Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Subject</DialogTitle>
-          <DialogDescription>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi elit
-            odio, lacinia in mollis ac, condimentum quis ligula. Ut nisi erat,
-            condimentum eu pretium at
-          </DialogDescription>
-        </DialogHeader>
-      </DialogContent>
+
+      {!selectedSubject ? (
+        <SelectSubjectDialogContent
+          onSelect={(s) => setSelectedSubject(s)}
+          headerLabel='Select a Subject to Delete'
+        />
+      ) : (
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Subject Deletion</DialogTitle>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button>Cancel</Button>
+            </DialogClose>
+            <Button onClick={onSubmit}>Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      )}
     </Dialog>
   )
 }

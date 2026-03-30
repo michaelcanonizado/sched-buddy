@@ -13,7 +13,11 @@ import {
   ImageDownIcon,
   PlusIcon,
   ScanQrCodeIcon,
+  WandSparklesIcon,
 } from 'lucide-react'
+import AddBackgroundImage from '@/features/schedule/components/actions/add-background-image'
+import { TextBody } from '@/components/text'
+import AddBackgroundFill from '@/features/schedule/components/actions/add-background-fill'
 
 export default function SchedulePage() {
   const canvasEngine = useCanvasEngine()
@@ -44,6 +48,21 @@ export default function SchedulePage() {
           <AddSubject />
           <EditSubject />
           <DeleteSubject />
+          <div className='flex w-full flex-col items-center rounded-lg border-2'>
+            <div className='flex w-full flex-row items-center justify-center gap-2 border-b-2 py-4'>
+              <WandSparklesIcon />
+              <TextBody>Customize</TextBody>
+            </div>
+            <div className='flex w-full flex-col px-4 pb-4'>
+              <TextBody className='mt-4'>Background</TextBody>
+              <AddBackgroundImage className='mt-2' />
+              <AddBackgroundFill className='mt-2' />
+              <TextBody className='mt-6'>Timetable</TextBody>
+              <Button variant='outline' className='mt-2'>
+                To-implement
+              </Button>
+            </div>
+          </div>
           <Button variant='outline' onClick={onExport}>
             <ImageDownIcon />
             Export

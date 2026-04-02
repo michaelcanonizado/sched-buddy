@@ -799,21 +799,6 @@ export class CanvasEngine {
     }
   }
 
-  async addImage(url: string) {
-    console.log('Image: ', url)
-
-    const img = await FabricImage.fromURL(url)
-    img.set({
-      left: 0,
-      top: 0,
-    })
-
-    img.scaleToWidth(this.CANVAS.width)
-    this.CANVAS.add(img)
-    // this.CANVAS.sendToBack(img)
-    this.CANVAS.renderAll()
-  }
-
   export() {
     const dataUrl = this.CANVAS.toDataURL({
       format: 'png',

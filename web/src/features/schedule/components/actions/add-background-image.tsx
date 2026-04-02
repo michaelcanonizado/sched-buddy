@@ -15,22 +15,30 @@ import { cn } from '@/lib/utils'
 import { ComponentClassNameProp } from '@/types'
 import { useEffect, useRef, useState } from 'react'
 
-function ImagePreview() {
+function ImagePreview({ imageUrl }: { imageUrl: string | null }) {
   const canvasContainerRef = useRef<HTMLDivElement | null>(null)
   const canvasElementRef = useRef<HTMLCanvasElement | null>(null)
   const canvasEngineRef = useRef<ImagePreviewCanvasEngine | null>(null)
 
   useEffect(() => {
+    /* If canvas element is not ready */
     if (!canvasElementRef.current) return
+    /* If no imageUrl available */
+    if (!imageUrl) {
+      console.log('ImagePreview rendered but no image available!')
+      return
+    }
 
     const engine = new ImagePreviewCanvasEngine(canvasElementRef.current)
+    engine.addImage(imageUrl)
     canvasEngineRef.current = engine
 
     return () => {
+      console.log('Clean up function called')
       engine.dispose()
       canvasEngineRef.current = null
     }
-  }, [])
+  }, [imageUrl])
 
   return (
     <div className='relative size-[500px]'>
@@ -46,6 +54,7 @@ function ImagePreview() {
 
 function AddBackgroundImage({ className }: ComponentClassNameProp) {
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false)
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const handleImageFileChange = async (
@@ -55,8 +64,11 @@ function AddBackgroundImage({ className }: ComponentClassNameProp) {
     if (!file) return
 
     try {
-      // const url = URL.createObjectURL(file)
+      const url = URL.createObjectURL(file)
+      setImageUrl(url)
       // canvasEngine.addImage(url)
+
+      /* Open Dialog */
       setIsImagePreviewOpen(true)
     } catch (e) {
       console.log('Error!: ', e)
@@ -87,7 +99,7 @@ function AddBackgroundImage({ className }: ComponentClassNameProp) {
           <DialogHeader>
             <DialogTitle>Image Preview</DialogTitle>
           </DialogHeader>
-          <ImagePreview />
+          <ImagePreview imageUrl={imageUrl} />
           <DialogFooter>
             <DialogClose asChild>
               <Button type='button'>Close</Button>

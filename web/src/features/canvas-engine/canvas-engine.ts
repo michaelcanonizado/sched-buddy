@@ -4,6 +4,7 @@ import {
   FabricText,
   Group,
   Path,
+  Point,
   Rect,
   Textbox,
   TextboxProps,
@@ -73,6 +74,7 @@ type MeetingWithContent = Meeting & {
 export class CanvasEngine {
   private CANVAS: Canvas
 
+  private TIMETABLE_GROUP_ID = 'timetableGroup'
   private TIMETABLE_GROUP: Group | null = null
 
   private DEFAULT_GRID_WIDTH = 1100
@@ -204,18 +206,6 @@ export class CanvasEngine {
     /* Set the dimensions of the canvas */
     this._setCanvasDimension(timetableGroup, state.display)
 
-    /* Temporarily scale the timetable to the width of the canvas and center it */
-    // timetableGroup.scaleToWidth(
-    //   this.CANVAS.getWidth() / this.CANVAS.getZoom() + 8,
-    // )
-    // const zoom = this.CANVAS.getZoom()
-    // const vpt = this.CANVAS.viewportTransform
-    // const canvasCenterX = (this.CANVAS.getWidth() / 2 - vpt[4]) / zoom
-    // const canvasCenterY = (this.CANVAS.getHeight() / 2 - vpt[5]) / zoom
-    // // timetableGroup.set({ left: canvasCenterX, top: canvasCenterY })
-    // timetableGroup.set({ left: 100, top: 0 })
-    // timetableGroup.setCoords()
-
     this._repositionObjects(viewport)
 
     this.CANVAS.backgroundColor = '#ff0000'
@@ -224,10 +214,29 @@ export class CanvasEngine {
 
   _repositionObjects(viewport: ViewportState) {
     this.CANVAS.getObjects().forEach((obj) => {
-      if (!obj.id) return
+      /* Find objects that we're meant to be saved */
+      if (!obj.id || !obj.toSave) return
+
+      /* Search for the object override */
       const saved = viewport.objectOverrides[obj.id]
 
-      if (saved === undefined) return
+      /* If object was meant to be saved but no override was found (g.g: localStorage was cleared),
+         set a default position. */
+      if (saved === undefined) {
+        /* Make timetableGroup span the whole width */
+        if (obj.id === this.TIMETABLE_GROUP_ID) {
+          obj.scaleToWidth(this.LOGICAL_CANVAS_WIDTH)
+        }
+
+        /* Centered in the canvas */
+        const center = new Point(
+          this.LOGICAL_CANVAS_WIDTH / 2,
+          this.LOGICAL_CANVAS_HEIGHT / 2,
+        )
+        obj.setXY(center, 'center', 'center')
+        obj.setCoords()
+        return
+      }
 
       obj.set({ ...saved })
       obj.setCoords()
@@ -832,7 +841,7 @@ export class CanvasEngine {
 
     const timetableGroup = new Group([timetableBackground, gridGroup], {
       toSave: true,
-      id: 'timetableGroup',
+      id: this.TIMETABLE_GROUP_ID,
       // originX: 'center',
       originX: 'left',
       // originY: 'center',

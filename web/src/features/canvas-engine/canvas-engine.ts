@@ -206,13 +206,13 @@ export class CanvasEngine {
     /* Set the dimensions of the canvas */
     this._setCanvasDimension(timetableGroup, state.display)
 
-    this._repositionObjects(viewport)
+    this._restoreSavedObjectsState(viewport)
 
     this.CANVAS.backgroundColor = '#ff0000'
     this.CANVAS.requestRenderAll()
   }
 
-  _repositionObjects(viewport: ViewportState) {
+  _restoreSavedObjectsState(viewport: ViewportState) {
     this.CANVAS.getObjects().forEach((obj) => {
       /* Find objects that we're meant to be saved */
       if (!obj.id || !obj.toSave) return

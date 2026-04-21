@@ -103,8 +103,12 @@ export class CanvasEngine {
     this.CANVAS.on('object:modified', (e) => {
       const obj = e.target as FabricObject
 
-      /* Only objects with ids are saved */
-      if (!obj || !obj.id || !this.onObjectModified) return
+      if (!obj || !obj.toSave || !this.onObjectModified) return
+
+      if (!obj.id) {
+        console.error('Trying to save object without an id! Object: ', obj)
+        return
+      }
 
       this.onObjectModified(obj.id, {
         left: obj.left,
@@ -222,6 +226,9 @@ export class CanvasEngine {
     this.CANVAS.getObjects().forEach((obj) => {
       if (!obj.id) return
       const saved = viewport.objectOverrides[obj.id]
+
+      if (saved === undefined) return
+
       obj.set({ ...saved })
       obj.setCoords()
     })
@@ -824,6 +831,7 @@ export class CanvasEngine {
     })
 
     const timetableGroup = new Group([timetableBackground, gridGroup], {
+      toSave: true,
       id: 'timetableGroup',
       // originX: 'center',
       originX: 'left',

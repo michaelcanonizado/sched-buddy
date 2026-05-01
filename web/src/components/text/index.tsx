@@ -6,7 +6,7 @@ Minor Third is used
 */
 
 export const textDisplayClassNames =
-  'font-heading text-[41px] leading-[110%] font-[700] tracking-[-2.5%]'
+  'font-heading text-[52px] leading-[110%] font-[700] tracking-[-4.0%]'
 export const TextDisplay = ({
   className,
   children,

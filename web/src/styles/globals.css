@@ -54,28 +54,27 @@
   --brand-green: #70e000;
   --brand-blue: #219ebc;
   --brand-pink: #fe689b;
-  --base-100: #ffffff;
-  --base-200: #fbfaf9;
-  --base-300: #474645;
-  --base-400: #171717;
-  --base-500: #121212;
-  --base-600: #000000;
+  --neutral-100: #ffffff;
+  --neutral-200: #fbfaf9;
+  --neutral-300: #d8d8d8;
+  --neutral-400: #474645;
+  --neutral-500: #171717;
 
   /* Modified Shadcn */
-  --background: var(--base-100);
-  --foreground: var(--base-400);
-  --card: var(--base-100);
-  --card-foreground: var(--base-400);
-  --popover: var(--base-100);
-  --popover-foreground: var(--base-400);
+  --background: var(--neutral-100);
+  --foreground: var(--neutral-400);
+  --card: var(--neutral-100);
+  --card-foreground: var(--neutral-400);
+  --popover: var(--neutral-100);
+  --popover-foreground: var(--neutral-400);
 
-  --muted: var(--base-200);
-  --muted-foreground: var(--base-300);
+  --muted: var(--neutral-200);
+  --muted-foreground: var(--neutral-400);
 
-  --border: var(--base-300);
-  --destructive: #var(--brand-red);
+  --border: var(--neutral-300);
+  --destructive: var(--brand-red);
 
-  --input: var(--brand-green);
+  --input: var(--neutral-300);
   --ring: var(--brand-yellow);
 
   /* Default Shadcn */

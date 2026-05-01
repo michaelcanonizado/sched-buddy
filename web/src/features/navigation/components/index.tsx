@@ -1,5 +1,5 @@
 import WidthContainer from '@/components/container'
-import { TextHeading, TextSub } from '@/components/text'
+import { TextHeadingLG, TextSub } from '@/components/text'
 import Link from 'next/link'
 
 export default function Navigation() {
@@ -10,7 +10,7 @@ export default function Navigation() {
           <Link href='/'>
             <div className='flex flex-row items-center gap-1'>
               <div className='size-[20px] rounded-full bg-orange-500' />
-              <TextHeading className='text-[18px]'>Sched Buddy</TextHeading>
+              <TextHeadingLG className='text-[18px]'>Sched Buddy</TextHeadingLG>
             </div>
           </Link>
 

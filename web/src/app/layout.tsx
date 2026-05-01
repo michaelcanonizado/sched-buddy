@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body
-        className={`${nunito.variable} ${inter.variable} ${redditSans.variable} light relative flex min-h-screen flex-col antialiased`}
+        className={`${nunito.variable} ${inter.variable} ${redditSans.variable} light text-foreground relative flex min-h-screen flex-col antialiased`}
       >
         <header className='sticky top-0 z-999'>
           <Navigation />

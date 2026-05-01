@@ -1,5 +1,5 @@
 import WidthContainer from '@/components/container'
-import { TextBody, TextDisplay, TextHeading } from '@/components/text'
+import { TextBody, TextDisplay, TextHeadingLG } from '@/components/text'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
@@ -25,9 +25,9 @@ export default function HomePage() {
           </div>
           <div className='border-border mx-auto flex max-w-[500px] flex-col gap-8 rounded-xl border-2 border-dashed p-8'>
             <div className='flex flex-col gap-4'>
-              <TextHeading className='text-start'>
+              <TextHeadingLG className='text-start'>
                 Nam vulputate fermentum tellus id fringilla praesent
-              </TextHeading>
+              </TextHeadingLG>
               <TextBody className='text-start'>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
                 vulputate consequat est non finibus. Nam vulputate fermentum

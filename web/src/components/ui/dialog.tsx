@@ -6,7 +6,7 @@ import { XIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Button } from './button'
-import { textHeadingClassNames, textSubClassNames } from '../text'
+import { textHeadingLGClassNames, textSubClassNames } from '../text'
 
 function Dialog({
   ...props
@@ -125,7 +125,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot='dialog-title'
-      className={cn(textHeadingClassNames, className)}
+      className={cn(textHeadingLGClassNames, className)}
       {...props}
     />
   )

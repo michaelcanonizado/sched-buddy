@@ -8,7 +8,10 @@
   --font-heading: var(--font-reddit);
 
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-foreground: var(--brand-red);
+  --color-foreground-100: var(--foreground-100);
+  --color-foreground-200: var(--foreground-200);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -58,11 +61,15 @@
   --neutral-200: #fbfaf9;
   --neutral-300: #d8d8d8;
   --neutral-400: #474645;
+  /* Use this for the headings */
   --neutral-500: #171717;
 
   /* Modified Shadcn */
   --background: var(--neutral-100);
   --foreground: var(--neutral-400);
+  --foreground-100: var(--neutral-400);
+  --foreground-200: var(--neutral-500);
+
   --card: var(--neutral-100);
   --card-foreground: var(--neutral-400);
   --popover: var(--neutral-100);

@@ -1,12 +1,8 @@
 import { cn } from '@/lib/utils'
 import { ComponentClassNameAndChildrenProp } from '@/types'
 
-/*
-Minor Third is used
-*/
-
 export const textDisplayClassNames =
-  'font-heading text-[52px] leading-[110%] font-[700] tracking-[-4.0%]'
+  'font-heading text-foreground-200 text-[52px] leading-[110%] font-[700] tracking-[-4.0%]'
 export const TextDisplay = ({
   className,
   children,
@@ -21,7 +17,7 @@ export const TextDisplay = ({
 }
 
 export const textHeadingLGClassNames =
-  'font-heading text-[32px] leading-[120%] font-[700] tracking-[-2.0%]'
+  'font-heading text-foreground-200 text-[32px] leading-[120%] font-[700] tracking-[-2.0%]'
 export const TextHeadingLG = ({
   className,
   children,
@@ -36,7 +32,7 @@ export const TextHeadingLG = ({
 }
 
 export const textHeadingMDClassNames =
-  'font-heading text-[23px] leading-[120%] font-[600] tracking-[-1.25%]'
+  'font-heading text-foreground-200 text-[23px] leading-[120%] font-[600] tracking-[-1.25%]'
 export const TextHeadingMD = ({
   className,
   children,
@@ -51,7 +47,7 @@ export const TextHeadingMD = ({
 }
 
 export const textHeadingSMClassNames =
-  'font-heading text-[20px] leading-[120%] font-[500] tracking-[-0.5%]'
+  'font-heading text-foreground-100 text-[20px] leading-[120%] font-[500] tracking-[-0.5%]'
 export const TextHeadingSM = ({
   className,
   children,
@@ -66,7 +62,7 @@ export const TextHeadingSM = ({
 }
 
 export const textBodyClassNames =
-  'font-body text-[16px] leading-[147%] font-[400] tracking-[1.5%]'
+  'font-body text-foreground-100 text-[16px] leading-[147%] font-[400] tracking-[1.5%]'
 export const TextBody = ({
   className,
   children,
@@ -81,7 +77,7 @@ export const TextBody = ({
 }
 
 export const textSubClassNames =
-  'font-body text-[14px] leading-[141%] font-[500] tracking-[2.25%]'
+  'font-body text-foreground-100 text-[14px] leading-[141%] font-[500] tracking-[2.25%]'
 export const TextSub = ({
   className,
   children,

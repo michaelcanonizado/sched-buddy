@@ -7,6 +7,13 @@
   --font-body: var(--font-reddit);
   --font-heading: var(--font-reddit);
 
+  --color-brand-red: var(--brand-red);
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-yellow: var(--brand-yellow);
+  --color-brand-green: var(--brand-green);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-pink: var(--brand-pink);
+
   --color-background: var(--background);
   --color-foreground: var(--brand-red);
   --color-foreground-100: var(--foreground-100);

@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
+  DialogClose,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -16,6 +17,7 @@ import { CalendarPlusIcon } from 'lucide-react'
 import SubjectForm, { SubjectFormValue } from '../subject-form'
 import { useState } from 'react'
 import { subjectFromFormValues } from '../../lib/subjectMapper'
+import { TextBody } from '@/components/text'
 
 function AddSubject() {
   const [open, setOpen] = useState(false)
@@ -55,10 +57,11 @@ function AddSubject() {
           <CalendarPlusIcon /> Add Subject
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent showCloseButton={false}>
+        {/* <DialogContent showCloseButton={false} className='h-screen !max-w-screen'> */}
         <DialogHeader>
           <DialogTitle>Add Subject</DialogTitle>
-          <DialogDescription></DialogDescription>
+          <DialogDescription>Adds a subject to the timetable</DialogDescription>
         </DialogHeader>
 
         <SubjectForm
@@ -68,11 +71,12 @@ function AddSubject() {
         />
 
         <DialogFooter>
-          <Field orientation='horizontal'>
-            <Button type='submit' form={formId}>
-              Confirm
-            </Button>
-          </Field>
+          <DialogClose asChild>
+            <Button variant='outline'>Cancel</Button>
+          </DialogClose>
+          <Button type='submit' form={formId}>
+            Confirm
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

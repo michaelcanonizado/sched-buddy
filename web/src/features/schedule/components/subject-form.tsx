@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { XIcon } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import formatDay from '../lib/format-day'
-import { TextBody } from '@/components/text'
+import { TextBody, TextHeadingSM } from '@/components/text'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import z from 'zod'
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
@@ -93,21 +93,20 @@ function SubjectForm({
 
   return (
     <form id={formId} onSubmit={form.handleSubmit(onSubmit)}>
-      <FieldGroup className='flex max-h-[500px] flex-col gap-4 overflow-y-scroll'>
+      <FieldGroup className='bg-muted flex max-h-[500px] flex-col gap-8 overflow-y-scroll p-8'>
         {/* General Subject Details */}
         <FieldSet>
           <FieldGroup>
-            <Controller
-              name='title'
-              control={form.control}
-              render={({ field, fieldState }) => {
-                return (
-                  <Field
-                    data-invalid={fieldState.invalid}
-                    orientation='horizontal'
-                    className='flex flex-col gap-2'
-                  >
-                    <div className='flex w-full flex-row gap-2'>
+            <div className='grid grid-cols-2 gap-4'>
+              <Controller
+                name='title'
+                control={form.control}
+                render={({ field, fieldState }) => {
+                  return (
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      orientation='vertical'
+                    >
                       <FieldLabel
                         htmlFor='subject-form_title'
                         className='whitespace-nowrap'
@@ -117,30 +116,27 @@ function SubjectForm({
 
                       <Input
                         {...field}
-                        id='subject_title-form'
+                        id='subject-form_title'
                         placeholder='Mathematics in the Modern World'
                         autoComplete='off'
                         aria-invalid={fieldState.invalid}
                       />
-                    </div>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )
-              }}
-            />
-            <Controller
-              name='color'
-              control={form.control}
-              render={({ field, fieldState }) => {
-                return (
-                  <Field
-                    data-invalid={fieldState.invalid}
-                    orientation='horizontal'
-                    className='flex flex-col gap-2'
-                  >
-                    <div className='flex w-full flex-row gap-2'>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )
+                }}
+              />
+              <Controller
+                name='color'
+                control={form.control}
+                render={({ field, fieldState }) => {
+                  return (
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      orientation='vertical'
+                    >
                       <FieldLabel
                         htmlFor='subject-form_color'
                         className='whitespace-nowrap'
@@ -155,33 +151,30 @@ function SubjectForm({
                         autoComplete='off'
                         aria-invalid={fieldState.invalid}
                       />
-                    </div>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )
-              }}
-            />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )
+                }}
+              />
+            </div>
           </FieldGroup>
         </FieldSet>
 
         {/* Meeting details */}
-        <div className='flex flex-col gap-2'>
+        <div className='flex flex-col gap-8'>
           {meetings.map((field, index) => {
             return (
               <FieldSet
                 key={field.id}
-                className='w-full overflow-hidden rounded-md border-2'
+                className='bg-background w-full overflow-hidden rounded-xl border'
               >
-                <div className='flex items-center justify-between bg-teal-700 px-2'>
-                  <TextBody className='text-white'>
-                    Meeting Time {index + 1}
-                  </TextBody>
+                <div className='flex items-center justify-between border-b px-6 py-4'>
+                  <TextHeadingSM>Meeting {index + 1}</TextHeadingSM>
                   {meetings.length > 1 && (
                     <Button
                       type='button'
-                      variant='ghost'
                       size='icon'
                       className='border-none'
                       onClick={() => removeMeeting(index)}
@@ -191,17 +184,17 @@ function SubjectForm({
                     </Button>
                   )}
                 </div>
-                <FieldGroup className='m-2 w-auto overflow-hidden rounded-md border p-2'>
-                  <div className='flex flex-col gap-2 rounded-md bg-teal-100 p-2'>
+                <div className='w-auto overflow-hidden'>
+                  <div className='flex flex-col items-center gap-6 border-b p-6'>
                     <Controller
                       name={`meetings.${index}.days`}
                       control={form.control}
                       render={({ field: controllerField, fieldState }) => {
                         return (
-                          <>
+                          <div className='flex flex-col gap-2'>
                             <FieldGroup
                               data-slot='checkbox-group'
-                              className='flex flex-row justify-between'
+                              className='flex flex-row justify-center !gap-6'
                             >
                               {days.map((day) => {
                                 return (
@@ -209,11 +202,16 @@ function SubjectForm({
                                     key={`subject-form_meetings.${index}.day.${day}`}
                                     data-invalid={fieldState.invalid}
                                     orientation='vertical'
-                                    className='items-center [&>*]:w-min'
+                                    className='w-fit items-center [&>*]:w-min'
                                   >
                                     <FieldLabel
                                       htmlFor={`subject-form_meetings.${index}.day.${day}`}
-                                      className='font-normal hover:cursor-pointer'
+                                      className={cn(
+                                        'hover:cursor-pointer',
+                                        'grid !size-[42px] place-items-center rounded-lg border',
+                                        controllerField.value.includes(day) &&
+                                          'border-brand-yellow bg-brand-yellow/60 border-2',
+                                      )}
                                       defaultChecked
                                     >
                                       {formatDay(day, 'title', true)}
@@ -221,7 +219,7 @@ function SubjectForm({
                                     <Checkbox
                                       name={controllerField.name}
                                       id={`subject-form_meetings.${index}.day.${day}`}
-                                      className='size-4!'
+                                      className='hidden'
                                       checked={controllerField.value.includes(
                                         day,
                                       )}
@@ -235,17 +233,48 @@ function SubjectForm({
                                       }}
                                     />
                                   </Field>
+                                  // <Field
+                                  //   key={`subject-form_meetings.${index}.day.${day}`}
+                                  //   data-invalid={fieldState.invalid}
+                                  //   orientation='vertical'
+                                  //   className='w-fit items-center [&>*]:w-min'
+                                  // >
+                                  //   <FieldLabel
+                                  //     htmlFor={`subject-form_meetings.${index}.day.${day}`}
+                                  //     className='font-normal hover:cursor-pointer'
+                                  //     defaultChecked
+                                  //   >
+                                  //     {formatDay(day, 'title', true)}
+                                  //   </FieldLabel>
+                                  //   <Checkbox
+                                  //     name={controllerField.name}
+                                  //     id={`subject-form_meetings.${index}.day.${day}`}
+                                  //     className='relative size-8! rounded-lg'
+                                  //     checked={controllerField.value.includes(
+                                  //       day,
+                                  //     )}
+                                  //     onCheckedChange={(checked) => {
+                                  //       const newValues = checked
+                                  //         ? [...controllerField.value, day]
+                                  //         : controllerField.value.filter(
+                                  //             (value) => value !== day,
+                                  //           )
+                                  //       controllerField.onChange(newValues)
+                                  //     }}
+                                  //   />
+                                  // </Field>
                                 )
                               })}
                             </FieldGroup>
                             {fieldState.invalid && (
                               <FieldError errors={[fieldState.error]} />
                             )}
-                          </>
+                          </div>
                         )
                       }}
                     />
-                    <Controller
+
+                    {/* <Controller
                       name={`meetings.${index}.startTime`}
                       control={form.control}
                       render={({ field: controllerField, fieldState }) => {
@@ -301,10 +330,11 @@ function SubjectForm({
                           </Field>
                         )
                       }}
-                    />
+                    /> */}
+                    <div className='h-[100px] w-full' />
                   </div>
 
-                  <div className='flex flex-col gap-2 rounded-md bg-teal-100 p-2'>
+                  <div className='flex flex-row gap-4 p-6'>
                     <Controller
                       name={`meetings.${index}.type`}
                       control={form.control}
@@ -312,7 +342,7 @@ function SubjectForm({
                         return (
                           <Field
                             data-invalid={fieldState.invalid}
-                            orientation='horizontal'
+                            orientation='vertical'
                           >
                             <FieldLabel
                               htmlFor={`subject-form_meetings.${index}.type`}
@@ -322,7 +352,7 @@ function SubjectForm({
                             <Input
                               {...controllerField}
                               id={`subject-form_meetings.${index}.type`}
-                              placeholder='optional (ex. Lab, Lecture, Online Class)'
+                              placeholder='Lab'
                               autoComplete='off'
                               aria-invalid={fieldState.invalid}
                             />
@@ -341,7 +371,7 @@ function SubjectForm({
                         return (
                           <Field
                             data-invalid={fieldState.invalid}
-                            orientation='horizontal'
+                            orientation='vertical'
                           >
                             <FieldLabel
                               htmlFor={`subject-form_meetings.${index}.instructor`}
@@ -351,7 +381,7 @@ function SubjectForm({
                             <Input
                               {...controllerField}
                               id={`subject-form_meetings.${index}.instructor`}
-                              placeholder='optional'
+                              placeholder='Prof. John Doe'
                               autoComplete='off'
                               aria-invalid={fieldState.invalid}
                             />
@@ -370,7 +400,7 @@ function SubjectForm({
                         return (
                           <Field
                             data-invalid={fieldState.invalid}
-                            orientation='horizontal'
+                            orientation='vertical'
                           >
                             <FieldLabel
                               htmlFor={`subject-form_meetings.${index}.location`}
@@ -380,7 +410,7 @@ function SubjectForm({
                             <Input
                               {...controllerField}
                               id={`subject-form_meetings.${index}.location`}
-                              placeholder='optional (ex BUCS B2-201)'
+                              placeholder='BUCS B2-201'
                               autoComplete='off'
                               aria-invalid={fieldState.invalid}
                             />
@@ -392,7 +422,7 @@ function SubjectForm({
                       }}
                     />
                   </div>
-                </FieldGroup>
+                </div>
               </FieldSet>
             )
           })}

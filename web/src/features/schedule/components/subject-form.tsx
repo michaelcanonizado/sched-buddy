@@ -58,7 +58,7 @@ const timeSchema = z
     }
   })
 
-type Time = z.infer<typeof timeSchema>
+export type TimeFormValue = z.infer<typeof timeSchema>
 
 const meetingFormSchema = z.object({
   type: z.string(),

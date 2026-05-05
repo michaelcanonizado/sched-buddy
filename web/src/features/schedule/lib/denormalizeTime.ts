@@ -1,8 +1,6 @@
-export function denormalizeTime(minutesAfterMidnight: number): {
-  hours: number
-  minutes: number
-  meridiem: 'am' | 'pm'
-} {
+import { TimeFormValue } from '../components/subject-form'
+
+export function denormalizeTime(minutesAfterMidnight: number): TimeFormValue {
   if (
     !Number.isInteger(minutesAfterMidnight) ||
     minutesAfterMidnight < 0 ||
@@ -19,6 +17,6 @@ export function denormalizeTime(minutesAfterMidnight: number): {
   return {
     hours: hours12,
     minutes: minutesAfterMidnight % 60,
-    meridiem: hours24 < 12 ? 'am' : 'pm',
+    meridiem: hours24 < 12 ? 'AM' : 'PM',
   }
 }

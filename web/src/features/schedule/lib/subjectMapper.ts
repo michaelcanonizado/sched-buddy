@@ -1,4 +1,3 @@
-import { Subject } from './../types/index'
 import { MeetingFormValue, SubjectFormValue } from '../components/subject-form'
 import { Meeting, Subject } from '../types'
 import { normalizeTime } from './normalizeTime'
@@ -8,10 +7,7 @@ function isStringEmpty(str: unknown): boolean {
   return typeof str !== 'string' || str.trim().length === 0
 }
 
-export function subjectFromFormValues(
-  formValues: SubjectFormValue,
-  id?: string,
-): Subject {
+export function subjectFromFormValues(formValues: SubjectFormValue, id?: string): Subject {
   const newSubjectMeetings: Meeting[] = []
   formValues.meetings.forEach((meeting) => {
     newSubjectMeetings.push({
@@ -21,9 +17,7 @@ export function subjectFromFormValues(
       startTime: normalizeTime(meeting.startTime),
       endTime: normalizeTime(meeting.endTime),
       type: isStringEmpty(meeting.type) ? undefined : meeting.type,
-      instructor: isStringEmpty(meeting.instructor)
-        ? undefined
-        : meeting.instructor,
+      instructor: isStringEmpty(meeting.instructor) ? undefined : meeting.instructor,
       location: isStringEmpty(meeting.location) ? undefined : meeting.location,
     })
   })

@@ -26,8 +26,15 @@ function DeleteSubject() {
     setOpen(false)
   }
 
+  function onChangeOpen(open: boolean) {
+    if (!open) {
+      setSelectedSubject(null)
+    }
+    setOpen(open)
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onChangeOpen}>
       <DialogTrigger asChild>
         <Button variant='outline'>
           <PencilIcon /> Delete Subject

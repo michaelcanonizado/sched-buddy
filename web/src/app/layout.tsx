@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import '@/styles/globals.css'
 import { Inter, Nunito, Reddit_Sans } from 'next/font/google'
 import Navigation from '@/features/navigation/components'
+import { Toaster } from '@/components/ui/sonner'
 
 const redditSans = Reddit_Sans({
   variable: '--font-reddit',
@@ -40,6 +41,7 @@ export default function RootLayout({
           <Navigation />
         </header>
         <main className='flex grow flex-col'>{children}</main>
+        <Toaster />
       </body>
     </html>
   )

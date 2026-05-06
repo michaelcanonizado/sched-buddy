@@ -41,10 +41,6 @@ export default function SchedulePage() {
     <WidthContainer className='mt-16 mb-8 flex grow md:max-w-[1440px]'>
       <div className='flex grow flex-col gap-4 md:flex-row'>
         <div className='flex flex-col gap-4'>
-          <Button variant='outline'>
-            <ScanQrCodeIcon /> Scan COR
-          </Button>
-          <ChangeDisplay />
           <AddSubject />
           <EditSubject />
           <DeleteSubject />
@@ -53,14 +49,13 @@ export default function SchedulePage() {
               <WandSparklesIcon />
               <TextBody>Customize</TextBody>
             </div>
-            <div className='flex w-full flex-col px-4 pb-4'>
+            <div className='flex w-full flex-col gap-2 px-4 pb-4'>
               <TextBody className='mt-4'>Background</TextBody>
-              <AddBackgroundImage className='mt-2' />
-              <AddBackgroundFill className='mt-2' />
-              <TextBody className='mt-6'>Timetable</TextBody>
-              <Button variant='outline' className='mt-2'>
-                To-implement
-              </Button>
+              <AddBackgroundImage />
+              <AddBackgroundFill />
+              <TextBody className='mt-4'>Timetable</TextBody>
+              <ChangeDisplay />
+              <Button variant='outline'>To-implement</Button>
             </div>
           </div>
           <Button variant='outline' onClick={onExport}>

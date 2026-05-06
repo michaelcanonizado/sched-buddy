@@ -1,45 +1,24 @@
 import WidthContainer from '@/components/container'
-import { TextBody, TextDisplay, TextHeadingLG } from '@/components/text'
+import ScanButton from '@/features/scanner/components'
+import { TextHeadingSM, TextDisplay } from '@/components/text'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import { Wand } from 'lucide-react'
 
 export default function HomePage() {
   return (
     <div className='grid h-screen w-screen place-items-center'>
       <WidthContainer>
-        <div className='flex flex-col items-center justify-center gap-12'>
-          <div className='flex flex-col items-center gap-4'>
-            <TextDisplay className='text-center'>
-              Smart Schedules, Zero Confusion rddit
-            </TextDisplay>
-            <TextBody>
-              Ut enim ad minim veniam, quis nostrud exercitation!
-            </TextBody>
+        <div className='flex flex-col items-center justify-center gap-8'>
+          <div className='flex max-w-[500px] flex-col items-center gap-4'>
+            <TextDisplay className='text-center'>Smart Schedules, Zero Confusion rddit</TextDisplay>
+            <TextHeadingSM>Ut enim ad minim veniam, quis nostrud exercitation!</TextHeadingSM>
           </div>
-          <div className='relative flex h-[100px] w-fit flex-row gap-4'>
-            <div className='aspect-square size-[100px] rounded-full bg-[#d00000]' />
-            <div className='aspect-square size-[100px] rounded-full bg-[#fb8500]' />
-            <div className='aspect-square size-[100px] rounded-full bg-[#219ebc]' />
-            <div className='aspect-square size-[100px] rounded-full bg-[#ffafcc]' />
-            <div className='aspect-square size-[100px] rounded-full bg-[#70e000]' />
-          </div>
-          <div className='border-border mx-auto flex max-w-[500px] flex-col gap-8 rounded-xl border-2 border-dashed p-8'>
-            <div className='flex flex-col gap-4'>
-              <TextHeadingLG className='text-start'>
-                Nam vulputate fermentum tellus id fringilla praesent
-              </TextHeadingLG>
-              <TextBody className='text-start'>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
-                vulputate consequat est non finibus. Nam vulputate fermentum
-                tellus id fringilla. Praesent gravida euismod.
-              </TextBody>
-            </div>
-            <div className='flex w-full flex-row justify-center gap-4'>
-              <Button>
-                <Link href='/schedule'>Get Started</Link>
-              </Button>
-              <Button variant='outline'>Pay ₱1000</Button>
-            </div>
+          <div className='flex flex-row gap-2'>
+            <ScanButton />
+            <Button variant='outline'>
+              <Wand />
+              Create Manually
+            </Button>
           </div>
         </div>
       </WidthContainer>

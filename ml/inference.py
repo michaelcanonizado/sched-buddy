@@ -120,6 +120,26 @@ def run_pipeline(img_path: Path):
         cv2.imwrite(str(CROPPED_OUTPUT), cropped)
         logger.info(f"Saved: {CROPPED_OUTPUT}")
 
+    # -----------------------------------------------------------------------------
+    # Stage 3: Table Structure Detection
+    # -----------------------------------------------------------------------------
+    from ultralytics import YOLO
+
+    from config import TESSERACT_CONFIG
+    from detector import BorderlessTableDetector
+    from extraction import extract_table
+
+    detector = BorderlessTableDetector(
+    image_path=CROPPED_OUTPUT,
+    output_path=STRUCT_OUTPUT
+    )
+
+    detector.load_image()
+    detections, _ = detector.process(
+        model_type="structure", threshold=0.9, show_plot=False, save_plot=True
+    )
+
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python inference.py path/to/image.jpg")

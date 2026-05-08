@@ -139,6 +139,24 @@ def run_pipeline(img_path: Path):
         model_type="structure", threshold=0.9, show_plot=False, save_plot=True
     )
 
+    # -----------------------------------------------------------------------------
+    # Stage 4: Data Extraction
+    # -----------------------------------------------------------------------------
+    table_data = extract_table(detector, detections)
+    Path(EXTRACTED_JSON).write_text(
+        json.dumps(
+            {
+                "image file:": str(CROPPED_OUTPUT),
+                "ocr configuration:": TESSERACT_CONFIG,
+                "headers": table_data.headers,
+                "rows": table_data.rows,
+            },
+            ensure_ascii=False,
+            indent=2
+        ),
+        encoding="utf-8"
+    )
+    logger.info("Table JSON saved: %s", EXTRACTED_JSON)
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

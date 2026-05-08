@@ -35,6 +35,25 @@ def run_pipeline(img_path: Path):
 
     preprocessed_path = preprocess(str(img_path))
 
+    # -----------------------------------------------------------------------------
+    # Stage 2: Table Detection
+    # -----------------------------------------------------------------------------
+
+    from ultralytics import YOLO
+
+    model = YOLO("model.pt")
+
+    # Run inference
+    results = model.predict(
+        source=preprocessed_path,
+        conf=0.8, 
+        save_txt=True, 
+        project=str(OUTPUT_DIR),
+        name=".",
+        exist_ok=True)
+
+    results[0].save(str(TABLE_OUTPUT))    
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python inference.py path/to/image.jpg")

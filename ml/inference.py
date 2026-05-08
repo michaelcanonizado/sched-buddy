@@ -28,7 +28,12 @@ def run_pipeline(img_path: Path):
     STRUCT_OUTPUT = OUTPUT_DIR / f"struct_{img_path.stem}.jpg"
     EXTRACTED_JSON = OUTPUT_DIR / f"extracted_{img_path.stem}.json"
 
+    # -----------------------------------------------------------------------------
+    # Stage 1: Preprocessing
+    # -----------------------------------------------------------------------------
+    from preprocess import preprocess
 
+    preprocessed_path = preprocess(str(img_path))
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

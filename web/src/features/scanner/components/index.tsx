@@ -59,7 +59,7 @@ export default function ScanButton() {
 
     try {
       const result = await uploadCOR(file)
-      console.log('Success! ', result)
+      console.log('Success: ', result)
 
       /* Update zustand */
 

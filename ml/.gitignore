@@ -1,0 +1,13 @@
+venv/
+*__pycache__
+
+# For samples
+*.jpg
+*.png
+*.jfif
+*.jpeg
+*.pdf
+
+# Tests
+output
+sample

@@ -4,14 +4,59 @@ import { Button } from '@/components/ui/button'
 import { ScanQrCode } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { validateCORFileType as validateCORFile } from '../lib/validate-cor-file-type'
-import { uploadCOR } from '../actions/upload-cor'
 import { toast } from 'sonner'
-import { TextHeadingSM } from '@/components/text'
+import { TextBody, TextHeadingSM, TextSub } from '@/components/text'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import { useCORExtraction } from '../hooks/use-cor-extraction'
+import { Job } from '../schemas'
 
-type Status = 'idle' | 'uploading' | 'error'
-function LoadingScreen({ show }: { show: boolean }) {
+function LoadingScreen({
+  show,
+  startTime,
+  job,
+}: {
+  show: boolean
+  startTime: number | null
+  job: Job | null
+}) {
+  const [elapsed, setElapsed] = useState(0)
+
+  useEffect(() => {
+    if (!show || !startTime) return
+
+    const interval = setInterval(() => {
+      setElapsed(Date.now() - startTime)
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [show, startTime])
+
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000)
+    const minutes = Math.floor(totalSeconds / 60)
+    const seconds = totalSeconds % 60
+
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  function getLoadingLabel(jobStatus?: Job['status']) {
+    switch (jobStatus) {
+      case 'pending':
+        return 'Starting extraction...'
+      case 'processing':
+        return 'Extracting text...'
+      case 'done':
+        return 'Extracting complete...'
+      case 'failed':
+        return 'Extraction failed...'
+      default:
+        return 'No job was passed'
+    }
+  }
+
+  if (!job) return
+
   return (
     <div
       className={cn(
@@ -19,8 +64,10 @@ function LoadingScreen({ show }: { show: boolean }) {
         show ? 'visible opacity-100' : 'invisible opacity-0',
       )}
     >
-      <div className=''>
+      <div className='flex flex-col items-center justify-center *:text-center'>
         <TextHeadingSM>Loading...</TextHeadingSM>
+        <TextBody>{getLoadingLabel(job.status)}</TextBody>
+        {startTime && <TextSub>Elapsed Time: {formatTime(elapsed)}</TextSub>}
       </div>
     </div>
   )
@@ -29,7 +76,8 @@ function LoadingScreen({ show }: { show: boolean }) {
 export default function ScanButton() {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [status, setStatus] = useState<Status>('idle')
+  const [startTime, setStartTime] = useState<number | null>(null)
+  const { extract, status, data, isLoading, isError, error, job } = useCORExtraction()
 
   function onButtonClick() {
     fileInputRef.current?.click()
@@ -42,6 +90,7 @@ export default function ScanButton() {
     /* Reset input so the same file can be re-selected if needed */
     e.target.value = ''
 
+    /* Client side validation for file */
     try {
       validateCORFile(file)
     } catch (err) {
@@ -50,36 +99,31 @@ export default function ScanButton() {
       } else {
         toast.error('Sorry an error occurred')
       }
-      setStatus('idle')
       return
     }
 
-    /* Show loading screen */
-    setStatus('uploading')
-
     try {
-      const result = await uploadCOR(file)
-      console.log('Success: ', result)
+      setStartTime(Date.now())
+
+      extract(file)
 
       /* Update zustand */
 
       /* Redirect to scheudle */
-      router.push('/schedule')
+      // router.push('/schedule')
       return
-    } catch (err) {
-      if (err instanceof Error) {
-        toast.error("Sorry can't process file!", { position: 'top-center' })
+    } catch {
+      if (!isError) {
+        toast.error(error, { position: 'top-center' })
       } else {
-        toast.error('Sorry an error occurred')
+        toast.error("Sorry can't process file!", { position: 'top-center' })
       }
-      setStatus('idle')
       return
     }
   }
 
+  /* Prevent scrolling when loading screen is shown. If weird scroll is still present behavior (especially on mobile), add: overscroll-none */
   useEffect(() => {
-    /* Prevent scrolling when loading screen is shown */
-    /* If you still notice weird scroll behavior (especially on mobile), add: overscroll-none */
     if (status === 'uploading') {
       document.body.style.overflow = 'hidden'
     } else {
@@ -100,10 +144,14 @@ export default function ScanButton() {
         className='hidden'
         onChange={handleFileChange}
       />
-      <Button onClick={onButtonClick} disabled={status === 'uploading'}>
+      <Button onClick={onButtonClick} disabled={status === 'uploading' || status === 'processing'}>
         <ScanQrCode /> Scan COR
       </Button>
-      <LoadingScreen show={status === 'uploading'} />
+      <LoadingScreen
+        show={status === 'uploading' || status === 'processing'}
+        startTime={startTime}
+        job={job}
+      />
     </div>
   )
 }

@@ -31,7 +31,7 @@ ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp"}
 # ---------------------------------------------------------------------------
 
 def _run_pipeline_task(job_id: str, image_path: Path):
-    from ml.pipeline import run_pipeline
+    from pipeline import run_pipeline
 
     job_store.update(job_id, status=JobStatus.PROCESSING, updated_at=time.time())
     try:

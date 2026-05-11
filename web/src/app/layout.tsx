@@ -3,6 +3,7 @@ import '@/styles/globals.css'
 import { Inter, Nunito, Reddit_Sans } from 'next/font/google'
 import Navigation from '@/features/navigation/components'
 import { Toaster } from '@/components/ui/sonner'
+import Providers from './providers'
 
 const redditSans = Reddit_Sans({
   variable: '--font-reddit',
@@ -37,11 +38,13 @@ export default function RootLayout({
       <body
         className={`${nunito.variable} ${inter.variable} ${redditSans.variable} light text-foreground-100 relative flex min-h-screen flex-col antialiased`}
       >
-        <header className='sticky top-0 z-999'>
-          <Navigation />
-        </header>
-        <main className='flex grow flex-col'>{children}</main>
-        <Toaster />
+        <Providers>
+          <header className='sticky top-0 z-999'>
+            <Navigation />
+          </header>
+          <main className='flex grow flex-col'>{children}</main>
+          <Toaster />
+        </Providers>
       </body>
     </html>
   )

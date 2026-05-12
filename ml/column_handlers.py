@@ -168,12 +168,21 @@ class TimeHandler(ColumnHandler):
             h = 0
         return h * 60 + m
 
+# NOTE: The following handlers are quite lenient in what they accept, as room/faculty fields are often noisy and we don't want to lose valid data if the formatting is unexpected.  They do, however, strip out obviously invalid characters (e.g. punctuation in room names)
 class RoomHandler(ColumnHandler):
     is_schedule_field = True
 
     def parse_cell(self, text: str) -> str:
         """Return the room location as a string."""
-        return text.strip()
+        cleaned = text.strip()
+
+        if not cleaned:
+            return ""
+        
+        cleaned = re.sub(r'[^a-zA-Z0-9\s\-]', ' ', cleaned)
+        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+        return cleaned
 
 
 class FacultyHandler(ColumnHandler):
@@ -181,7 +190,15 @@ class FacultyHandler(ColumnHandler):
 
     def parse_cell(self, text: str) -> str:
         """Return the faculty name as a string."""
-        return text.strip()
+        cleaned = text.strip()
+        
+        if not cleaned:
+            return ""
+        
+        cleaned = re.sub(r'[^a-zA-Z\s\.\-\,]', '', cleaned)
+        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+                    
+        return cleaned
 
 
 # Registry

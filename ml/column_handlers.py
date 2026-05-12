@@ -33,6 +33,11 @@ class ColumnHandler(ABC):
         from the header text).  The default implementation is a no-op.
         """
 
+    @property
+    def sub_columns(self) -> tuple[str, ...]:
+        """The active sub-column names (read-only). Override in subclasses."""
+        return ()
+
     @abstractmethod
     def parse_cell(self, text: str) -> Any:
         """Convert raw OCR *text* for this column into a structured value."""

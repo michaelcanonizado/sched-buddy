@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { useCORExtraction } from '../hooks/use-cor-extraction'
 import { Job } from '../schemas'
+import { useScheduleActions } from '@/features/schedule/store/use-schedule-store'
 
 function LoadingScreen({
   show,
@@ -75,9 +76,11 @@ function LoadingScreen({
 
 export default function ScanButton() {
   const router = useRouter()
+  const { saveCORData } = useScheduleActions()
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [startTime, setStartTime] = useState<number | null>(null)
-  const { extract, status, data, isLoading, isError, error, job } = useCORExtraction()
+  const { extract, status, data: extractedData, isError, error, job } = useCORExtraction()
 
   function onButtonClick() {
     fileInputRef.current?.click()
@@ -104,14 +107,7 @@ export default function ScanButton() {
 
     try {
       setStartTime(Date.now())
-
       extract(file)
-
-      /* Update zustand */
-
-      /* Redirect to scheudle */
-      // router.push('/schedule')
-      return
     } catch {
       if (!isError) {
         toast.error(error, { position: 'top-center' })
@@ -121,6 +117,21 @@ export default function ScanButton() {
       return
     }
   }
+
+  /* Tasks to perform after data eextraction */
+  useEffect(() => {
+    if (!extractedData) return
+
+    saveCORData(extractedData)
+    router.push('/schedule')
+  }, [extractedData])
+
+  useEffect(() => {
+    console.log('extractedData: ', extractedData)
+    console.log('status: ', status)
+    console.log('isError: ', isError)
+    console.log('error: ', error)
+  }, [extractedData, isError, error, status])
 
   /* Prevent scrolling when loading screen is shown. If weird scroll is still present behavior (especially on mobile), add: overscroll-none */
   useEffect(() => {

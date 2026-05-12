@@ -23,7 +23,10 @@ export default function jobPollQueryOptions<TData = Job, TError = string>(
     },
     refetchInterval: (query) => {
       /* Stop polling once the job finishes */
-      if (query.state.data?.status === 'done') return false
+      if (query.state.data?.status === 'done') {
+        console.log('Extraction done!')
+        return false
+      }
       return intervalMs
     },
   })

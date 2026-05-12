@@ -10,10 +10,12 @@ Monorepo layout assumed:
     └── ml/        ← detector.py, extraction.py, config.py, model.pt
 
 Stages
-  1. Table Detection    — YOLOv11s (ml/model.pt)
+  1. Preprocessing       — preprocess (ml/preprocess.py) → cleaned image
+  2. Table Detection    — YOLOv11s (ml/model.pt)
   2. Table Cropping     — bounding-box crop from YOLO label
   3. Structure Detection — BorderlessTableDetector (ml/detector.py)
   4. Data Extraction    — extract_table (ml/extraction.py) → headers + rows
+  5. Postprocessing     — serialize_row + validate_course_rows (ml/extraction.py)
 """
 
 from __future__ import annotations
@@ -22,7 +24,9 @@ import json
 import logging
 import shutil
 import sys
+import time
 from pathlib import Path
+from typing import Optional
 
 import cv2
 
@@ -80,13 +84,19 @@ def is_model_ready() -> bool:
 # ---------------------------------------------------------------------------
 
 def run_pipeline(image_path: Path, job_id: str) -> ExtractionResult:
-
+    # Timing tracking
+    t_start = time.perf_counter()
+    timings = {}
+    
     # ml/ modules — importable because _ML_DIR is in sys.path
     from preprocess import preprocess             # ml/preprocess.py
     from detector import BorderlessTableDetector  # ml/detector.py
     from extraction import extract_table          # ml/extraction.py
     from postprocess import serialize_row, validate_course_rows  # ml/extraction.py
     from models import TableData                  # ml/models.py
+    
+    t_import = time.perf_counter() - t_start
+    timings['import'] = t_import
 
     # -----------------------------------------------------------------------
     # Per-job workspace inside backend/outputs/<job_id>/
@@ -114,8 +124,11 @@ def run_pipeline(image_path: Path, job_id: str) -> ExtractionResult:
     # -----------------------------------------------------------------------
     # Stage 2 — Table detection (YOLO)
     # -----------------------------------------------------------------------
+    t_yolo_start = time.perf_counter()
 
     model = _get_yolo()
+
+    t_yolo_load = time.perf_counter() - t_yolo_start
     
     results = model.predict(
         source=str(preprocessed.output_path),
@@ -126,11 +139,21 @@ def run_pipeline(image_path: Path, job_id: str) -> ExtractionResult:
         exist_ok=True,
     )
 
+    t_yolo_predict = time.perf_counter() - t_yolo_start - t_yolo_load
+    timings['yolo_load'] = t_yolo_load
+    timings['yolo_predict'] = t_yolo_predict
+    
     results[0].save(str(TABLE_OUTPUT_PATH))
+
+    logger.info(
+        "[%s] YOLO done → %s (load=%.2fs, predict=%.2fs)",
+        job_id, TABLE_OUTPUT_PATH, t_yolo_load, t_yolo_predict
+    )
 
     # -----------------------------------------------------------------------
     # Stage 2b — Crop detected table region
     # -----------------------------------------------------------------------
+    t_crop_start = time.perf_counter()
 
     image = cv2.imread(str(preprocessed.output_path))
     if image is None:
@@ -180,9 +203,13 @@ def run_pipeline(image_path: Path, job_id: str) -> ExtractionResult:
 
     cv2.imwrite(str(CROPPED_OUTPUT_PATH), cropped)
 
+    timings['crop'] = time.perf_counter() - t_crop_start
+    logger.info("[%s] Cropped table → %s (%.2fs)", job_id, CROPPED_OUTPUT_PATH, timings['crop'])
+
     # -----------------------------------------------------------------------
     # Stage 3 — Structure detection (Table Transformer)
     # -----------------------------------------------------------------------
+    t_struct_start = time.perf_counter()
 
     detector = BorderlessTableDetector(
         image_path=CROPPED_OUTPUT_PATH,
@@ -195,23 +222,40 @@ def run_pipeline(image_path: Path, job_id: str) -> ExtractionResult:
         show_plot=False,
         save_plot=True,
     )
-    logger.info("[%s] Structure detection: %d regions", job_id, len(detections))
+
+    timings['structure_detection'] = time.perf_counter() - t_struct_start
+    logger.info(
+        "[%s] Structure detection: %d regions (%.2fs)",
+        job_id, len(detections), timings['structure_detection']
+    )
 
     # -----------------------------------------------------------------------
     # Stage 4 — Data extraction (OCR + validation)
     # -----------------------------------------------------------------------
+    t_extract_start = time.perf_counter()
 
     table_data = extract_table(detector, detections)
+
+    timings['extraction'] = time.perf_counter() - t_extract_start
+    logger.info(
+        "[%s] Extraction done — %d headers, %d rows (%.2fs)",
+        job_id, len(table_data.headers), len(table_data.rows), timings['extraction']
+    )
     
     # -----------------------------------------------------------------------
     # Stage 5: Data postprocessing and validation
     # -----------------------------------------------------------------------
+    t_postproc_start = time.perf_counter()
 
     # NOTE: UnitsHandler return a class breakdown dict, which fails CourseRow validation, so we serialize it before validation.
     serialized_row = [serialize_row(row) for row in table_data.rows]
     serialized_table_data = TableData(headers=table_data.headers, rows=serialized_row, cells=table_data.cells)
     
     normalized_table_data = validate_course_rows(table=serialized_table_data)
+
+    timings['postprocessing'] = time.perf_counter() - t_postproc_start
+
+    t_total = time.perf_counter() - t_start
 
     # -----------------------------------------------------------------------
     # Optional Stage: Data Export
@@ -221,6 +265,8 @@ def run_pipeline(image_path: Path, job_id: str) -> ExtractionResult:
         json.dumps(
             {
                 "image_file": str(image_path),
+                "timings": timings,
+                "total_time": t_total,
                 "headers": normalized_table_data.headers,
                 "rows": normalized_table_data.rows,
             },
@@ -230,6 +276,25 @@ def run_pipeline(image_path: Path, job_id: str) -> ExtractionResult:
         encoding="utf-8"
     )
     print("Table JSON saved: %s" % EXTRACTED_JSON_PATH)
+
+
+    logger.info("[%s] Postprocessing done (%.2fs)", job_id, timings['postprocessing'])
+
+    # -----------------------------------------------------------------------
+    # Total timing
+    # -----------------------------------------------------------------------
+    logger.info(
+        "[%s] ✓ PIPELINE COMPLETE (%.2fs total) | "
+        "yolo_load=%.2fs | yolo_predict=%.2fs | crop=%.2fs | "
+        "structure=%.2fs | extraction=%.2fs | postproc=%.2fs",
+        job_id, t_total,
+        timings.get('yolo_load', 0),
+        timings.get('yolo_predict', 0),
+        timings.get('crop', 0),
+        timings.get('structure_detection', 0),
+        timings.get('extraction', 0),
+        timings.get('postprocessing', 0),
+    )
 
     return ExtractionResult(
         data=normalized_table_data.rows,

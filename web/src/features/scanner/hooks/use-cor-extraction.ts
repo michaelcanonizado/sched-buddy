@@ -91,13 +91,7 @@ export function useCORExtraction(): UseCORExtractionReturn {
     [queryClient],
   )
 
-  /* Clean up a failed job from the backend.
-   *
-   * This effect only calls external systems (API + query cache) — it never
-   * calls setState synchronously in the effect body, satisfying the lint rule.
-   * setState calls inside the async function are treated as async side-effects,
-   * not synchronous cascades.
-   */
+  /* Clean up a failed job from the backend. */
   useEffect(() => {
     if (polledJob?.status !== 'failed') return
 

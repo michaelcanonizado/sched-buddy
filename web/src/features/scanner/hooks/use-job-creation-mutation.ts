@@ -13,8 +13,5 @@ export function useJobCreationMutation() {
     onError: (error) => {
       console.error('Scan COR job creation failed', error)
     },
-    onSuccess: (res) => {
-      console.log('Creating job success: ', res)
-    },
   })
 }

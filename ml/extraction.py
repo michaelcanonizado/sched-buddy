@@ -18,19 +18,25 @@ logger = logging.getLogger(__name__)
 
 HEADER_NAMES = ["code", "subject", "units", "class", "days", "time", "room", "faculty"]
 
+# ---------------------------------------------------------------------------
 # Default course database
+# ---------------------------------------------------------------------------
 logger.info("⚠️  Loading default course database...")
 default_course_db: CourseDatabase = CourseDatabase.from_dir(
     Path(__file__).parent / "databases"
 )
 
-# Fuzzy matching
+# ---------------------------------------------------------------------------
+# Fuzzy matching helpers
+# ---------------------------------------------------------------------------
+
 def _best_fuzzy_match(
     query: str,
     candidates: list[str],
     min_score: int = 0,
 ) -> tuple[str, float]:
     best_name, best_score = query, -1
+    query_norm = query.lower().strip()
     for candidate in candidates:
         score = max(
             fuzz.partial_ratio(query, candidate),
@@ -48,9 +54,17 @@ def match_course(
     min_score: int = 0,
     db: CourseDatabase | None = None,
 ) -> tuple[str, int, str]:
-    return (db or default_course_db).match(extracted_text, min_score)
+    matched_code, score, subject = (db or default_course_db).match(extracted_text, min_score)
+    if score < min_score:
+        logger.info("No match for code %r (best: %r with score %d): sending empty string", extracted_text, matched_code, score)
+        matched_code = ""
+    return matched_code, score, subject
 
-# Header OCR  (runs first, before any data extraction)
+
+# ---------------------------------------------------------------------------
+# Column-handler resolution (runs before cell extraction)
+# ---------------------------------------------------------------------------
+
 def _resolve_column_handlers(
     detector,
     columns: list,
@@ -86,6 +100,9 @@ def _resolve_column_handlers(
 
     return names, handlers
 
+# ---------------------------------------------------------------------------
+# Multiline row expansion
+# ---------------------------------------------------------------------------
 
 def _expand_multiline_rows(
     row: dict[str, Any],
@@ -139,13 +156,13 @@ def extract_table(
     )
     header_dets = [d for d in detections if "header" in d.label.lower()]
 
-    # 1. Header OCR first so handlers are configured before data rows
+    # 1. Header OCR — must run before cell extraction so handlers are ready.
     header_names, handlers = _resolve_column_handlers(detector, columns, header_dets)
     schedule_fields = {
         name for name, h in zip(header_names, handlers) if h.is_schedule_field
     }
 
-    # 2. Cell extraction
+    # 2. Cell extraction — schedule fields kept raw; others parsed immediately.
     cell_records:  list[CellRecord] = []
     rows_as_dicts: list[dict]       = []
     data_rows = rows[1:] if len(rows) > 1 else []

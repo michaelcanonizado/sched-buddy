@@ -1,11 +1,25 @@
 from __future__ import annotations
 
+import sys
 import time
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
+# Import settings first to get the repo root and ml dir, then add both to sys.path
+from core.config import settings
+
+# Add both the workspace root and ml/ to sys.path
+_REPO_ROOT = str(settings.REPO_ROOT)
+_ML_DIR = str(settings.ML_DIR)
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+if _ML_DIR not in sys.path:
+    sys.path.insert(0, _ML_DIR)
+
+# Now import from ml
+from ml.models import CourseRow
 
 # ---------------------------------------------------------------------------
 # Job lifecycle
@@ -27,45 +41,12 @@ class Job(BaseModel):
     error: Optional[str] = None
     result: Optional[ExtractionResult] = None
 
-
-# ---------------------------------------------------------------------------
-# Schedule domain models — mirror the ml/ output format
-# ---------------------------------------------------------------------------
-
-class UnitBreakdown(BaseModel):
-    credit: float = 0.0
-    lec: float = 0.0
-    lab: float = 0.0
-
-
-class TimeRange(BaseModel):
-    start: str = Field(..., examples=["07:30 AM"])
-    end: str = Field(..., examples=["09:00 AM"])
-
-
-class Schedule(BaseModel):
-    days: List[str] = Field(default_factory=list, examples=[["monday", "wednesday"]])
-    time: Optional[TimeRange] = None
-    room: Optional[str] = None
-    faculty: Optional[str] = None
-
-
-class CourseRow(BaseModel):
-    code: Optional[str] = None
-    subject: Optional[str] = None
-    units: Optional[Union[UnitBreakdown, float]] = None
-    class_section: Optional[str] = Field(None, alias="class")
-    schedules: List[Schedule] = Field(default_factory=list)
-
-    model_config = {"populate_by_name": True}
-
-
 # ---------------------------------------------------------------------------
 # Top-level extraction result
 # ---------------------------------------------------------------------------
 
 class ExtractionResult(BaseModel):
-    data: List[Any] = Field(
+    data: List[CourseRow] = Field(
         default_factory=list,
         description="Extracted course rows. Each item is a CourseRow-shaped dict.",
     )

@@ -1,11 +1,4 @@
-export type Day =
-  | 'monday'
-  | 'tuesday'
-  | 'wednesday'
-  | 'thursday'
-  | 'friday'
-  | 'saturday'
-  | 'sunday'
+export type Day = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
 
 /* minutes since midnight (0[00:00] -> 1,439[23:59]) */
 export type Time = number

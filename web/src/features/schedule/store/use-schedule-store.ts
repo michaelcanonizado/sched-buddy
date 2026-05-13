@@ -1,9 +1,9 @@
 import displays, { Display } from '@/features/schedule/lib/displays'
 import { create } from 'zustand'
-import { scheduleData } from '../lib/mock-data'
 import { persist } from 'zustand/middleware'
 import { Day, Meeting, Subject } from '../types'
 import { ExtractionResult } from '@/features/scanner/schemas'
+import { createUniqueColorGenerator } from '../lib/default-meeting-colors'
 
 type DisplayOrientation = 'portrait' | 'landscape'
 
@@ -43,12 +43,14 @@ export const useScheduleStore = create<ScheduleStoreState>()(
           timeResolution: 30,
           showWeekend: false,
         },
-        subjects: scheduleData,
+        subjects: [],
         display: displays[0],
         hasHydrated: false,
         orientation: 'portrait',
         actions: {
           saveCORData: (data) => {
+            const getRandomColor = createUniqueColorGenerator()
+
             const subjects: Subject[] = data.data.map((subject) => {
               const meetings: Meeting[] = subject.schedules.map((meeting) => {
                 return {
@@ -65,7 +67,7 @@ export const useScheduleStore = create<ScheduleStoreState>()(
               return {
                 id: crypto.randomUUID(),
                 title: subject.subject ?? '',
-                color: '#FFE37D',
+                color: getRandomColor(),
                 meetings,
               }
             })

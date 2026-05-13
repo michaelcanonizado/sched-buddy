@@ -18,7 +18,7 @@ const courseScheduleSchema = z.object({
   days: z.array(
     z.enum(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']),
   ),
-  time: z.union([courseTimeSchema, z.null()]),
+  time: courseTimeSchema,
   room: z.union([z.string(), z.null()]),
   faculty: z.union([z.string(), z.null()]),
 })
@@ -34,14 +34,8 @@ const courseRowSchema = z.object({
 export type CourseRow = z.infer<typeof courseRowSchema>
 
 const extractionResultSchema = z.object({
-  image_file: z.string(),
-  ocr_config: z.string(),
-  headers: z.array(z.string()),
-  rows: z.array(courseRowSchema),
-  row_count: z.number(),
-  column_count: z.number(),
+  data: z.array(courseRowSchema),
 })
-
 export type ExtractionResult = z.infer<typeof extractionResultSchema>
 
 export const jobStatusSchema = z.enum(['pending', 'processing', 'done', 'failed'])

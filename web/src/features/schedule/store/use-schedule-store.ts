@@ -49,7 +49,7 @@ export const useScheduleStore = create<ScheduleStoreState>()(
         orientation: 'portrait',
         actions: {
           saveCORData: (data) => {
-            const subjects: Subject[] = data.rows.map((subject) => {
+            const subjects: Subject[] = data.data.map((subject) => {
               const meetings: Meeting[] = subject.schedules.map((meeting) => {
                 return {
                   id: crypto.randomUUID(),

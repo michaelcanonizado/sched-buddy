@@ -28,7 +28,7 @@ type UseCORExtractionReturn = {
   reset: () => Promise<void>
 }
 
-const POLL_TIMEOUT_MS = 1 * 60 * 1000
+const POLL_TIMEOUT_MS = 5 * 60 * 1000
 
 export function useCORExtraction(): UseCORExtractionReturn {
   const queryClient = useQueryClient()

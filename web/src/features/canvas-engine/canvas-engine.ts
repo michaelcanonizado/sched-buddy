@@ -1,5 +1,6 @@
 import {
   Canvas,
+  FabricImage,
   FabricObject,
   FabricText,
   Group,
@@ -84,6 +85,8 @@ export class CanvasEngine {
 
   private DEFAULT_START_TIME = 8 * 60
   private DEFAULT_END_TIME = 17 * 60
+
+  private backgroundImage: FabricImage | null = null
 
   private onObjectModified: SetObjectOverride | null = null
 
@@ -819,6 +822,45 @@ export class CanvasEngine {
     /* Temporary fix! A cleaner solution is to add an id property to FabricObjects and search the canvas to keep it uniform to the codebase */
     if (!this.TIMETABLE_GROUP) return null
     return await this.TIMETABLE_GROUP.clone()
+  }
+
+  async addImage(
+    imageUrl: string,
+    cropPixels: {
+      x: number
+      y: number
+      width: number
+      height: number
+    },
+  ): Promise<void> {
+    const { width: canvasWidth, height: canvasHeight } = this.getCanvasDimenstions()
+
+    if (this.backgroundImage) {
+      this.CANVAS.remove(this.backgroundImage)
+    }
+
+    const img = await FabricImage.fromURL(imageUrl)
+
+    img.set({
+      cropX: cropPixels.x,
+      cropY: cropPixels.y,
+      width: cropPixels.width,
+      height: cropPixels.height,
+      scaleX: canvasWidth / cropPixels.width,
+      scaleY: canvasHeight / cropPixels.height,
+      left: 0,
+      top: 0,
+      originX: 'left',
+      originY: 'top',
+      selectable: false,
+      eventable: false,
+    })
+
+    this.backgroundImage = img
+
+    this.CANVAS.add(img)
+    this.CANVAS.sendObjectToBack(img)
+    this.CANVAS.renderAll()
   }
 
   getCanvasDimenstions() {

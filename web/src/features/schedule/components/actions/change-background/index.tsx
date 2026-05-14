@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -11,7 +10,9 @@ import { TabletSmartphone } from 'lucide-react'
 import { TextHeadingSM, TextBody } from '@/components/text'
 import { cn } from '@/lib/utils'
 import { ComponentClassNameProp } from '@/types'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import AddImage from './add-image'
+import { Input } from '@/components/ui/input'
 
 function Card({
   heading,
@@ -35,35 +36,44 @@ function Card({
   )
 }
 
-function ChangeImage() {
-  return <div className='h-[200px] w-[1000px]'></div>
-}
-
-function ChangeFill() {
-  return <div className='h-[200px] w-[1000px]'></div>
-}
-
 export default function ChangeBackground() {
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<'image' | 'fill' | null>(null)
 
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null
+    if (!file) return
+
+    try {
+      const url = URL.createObjectURL(file)
+      setImageUrl(url)
+    } catch (e) {
+      console.log('Error!: ', e)
+    }
+  }
+
+  const onOpenChangeWrapper = (isOpen: boolean) => {
+    setOpen(isOpen)
+    if (!isOpen) {
+      setTimeout(() => {
+        setImageUrl(null)
+        setSelected(null)
+      }, 100)
+    }
+  }
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(open) => {
-        setOpen(open)
-        if (!open) {
-          setTimeout(() => setSelected(null), 100)
-        }
-      }}
-    >
+    <Dialog open={open} onOpenChange={onOpenChangeWrapper}>
       <DialogTrigger asChild>
         <Button variant='outline'>
           <TabletSmartphone />
           Change Background
         </Button>
       </DialogTrigger>
-      <DialogContent className='sm:max-w-fit'>
+      <DialogContent className='overflow-hidden sm:max-w-fit'>
         <DialogHeader>
           <DialogTitle>Change Background</DialogTitle>
         </DialogHeader>
@@ -73,6 +83,7 @@ export default function ChangeBackground() {
             <div
               onClick={() => {
                 setSelected('image')
+                fileInputRef.current?.click()
               }}
             >
               <Card heading='Image' description='Add an image to the schedule' />
@@ -86,8 +97,17 @@ export default function ChangeBackground() {
             </div>
           </div>
         )}
-        {selected === 'image' && <ChangeImage />}
-        {selected === 'fill' && <ChangeFill />}
+        <Input
+          type='file'
+          accept='image/*'
+          ref={fileInputRef}
+          onChange={handleImageFileChange}
+          className='hidden'
+        />
+        {selected === 'image' && (
+          <AddImage imageUrl={imageUrl ?? ''} setDialogOpen={onOpenChangeWrapper} />
+        )}
+        {selected === 'fill' && <div className='h-[200px] w-[1000px]'></div>}
       </DialogContent>
     </Dialog>
   )

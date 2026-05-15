@@ -25,7 +25,8 @@ export default function ScheduleView() {
   const statesHydrated = hasScheduleContextHydrated && hasCanvasEngineContextHydrated
 
   const scheduleState = useScheduleStore(useShallow((s) => s))
-  const backgroundImageCropArea = useScheduleBackgroundImageCropArea()
+  const scheeduleBackgroundImageCropArea = useScheduleBackgroundImageCropArea()
+
   const canvasViewportState = useCanvasEngineStore(
     useShallow((s) => ({
       zoom: s.zoom,
@@ -54,11 +55,7 @@ export default function ScheduleView() {
 
     const engine = new CanvasEngine(canvasElementRef.current)
     engine.setOnObjectModified(setObjectOverride)
-
     setEngine(engine)
-
-    const { clientWidth, clientHeight } = canvasContainerRef.current
-    engine.resize(clientWidth, clientHeight)
 
     return () => {
       engine.dispose()
@@ -69,15 +66,15 @@ export default function ScheduleView() {
   /* Change the schedule background image on change and on initial load */
   useEffect(() => {
     async function addBackgroundImage() {
-      if (!backgroundImageCropArea || !canvasEngine) return
+      if (!scheeduleBackgroundImageCropArea || !canvasEngine) return
 
       const backgroundImageUrl = await getBackgroundImageDB()
       if (!backgroundImageUrl) return
 
-      await canvasEngine.addBackgroundImage(backgroundImageUrl, backgroundImageCropArea)
+      await canvasEngine.addBackgroundImage(backgroundImageUrl, scheeduleBackgroundImageCropArea)
     }
     addBackgroundImage()
-  }, [backgroundImageCropArea, canvasEngine])
+  }, [scheeduleBackgroundImageCropArea, canvasEngine])
 
   /* Rerender the canvas when the states changes */
   useEffect(

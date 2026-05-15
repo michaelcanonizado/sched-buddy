@@ -91,11 +91,10 @@ export class CanvasEngine {
   private onObjectModified: SetObjectOverride | null = null
 
   constructor(canvas: HTMLCanvasElement) {
-    this.CANVAS = new Canvas(canvas, {
-      width: this.DEFAULT_GRID_WIDTH,
-      height: this.DEFAULT_GRID_HEIGHT,
-      backgroundColor: '#ff0000',
-    })
+    this.CANVAS = new Canvas(canvas)
+    /* Force canvas dimensions to 0 so canvas dimension checking can ignore this initial dimension */
+    this.CANVAS.setDimensions({ width: 0, height: 0 })
+
     this.attachListeners()
   }
 
@@ -151,7 +150,6 @@ export class CanvasEngine {
 
   render(state: ScheduleStoreState, viewport: ViewportState) {
     this.CANVAS.clear()
-
     const defaultTimetableStyle: TimetableStyle = {
       grid: {
         overlap: 10,
@@ -195,45 +193,88 @@ export class CanvasEngine {
     /* Draw the subject meetings on top of the timetable */
     this._drawSubjectMeetings(state.subjects, defaultTimetableStyle, gridBounds, meetingGroup)
 
+    /* Check for a dimension change before setting the canvas dimension */
+    const canvasDimensionChanged = this._canvasDimensionChanged(state.display)
+
     /* Set the dimensions of the canvas */
     this._setCanvasDimension(timetableGroup, state.display)
 
-    this._restoreSavedObjectsState(viewport)
+    if (canvasDimensionChanged) {
+      this._resetAllObjectPosition()
+    } else {
+      this._restoreSavedObjectsState(viewport)
+    }
 
+    this.CANVAS.backgroundColor = '#fb8500'
     this.CANVAS.requestRenderAll()
+  }
+
+  _canvasDimensionChanged(currentDisplay: ScheduleStoreState['display']) {
+    /* Ignore the initial creation and render of the canvas */
+    if (this.CANVAS.getWidth() === 0 || this.CANVAS.getHeight() === 0) {
+      return false
+    }
+
+    if (!currentDisplay) {
+      const usingDefaultDimensions =
+        this.LOGICAL_CANVAS_WIDTH === this.DEFAULT_GRID_WIDTH &&
+        this.LOGICAL_CANVAS_HEIGHT === this.DEFAULT_GRID_HEIGHT
+      // console.log('Canvas dimension changed: ', !usingDefaultDimensions)
+      return !usingDefaultDimensions
+    }
+
+    const widthChanged = currentDisplay.dimensions.width !== this.LOGICAL_CANVAS_WIDTH
+    const heightChanged = currentDisplay.dimensions.height !== this.LOGICAL_CANVAS_HEIGHT
+    // console.log('Canvas dimension changed: ', widthChanged || heightChanged)
+
+    return widthChanged || heightChanged
   }
 
   _restoreSavedObjectsState(viewport: ViewportState) {
     this.CANVAS.getObjects().forEach((obj) => {
-      /* Find objects that we're meant to be saved */
+      /* Find objects that were meant to be saved */
       if (!obj.id || !obj.toSave) return
 
-      /* Search for the object override */
+      /* Search for the saved object override */
       const saved = viewport.objectOverrides[obj.id]
 
-      /* If object was meant to be saved but no override was found (g.g: localStorage was cleared),
-         set a default position. */
+      /* If object was meant to be saved but no override was found (e.g: localStorage was cleared),
+         reset its position. */
       if (saved === undefined) {
-        /* Make timetableGroup span the whole width */
-        if (obj.id === this.TIMETABLE_GROUP_ID) {
-          if (this.LOGICAL_CANVAS_WIDTH <= this.LOGICAL_CANVAS_HEIGHT) {
-            obj.scaleToWidth(this.LOGICAL_CANVAS_WIDTH)
-          } else {
-            /* Some vertical padding so timetable doesnt touch vertical edges */
-            obj.scaleToHeight(this.LOGICAL_CANVAS_HEIGHT - 100)
-          }
-        }
-
-        /* Centered in the canvas */
-        const center = new Point(this.LOGICAL_CANVAS_WIDTH / 2, this.LOGICAL_CANVAS_HEIGHT / 2)
-        obj.setXY(center, 'center', 'center')
-        obj.setCoords()
+        this._resetObjectPosition(obj)
         return
       }
 
       obj.set({ ...saved })
       obj.setCoords()
     })
+  }
+
+  _resetAllObjectPosition() {
+    this.CANVAS.getObjects().forEach((obj) => {
+      if (!obj.id || !obj.toSave) return
+      this._resetObjectPosition(obj)
+      /* Trigger the listener to object positions */
+      this.CANVAS.fire('object:modified', {
+        target: obj,
+      })
+    })
+  }
+
+  _resetObjectPosition(obj: FabricObject) {
+    if (obj.id === this.TIMETABLE_GROUP_ID) {
+      if (this.LOGICAL_CANVAS_WIDTH <= this.LOGICAL_CANVAS_HEIGHT) {
+        obj.scaleToWidth(this.LOGICAL_CANVAS_WIDTH)
+      } else {
+        /* Some vertical padding so timetable doesnt touch vertical edges */
+        obj.scaleToHeight(this.LOGICAL_CANVAS_HEIGHT - 100)
+      }
+    }
+
+    /* Centered in the canvas */
+    const center = new Point(this.LOGICAL_CANVAS_WIDTH / 2, this.LOGICAL_CANVAS_HEIGHT / 2)
+    obj.setXY(center, 'center', 'center')
+    obj.setCoords()
   }
 
   _getTimetableDays(
@@ -588,6 +629,10 @@ export class CanvasEngine {
         width: timetableGroup.getScaledWidth(),
         height: timetableGroup.getScaledHeight(),
       })
+
+      this.LOGICAL_CANVAS_WIDTH = this.DEFAULT_GRID_WIDTH
+      this.LOGICAL_CANVAS_HEIGHT = this.DEFAULT_GRID_HEIGHT
+
       timetableGroup.set({ selectable: false, evented: false })
     } else {
       const width = display.dimensions.width
@@ -595,6 +640,7 @@ export class CanvasEngine {
 
       this.LOGICAL_CANVAS_WIDTH = width
       this.LOGICAL_CANVAS_HEIGHT = height
+
       this.CANVAS.setDimensions({
         width: width,
         height: height,

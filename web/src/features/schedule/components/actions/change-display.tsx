@@ -28,21 +28,16 @@ export default function ChangeDisplay() {
           <DialogDescription>Change the background device</DialogDescription>
         </DialogHeader>
 
-        <div className='flex flex-col gap-2'>
-          <Button variant='outline' onClick={() => setDisplay(null)}>
-            No display
-          </Button>
-          {displays.map((display, index) => {
-            return (
-              <Button
-                key={index}
-                variant='outline'
-                onClick={() => setDisplay(display)}
-              >
-                {display.name}
-              </Button>
-            )
-          })}
+        <div className='max-h-[500px] overflow-y-scroll'>
+          <div className='flex flex-col gap-4 p-8'>
+            {displays.map((display, index) => {
+              return (
+                <Button key={index} variant='outline' onClick={() => setDisplay(display)}>
+                  {display.name}
+                </Button>
+              )
+            })}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

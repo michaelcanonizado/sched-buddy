@@ -218,7 +218,7 @@ export class CanvasEngine {
       this.CANVAS.sendObjectToBack(backgroundImage)
     }
 
-    this.CANVAS.backgroundColor = '#fb8500'
+    // this.CANVAS.backgroundColor = '#fb8500'
     this.CANVAS.requestRenderAll()
   }
 
@@ -275,19 +275,33 @@ export class CanvasEngine {
   }
 
   _resetObjectPosition(obj: FabricObject) {
-    if (obj.id === this.TIMETABLE_GROUP_ID) {
-      if (this.LOGICAL_CANVAS_WIDTH <= this.LOGICAL_CANVAS_HEIGHT) {
-        obj.scaleToWidth(this.LOGICAL_CANVAS_WIDTH)
-      } else {
-        /* Some vertical padding so timetable doesnt touch vertical edges */
-        obj.scaleToHeight(this.LOGICAL_CANVAS_HEIGHT - 100)
-      }
+    if (obj.id !== this.TIMETABLE_GROUP_ID) {
+      /* Centered in the canvas */
+      const center = new Point(this.LOGICAL_CANVAS_WIDTH / 2, this.LOGICAL_CANVAS_HEIGHT / 2)
+      obj.setXY(center, 'center', 'center')
+      obj.setCoords()
     }
 
-    /* Centered in the canvas */
-    const center = new Point(this.LOGICAL_CANVAS_WIDTH / 2, this.LOGICAL_CANVAS_HEIGHT / 2)
-    obj.setXY(center, 'center', 'center')
+    const margin = 100
+    /* Portrait */
+    if (this.LOGICAL_CANVAS_WIDTH <= this.LOGICAL_CANVAS_HEIGHT) {
+      obj.scaleToWidth(this.LOGICAL_CANVAS_WIDTH - margin)
+
+      /* Position at the bottom with margin */
+      const bottomX = this.LOGICAL_CANVAS_WIDTH / 2
+      const bottomY = this.LOGICAL_CANVAS_HEIGHT - obj.getScaledHeight() / 2 - margin / 2
+      obj.setXY(new Point(bottomX, bottomY), 'center', 'center')
+    } else {
+      /* Landscape */
+      obj.scaleToHeight(this.LOGICAL_CANVAS_HEIGHT - margin)
+
+      /* Centered in the canvas */
+      const center = new Point(this.LOGICAL_CANVAS_WIDTH / 2, this.LOGICAL_CANVAS_HEIGHT / 2)
+      obj.setXY(center, 'center', 'center')
+    }
+
     obj.setCoords()
+    return
   }
 
   _getTimetableDays(

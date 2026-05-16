@@ -8,6 +8,7 @@ import { createUniqueColorGenerator } from '../lib/default-meeting-colors'
 type DisplayOrientation = 'portrait' | 'landscape'
 
 type ScheduleStoreActions = {
+  setTitle: (title: string) => void
   saveCORData: (data: ExtractionResult) => void
   addSubject: (subject: Subject) => void
   editSubject: (subject: Subject) => void
@@ -40,6 +41,7 @@ export type BackgroundImageContext = {
 }
 
 export type ScheduleStoreState = {
+  title: string
   settings: Settings
   subjects: Subject[]
   background: {
@@ -56,6 +58,7 @@ export const useScheduleStore = create<ScheduleStoreState>()(
   persist(
     (set, get) =>
       ({
+        title: '',
         settings: {
           timeFormat: '12',
           startOfWeek: 'monday',
@@ -72,6 +75,7 @@ export const useScheduleStore = create<ScheduleStoreState>()(
         hasHydrated: false,
         orientation: 'portrait',
         actions: {
+          setTitle: (title) => set({ title }),
           saveCORData: (data) => {
             const getRandomColor = createUniqueColorGenerator()
 
@@ -139,6 +143,7 @@ export const useScheduleStore = create<ScheduleStoreState>()(
       name: 'schedule-context',
       /* Fields to store in localStorage. Don't serialize actions! It cannot be serialized. */
       partialize: (state) => ({
+        title: state.title,
         subjects: state.subjects,
         display: state.display,
         background: state.background,

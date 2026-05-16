@@ -1,8 +1,10 @@
 import { Button } from '@/components/ui/button'
 import { useCanvasEngine } from '@/features/canvas-engine/use-canvas-engine-store'
 import { ImageDownIcon } from 'lucide-react'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
 export default function ExportSchedule() {
+  const { title } = useScheduleStore()
   const canvasEngine = useCanvasEngine()
 
   const onExport = () => {
@@ -11,12 +13,12 @@ export default function ExportSchedule() {
       return
     }
 
-    const dataUrl = canvasEngine.export()
+    const { dataUrl, format } = canvasEngine.export()
     if (!dataUrl) return
 
     const link = document.createElement('a')
     link.href = dataUrl
-    link.download = 'schedule.png'
+    link.download = `${title}.${format}`
     link.click()
   }
 

@@ -8,43 +8,67 @@ import DeleteSubject from '@/features/schedule/components/actions/delete-subject
 import EditSubject from '@/features/schedule/components/actions/edit-subject'
 import ScheduleView from '@/features/schedule/components/schedule-view'
 import { PlusIcon } from 'lucide-react'
-import { TextBody } from '@/components/text'
+import { TextBody, textHeadingSMClassNames } from '@/components/text'
 import ChangeBackground from '@/features/schedule/components/actions/change-background'
 import { ComponentChildrenProp } from '@/types'
 import ExportSchedule from '@/features/schedule/components/actions/export-schedule'
+import { Input } from '@/components/ui/input'
+import { useScheduleActions, useScheduleStore } from '@/features/schedule/store/use-schedule-store'
+import { cn } from '@/lib/utils'
 
 function ButtonGroup({ children }: ComponentChildrenProp) {
   return <div className='flex flex-col gap-2'>{children}</div>
 }
 
 function Sidebar() {
+  const { title } = useScheduleStore()
+  const { setTitle } = useScheduleActions()
+
   return (
-    <div className='bg-background flex h-fit flex-col gap-8 rounded-xl border-2 p-8'>
-      <ButtonGroup>
-        <TextBody>Timetable</TextBody>
-        <div className='flex flex-col gap-2'>
-          <AddSubject />
-          <EditSubject />
-          <DeleteSubject />
-        </div>
-      </ButtonGroup>
-      <ButtonGroup>
-        <TextBody>Customize</TextBody>
-        <div className='flex flex-col gap-2'>
-          <ChangeBackground />
-          <ChangeDisplay />
-        </div>
-      </ButtonGroup>
-      <ButtonGroup>
-        <TextBody>File</TextBody>
-        <div className='flex flex-col gap-2'>
-          <ExportSchedule />
-          <Button variant='outline'>
-            <PlusIcon />
-            New Schedule
-          </Button>
-        </div>
-      </ButtonGroup>
+    <div
+      className={'bg-background flex h-fit max-w-[300px] flex-col overflow-hidden rounded-2xl'}
+      style={{ boxShadow: 'rgba(16,16,16,0.08) 0px 0px 6px 0px' }}
+    >
+      <div className='bg-brand-yellow/60 w-full px-8 pt-5 pb-5'>
+        <input
+          className={cn(
+            'focus-visible:outline-none',
+            'border-brand-yellow border-b-[3px]',
+            'font-heading text-foreground-100 text-[20px] leading-[120%] font-[500] tracking-[-0.5%]',
+            'm-0 !w-full p-0',
+          )}
+          placeholder='Schedule Title'
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </div>
+      <div className='flex h-fit flex-col gap-8 p-8'>
+        <ButtonGroup>
+          <TextBody>Timetable</TextBody>
+          <div className='flex flex-col gap-2'>
+            <AddSubject />
+            <EditSubject />
+            <DeleteSubject />
+          </div>
+        </ButtonGroup>
+        <ButtonGroup>
+          <TextBody>Customize</TextBody>
+          <div className='flex flex-col gap-2'>
+            <ChangeBackground />
+            <ChangeDisplay />
+          </div>
+        </ButtonGroup>
+        <ButtonGroup>
+          <TextBody>File</TextBody>
+          <div className='flex flex-col gap-2'>
+            <ExportSchedule />
+            <Button variant='outline'>
+              <PlusIcon />
+              New Schedule
+            </Button>
+          </div>
+        </ButtonGroup>
+      </div>
     </div>
   )
 }

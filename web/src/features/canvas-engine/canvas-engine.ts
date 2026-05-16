@@ -890,12 +890,13 @@ export class CanvasEngine {
   }
 
   export() {
+    const format = 'png'
     const dataUrl = this.CANVAS.toDataURL({
-      format: 'png',
-      quality: 3,
-      multiplier: 3,
+      format: format,
+      quality: 1,
+      multiplier: 4,
     })
-    return dataUrl
+    return { dataUrl, format }
   }
 
   async cloneTimetableGroup() {

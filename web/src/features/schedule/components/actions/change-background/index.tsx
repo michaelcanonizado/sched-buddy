@@ -81,45 +81,48 @@ export default function ChangeBackground() {
           <DialogTitle>Change Background</DialogTitle>
         </DialogHeader>
 
-        {selected === null && (
-          <div className='grid grid-cols-[auto_auto] gap-8 p-8 *:grow'>
-            <div
-              onClick={() => {
-                setSelected('image')
-                fileInputRef.current?.click()
-              }}
-            >
-              <Card heading='Image' description='Add an image to the schedule'>
-                <div className='absolute inset-0 flex items-start justify-center p-6'>
-                  <Image
-                    alt='Schedule with background image sample'
-                    src='/mockup-01.png'
-                    width={180}
-                    height={360}
-                    className='object-contain'
-                  />
-                </div>
-              </Card>
+        {
+          /* Nothing selected or Image card clicked, but no image selected */
+          (selected === null || (!imageUrl && selected === 'image')) && (
+            <div className='grid grid-cols-[auto_auto] gap-8 p-8 *:grow'>
+              <div
+                onClick={() => {
+                  setSelected('image')
+                  fileInputRef.current?.click()
+                }}
+              >
+                <Card heading='Image' description='Add an image to the schedule'>
+                  <div className='absolute inset-0 flex items-start justify-center p-6'>
+                    <Image
+                      alt='Schedule with background image sample'
+                      src='/mockup-01.png'
+                      width={180}
+                      height={360}
+                      className='object-contain'
+                    />
+                  </div>
+                </Card>
+              </div>
+              <div
+                onClick={() => {
+                  setSelected('fill')
+                }}
+              >
+                <Card heading='Fill' description='Use a solid color as the background'>
+                  <div className='absolute inset-0 flex items-start justify-center p-6'>
+                    <Image
+                      alt='Schedule with background image sample'
+                      src='/mockup-02.png'
+                      width={180}
+                      height={360}
+                      className='object-contain'
+                    />
+                  </div>
+                </Card>
+              </div>
             </div>
-            <div
-              onClick={() => {
-                setSelected('fill')
-              }}
-            >
-              <Card heading='Fill' description='Use a solid color as the background'>
-                <div className='absolute inset-0 flex items-start justify-center p-6'>
-                  <Image
-                    alt='Schedule with background image sample'
-                    src='/mockup-02.png'
-                    width={180}
-                    height={360}
-                    className='object-contain'
-                  />
-                </div>
-              </Card>
-            </div>
-          </div>
-        )}
+          )
+        }
         <Input
           type='file'
           accept='image/*'
@@ -127,8 +130,8 @@ export default function ChangeBackground() {
           onChange={handleImageFileChange}
           className='hidden'
         />
-        {selected === 'image' && (
-          <AddImage imageUrl={imageUrl ?? ''} setDialogOpen={onOpenChangeWrapper} />
+        {selected === 'image' && imageUrl && (
+          <AddImage imageUrl={imageUrl} setDialogOpen={onOpenChangeWrapper} />
         )}
         {selected === 'fill' && <AddFill setDialogOpen={onOpenChangeWrapper} />}
       </DialogContent>

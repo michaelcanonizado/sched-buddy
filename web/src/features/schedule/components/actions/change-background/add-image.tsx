@@ -1,5 +1,6 @@
 import { TextBody } from '@/components/text'
 import { Button } from '@/components/ui/button'
+import { DialogFooter } from '@/components/ui/dialog'
 import { useCanvasEngine } from '@/features/canvas-engine/use-canvas-engine-store'
 import { setBackgroundImageDB } from '@/features/schedule/db/background-image'
 import { useScheduleActions } from '@/features/schedule/store/use-schedule-store'
@@ -86,26 +87,28 @@ export default function AddImage({
   }
 
   return (
-    <div className='flex flex-col gap-8 p-8'>
-      <div
-        className={cn(
-          'relative h-[500px] w-[750px] min-w-[500px] overflow-hidden rounded-xl',
-          imageUrl.length === 0 ? 'border-border bg-muted border-2' : '',
-        )}
-      >
-        <Cropper
-          image={transformedImageUrl}
-          crop={crop}
-          zoom={zoom}
-          zoomWithScroll={true}
-          aspect={getCanvasAspectRatio()}
-          onCropChange={setCrop}
-          onCropComplete={onCropComplete}
-          onZoomChange={setZoom}
-          classes={{ containerClassName: 'bg-muted' }}
-        />
+    <div className='flex flex-col'>
+      <div className='bg-muted p-8'>
+        <div
+          className={cn(
+            'relative h-[500px] w-[750px] min-w-[500px] overflow-hidden rounded-xl',
+            imageUrl.length === 0 ? 'border-border bg-muted border-2' : '',
+          )}
+        >
+          <Cropper
+            image={transformedImageUrl}
+            crop={crop}
+            zoom={zoom}
+            zoomWithScroll={true}
+            aspect={getCanvasAspectRatio()}
+            onCropChange={setCrop}
+            onCropComplete={onCropComplete}
+            onZoomChange={setZoom}
+            classes={{ containerClassName: 'bg-muted' }}
+          />
+        </div>
       </div>
-      <div className='flex flex-row items-end justify-between'>
+      <DialogFooter className='flex flex-row items-end sm:justify-between'>
         <div className='flex items-end gap-4'>
           <div className='flex flex-col gap-1'>
             <TextBody className='text-center'>Flip</TextBody>
@@ -157,7 +160,7 @@ export default function AddImage({
         <div className=''>
           <Button onClick={handleConfirm}>Confirm</Button>
         </div>
-      </div>
+      </DialogFooter>
     </div>
   )
 }

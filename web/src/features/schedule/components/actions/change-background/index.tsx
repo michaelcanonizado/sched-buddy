@@ -9,26 +9,28 @@ import {
 import { TabletSmartphone } from 'lucide-react'
 import { TextHeadingSM, TextBody } from '@/components/text'
 import { cn } from '@/lib/utils'
-import { ComponentClassNameProp } from '@/types'
+import { ComponentClassNameAndChildrenProp } from '@/types'
 import { useRef, useState } from 'react'
 import AddImage from './add-image'
 import { Input } from '@/components/ui/input'
+import Image from 'next/image'
 
 function Card({
   heading,
   description,
   className,
-}: { heading: string; description: string } & ComponentClassNameProp) {
+  children,
+}: { heading: string; description: string } & ComponentClassNameAndChildrenProp) {
   return (
     <div
       className={cn(
-        'bg-muted flex aspect-square w-[350px] flex-col rounded-lg border *:px-8 *:py-6',
+        'bg-muted flex aspect-square w-[350px] flex-col rounded-lg border',
         'hover:ring-ring hover:cursor-pointer hover:ring-[4px] hover:ring-offset-4',
         className,
       )}
     >
-      <div className='grow'></div>
-      <div className='border-t'>
+      <div className='relative grow overflow-hidden'>{children}</div>
+      <div className='border-t px-8 py-6'>
         <TextHeadingSM>{heading}</TextHeadingSM>
         <TextBody className='text-muted-foreground'>{description}</TextBody>
       </div>
@@ -86,14 +88,34 @@ export default function ChangeBackground() {
                 fileInputRef.current?.click()
               }}
             >
-              <Card heading='Image' description='Add an image to the schedule' />
+              <Card heading='Image' description='Add an image to the schedule'>
+                <div className='absolute inset-0 flex items-start justify-center p-6'>
+                  <Image
+                    alt='Schedule with background image sample'
+                    src='/mockup-01.png'
+                    width={180}
+                    height={360}
+                    className='object-contain'
+                  />
+                </div>
+              </Card>
             </div>
             <div
               onClick={() => {
                 setSelected('fill')
               }}
             >
-              <Card heading='Fill' description='Use a solid color as the background' />
+              <Card heading='Fill' description='Use a solid color as the background'>
+                <div className='absolute inset-0 flex items-start justify-center p-6'>
+                  <Image
+                    alt='Schedule with background image sample'
+                    src='/mockup-02.png'
+                    width={180}
+                    height={360}
+                    className='object-contain'
+                  />
+                </div>
+              </Card>
             </div>
           </div>
         )}

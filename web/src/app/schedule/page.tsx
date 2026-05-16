@@ -8,11 +8,16 @@ import DeleteSubject from '@/features/schedule/components/actions/delete-subject
 import EditSubject from '@/features/schedule/components/actions/edit-subject'
 import { useCanvasEngine } from '@/features/canvas-engine/use-canvas-engine-store'
 import ScheduleView from '@/features/schedule/components/schedule-view'
-import { FolderUpIcon, Image, ImageDownIcon, PlusIcon } from 'lucide-react'
+import { ImageDownIcon, PlusIcon } from 'lucide-react'
 import { TextBody } from '@/components/text'
 import ChangeBackground from '@/features/schedule/components/actions/change-background'
+import { ComponentChildrenProp } from '@/types'
 
-export default function SchedulePage() {
+function ButtonGroup({ children }: ComponentChildrenProp) {
+  return <div className='flex flex-col gap-2'>{children}</div>
+}
+
+function Sidebar() {
   const canvasEngine = useCanvasEngine()
 
   const onExport = () => {
@@ -31,43 +36,51 @@ export default function SchedulePage() {
   }
 
   return (
-    <WidthContainer className='mt-16 mb-8 flex grow'>
-      <div className='flex grow flex-col gap-4 md:flex-row'>
-        <div className='flex flex-col gap-4'>
+    <div className='bg-background flex h-fit flex-col gap-8 rounded-xl border-2 p-8'>
+      <ButtonGroup>
+        <TextBody>Timetable</TextBody>
+        <div className='flex flex-col gap-2'>
           <AddSubject />
           <EditSubject />
           <DeleteSubject />
-          <div className='flex w-full flex-col items-center rounded-lg border-2'>
-            <div className='flex w-full flex-row items-center justify-center gap-2 border-b-2 py-4'>
-              <Image />
-              <TextBody>Customize</TextBody>
-            </div>
-            <div className='flex w-full flex-col gap-2 px-4 pb-4'>
-              <TextBody className='mt-4'>Background</TextBody>
-              <ChangeBackground />
-              <TextBody className='mt-4'>Timetable</TextBody>
-              <ChangeDisplay />
-              <Button variant='outline'>To-implement</Button>
-            </div>
-          </div>
+        </div>
+      </ButtonGroup>
+      <ButtonGroup>
+        <TextBody>Customize</TextBody>
+        <div className='flex flex-col gap-2'>
+          <ChangeBackground />
+          <ChangeDisplay />
+        </div>
+      </ButtonGroup>
+      <ButtonGroup>
+        <TextBody>File</TextBody>
+        <div className='flex flex-col gap-2'>
           <Button variant='outline' onClick={onExport}>
             <ImageDownIcon />
-            Export
-          </Button>
-          <Button variant='outline'>
-            <FolderUpIcon />
-            Import
+            Save as Image
           </Button>
           <Button variant='outline'>
             <PlusIcon />
             New Schedule
           </Button>
         </div>
+      </ButtonGroup>
+    </div>
+  )
+}
 
-        <div className='relative h-full min-h-[600px] grow rounded-xl border-2'>
-          <ScheduleView />
+export default function SchedulePage() {
+  return (
+    <div className='bg-muted flex grow'>
+      <WidthContainer className='mt-16 mb-8 flex grow flex-row'>
+        <div className='flex grow flex-col gap-4 md:flex-row'>
+          <Sidebar />
+
+          <div className='relative h-full min-h-[600px] grow rounded-xl border-2'>
+            <ScheduleView />
+          </div>
         </div>
-      </div>
-    </WidthContainer>
+      </WidthContainer>
+    </div>
   )
 }

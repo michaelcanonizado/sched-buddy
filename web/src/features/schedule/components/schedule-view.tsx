@@ -127,12 +127,9 @@ export default function ScheduleView() {
   return (
     <div
       ref={canvasContainerRef}
-      className={cn(
-        'absolute inset-4 grid place-items-center overflow-scroll rounded-lg',
-        // 'border border-red-500',
-      )}
+      className={cn('absolute inset-4 grid place-items-center overflow-scroll rounded-lg')}
     >
-      <canvas ref={canvasElementRef} className='rounded-lg border-2' />
+      <canvas ref={canvasElementRef} className={'rounded-lg'} />
     </div>
   )
 }

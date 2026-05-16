@@ -6,7 +6,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { TabletSmartphone } from 'lucide-react'
+import { Image as ImageIcon } from 'lucide-react'
 import { TextHeadingSM, TextBody } from '@/components/text'
 import { cn } from '@/lib/utils'
 import { ComponentClassNameAndChildrenProp } from '@/types'
@@ -72,7 +72,7 @@ export default function ChangeBackground() {
     <Dialog open={open} onOpenChange={onOpenChangeWrapper}>
       <DialogTrigger asChild>
         <Button variant='outline'>
-          <TabletSmartphone />
+          <ImageIcon />
           Change Background
         </Button>
       </DialogTrigger>

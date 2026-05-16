@@ -6,35 +6,18 @@ import AddSubject from '@/features/schedule/components/actions/add-subject'
 import ChangeDisplay from '@/features/schedule/components/actions/change-display'
 import DeleteSubject from '@/features/schedule/components/actions/delete-subject'
 import EditSubject from '@/features/schedule/components/actions/edit-subject'
-import { useCanvasEngine } from '@/features/canvas-engine/use-canvas-engine-store'
 import ScheduleView from '@/features/schedule/components/schedule-view'
-import { ImageDownIcon, PlusIcon } from 'lucide-react'
+import { PlusIcon } from 'lucide-react'
 import { TextBody } from '@/components/text'
 import ChangeBackground from '@/features/schedule/components/actions/change-background'
 import { ComponentChildrenProp } from '@/types'
+import ExportSchedule from '@/features/schedule/components/actions/export-schedule'
 
 function ButtonGroup({ children }: ComponentChildrenProp) {
   return <div className='flex flex-col gap-2'>{children}</div>
 }
 
 function Sidebar() {
-  const canvasEngine = useCanvasEngine()
-
-  const onExport = () => {
-    if (!canvasEngine) {
-      console.warn('Trying to export but no CanvasEngine in store')
-      return
-    }
-
-    const dataUrl = canvasEngine.export()
-    if (!dataUrl) return
-
-    const link = document.createElement('a')
-    link.href = dataUrl
-    link.download = 'schedule.png'
-    link.click()
-  }
-
   return (
     <div className='bg-background flex h-fit flex-col gap-8 rounded-xl border-2 p-8'>
       <ButtonGroup>
@@ -55,10 +38,7 @@ function Sidebar() {
       <ButtonGroup>
         <TextBody>File</TextBody>
         <div className='flex flex-col gap-2'>
-          <Button variant='outline' onClick={onExport}>
-            <ImageDownIcon />
-            Save as Image
-          </Button>
+          <ExportSchedule />
           <Button variant='outline'>
             <PlusIcon />
             New Schedule

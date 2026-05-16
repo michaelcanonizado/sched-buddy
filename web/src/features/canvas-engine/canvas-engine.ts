@@ -87,7 +87,7 @@ export class CanvasEngine {
   private DEFAULT_START_TIME = 8 * 60
   private DEFAULT_END_TIME = 17 * 60
 
-  private DEFAULT_CANVAS_FILL = '#FFFFFF'
+  private DEFAULT_CANVAS_FILL = '#fbfaf9'
   private BACKGROUND_IMAGE: FabricImage | null = null
 
   private onObjectModified: SetObjectOverride | null = null
@@ -919,7 +919,7 @@ export class CanvasEngine {
     imageUrl: string,
     backgroundImageContext: BackgroundImageContext,
   ): Promise<void> {
-    this.CANVAS.backgroundColor = '#ffffff'
+    this.CANVAS.backgroundColor = this.DEFAULT_CANVAS_FILL
 
     const cropPixels = backgroundImageContext.cropArea
     const originalDimension = backgroundImageContext.originalDimension

@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -32,9 +33,11 @@ export default function ChangeDisplay() {
           <div className='flex flex-col gap-4 p-8'>
             {displays.map((display, index) => {
               return (
-                <Button key={index} variant='outline' onClick={() => setDisplay(display)}>
-                  {display.name}
-                </Button>
+                <DialogClose key={index} asChild>
+                  <Button variant='outline' onClick={() => setDisplay(display)}>
+                    {display.name}
+                  </Button>
+                </DialogClose>
               )
             })}
           </div>

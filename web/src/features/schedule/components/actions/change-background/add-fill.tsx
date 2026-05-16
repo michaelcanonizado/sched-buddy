@@ -1,18 +1,14 @@
-import { TimetableSnapshot } from '@/features/canvas-engine/canvas-engine'
 import { useCanvasEngine } from '@/features/canvas-engine/use-canvas-engine-store'
 import { cn } from '@/lib/utils'
-import { ComponentChildrenProp, ComponentClassNameProp } from '@/types'
+import { ComponentClassNameProp } from '@/types'
 import Image from 'next/image'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import {
   ColorArea,
   ColorField,
   ColorPicker as Picker,
   ColorSlider,
-  ColorSwatch,
-  ColorSwatchPicker,
-  ColorSwatchPickerItem,
   ColorThumb,
   SliderTrack,
 } from '@/components/ui/color'
@@ -22,74 +18,33 @@ import { TextBody } from '@/components/text'
 import { Button } from '@/components/ui/button'
 import { DialogFooter } from '@/components/ui/dialog'
 
-interface MimicCanvasProps {
-  snapshot: TimetableSnapshot
-  backgroundColor: string
-}
-
 function MimicCanvas({
-  snapshot,
   backgroundColor,
   className,
-}: MimicCanvasProps & ComponentClassNameProp) {
-  const wrapperRef = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState<number | null>(null)
-
-  const {
-    imageSrc,
-    left,
-    top,
-    scaleX,
-    scaleY,
-    angle,
-    width: groupW,
-    height: groupH,
-    canvasWidth,
-    canvasHeight,
-  } = snapshot
-
-  /* Compute wrappe -> logical scale from the container's rendered width.
-  ResizeObserver keeps it correct if the dialog/container resizes. */
-  useEffect(() => {
-    if (!wrapperRef.current) return
-    const observer = new ResizeObserver(([entry]) => {
-      setScale(entry.contentRect.width / canvasWidth)
-    })
-    observer.observe(wrapperRef.current)
-    return () => observer.disconnect()
-  }, [canvasWidth])
-
+  timetableImageUrl,
+}: {
+  timetableImageUrl: string | null
+  backgroundColor: string
+} & ComponentClassNameProp) {
   return (
     <div
-      ref={wrapperRef}
-      className={cn('border-2', className)}
-      style={{
-        position: 'relative',
-        width: '100%',
-        aspectRatio: `${canvasWidth} / ${canvasHeight}`,
-        overflow: 'hidden',
-        backgroundColor,
-      }}
+      className={cn('grid size-full place-items-center p-4', className)}
+      style={{ backgroundColor }}
     >
-      {scale !== null && (
-        <Image
-          src={imageSrc}
-          alt='timetable'
-          draggable={false}
-          /* a data-URL is passed, no Next.js optimization needed */
-          unoptimized
-          width={groupW * scaleX * scale}
-          height={groupH * scaleY * scale}
-          style={{
-            position: 'absolute',
-            left: left * scale,
-            top: top * scale,
-            transform: `rotate(${angle}deg)`,
-            transformOrigin: 'top left',
-            display: 'block',
-          }}
-        />
-      )}
+      <div className='relative aspect-square h-full overflow-hidden rounded-sm'>
+        {timetableImageUrl ? (
+          <Image
+            src={timetableImageUrl}
+            alt='timetable'
+            draggable={false}
+            unoptimized
+            fill
+            className='object-contain'
+          />
+        ) : (
+          <div className='bg-muted size-full' />
+        )}
+      </div>
     </div>
   )
 }
@@ -113,7 +68,7 @@ function ColorPicker({ onChange, value }: { value: Color; onChange: (value: Colo
         </ColorSlider>
       </div>
       <div className='flex w-full flex-col gap-1 *:grow'>
-        <TextBody className='text-center'>Hex</TextBody>
+        <TextBody className='text-center font-semibold'>Hex</TextBody>
         <ColorField className='flex flex-col gap-2' aria-label='hex color'>
           <ColorInput className={cn(inputClassNames, 'text-center')} />
         </ColorField>
@@ -122,36 +77,44 @@ function ColorPicker({ onChange, value }: { value: Color; onChange: (value: Colo
   )
 }
 
+function toHex(color: Color) {
+  return `#${color.toHexInt().toString(16).padStart(6, '0')}`
+}
+
 export default function AddFill({ setDialogOpen }: { setDialogOpen: (open: boolean) => void }) {
   const canvasEngine = useCanvasEngine()
   const [backgroundColor, setBackgroundColor] = useState<Color>(parseColor('#ffffff'))
 
-  const snapshot = useMemo(() => {
+  const timetableImageUrl = useMemo(() => {
     if (!canvasEngine) return null
-    const snap = canvasEngine.getTimetableSnapshot()
-    if (!snap) return null
-    const { width: canvasWidth, height: canvasHeight } = canvasEngine.getCanvasDimenstions()
-    return { ...snap, canvasWidth, canvasHeight }
+    return canvasEngine.getTimetableImageUrl()
   }, [canvasEngine])
+
+  function onConfirm() {
+    if (!canvasEngine) return
+    canvasEngine.addBackgroundFill(toHex(backgroundColor))
+    setDialogOpen(false)
+  }
 
   return (
     <>
-      <div className='bg-muted h-fit max-h-[650px] w-[600px] overflow-y-scroll'>
+      <div className='bg-muted max-h-[650px] min-h-[300px] max-w-[600px] min-w-[300px] overflow-y-scroll'>
         <div className='flex flex-col gap-4 p-8'>
-          <div className=''>
-            {snapshot && (
+          <div className='flex flex-col gap-2'>
+            <TextBody className='text-center font-semibold'>Color Preview</TextBody>
+            <div className='h-[300px] w-[500px]'>
               <MimicCanvas
-                className='rounded-lg'
-                snapshot={snapshot}
-                backgroundColor={`#${backgroundColor.toHexInt().toString(16).padStart(6, '0')}`}
+                timetableImageUrl={timetableImageUrl}
+                backgroundColor={toHex(backgroundColor)}
+                className='grow rounded-lg'
               />
-            )}
+            </div>
           </div>
           <ColorPicker value={backgroundColor} onChange={setBackgroundColor} />
         </div>
       </div>
       <DialogFooter>
-        <Button>Confirm</Button>
+        <Button onClick={onConfirm}>Confirm</Button>
       </DialogFooter>
     </>
   )

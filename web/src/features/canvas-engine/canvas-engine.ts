@@ -17,19 +17,6 @@ import { Day, Meeting, Time } from '../schedule/types'
 import { Display } from '../schedule/lib/displays'
 import { SetObjectOverride, ViewportState } from './use-canvas-engine-store'
 
-export interface TimetableSnapshot {
-  imageSrc: string
-  left: number
-  top: number
-  scaleX: number
-  scaleY: number
-  angle: number
-  width: number
-  height: number
-  canvasWidth: number
-  canvasHeight: number
-}
-
 type TimetableStyle = {
   grid: {
     overlap: number
@@ -917,6 +904,8 @@ export class CanvasEngine {
       return
     }
 
+    this.CANVAS.backgroundColor = '#ffffff'
+
     const cropPixels = backgroundImageContext.cropArea
     const originalDimension = backgroundImageContext.originalDimension
 
@@ -925,6 +914,7 @@ export class CanvasEngine {
     /* If there is already an existing image, remove it */
     if (this.BACKGROUND_IMAGE) {
       this.CANVAS.remove(this.BACKGROUND_IMAGE)
+      this.BACKGROUND_IMAGE = null
     }
 
     /* Create image object */
@@ -976,19 +966,20 @@ export class CanvasEngine {
     this.CANVAS.renderAll()
   }
 
-  getTimetableSnapshot(): Omit<TimetableSnapshot, 'canvasWidth' | 'canvasHeight'> | null {
-    if (!this.TIMETABLE_GROUP) return null
-    const timetableGroup = this.TIMETABLE_GROUP
-    return {
-      imageSrc: timetableGroup.toDataURL({ multiplier: 1 }),
-      left: timetableGroup.left ?? 0,
-      top: timetableGroup.top ?? 0,
-      scaleX: timetableGroup.scaleX ?? 1,
-      scaleY: timetableGroup.scaleY ?? 1,
-      angle: timetableGroup.angle ?? 0,
-      width: timetableGroup.width ?? 0,
-      height: timetableGroup.height ?? 0,
+  addBackgroundFill(hex: string) {
+    /* If there is a background image, remove it */
+    if (this.BACKGROUND_IMAGE) {
+      this.CANVAS.remove(this.BACKGROUND_IMAGE)
+      this.BACKGROUND_IMAGE = null
     }
+
+    this.CANVAS.backgroundColor = hex
+    this.CANVAS.requestRenderAll()
+  }
+
+  getTimetableImageUrl() {
+    if (!this.TIMETABLE_GROUP) return null
+    return this.TIMETABLE_GROUP.toDataURL({ multiplier: 1 })
   }
 
   getCanvasDimenstions() {

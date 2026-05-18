@@ -105,7 +105,7 @@ class DaysHandler(ColumnHandler):
 
     _DAY_ALIASES: dict[str, list[str]] = {
         "monday":    ["Mon", "M"],
-        "tuesday":   ["Tue", "Tu", "T"],
+        "tuesday":   ["Tue", "Tu", "T", "Т", "т"], # add common OCR misreads
         "wednesday": ["Wed", "W"],
         "thursday":  ["Thu", "Th"],
         "friday":    ["Fri", "F"],

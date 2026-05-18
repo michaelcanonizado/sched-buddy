@@ -14,11 +14,12 @@ jdeskew
 pyyaml>=6.0
 
 # Table Structure Recognition model
-git+https://github.com/huggingface/transformers.git
+transformers<5.0
+surya-ocr
 timm
 matplotlib
 Pillow
-pytesseract
+
 
 # Data Validation
 pydantic

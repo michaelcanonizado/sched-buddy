@@ -2,7 +2,7 @@ import { CanvasEngine } from '@/features/canvas-engine/canvas-engine'
 import { useEffect, useRef } from 'react'
 import {
   useScheduleBackgroundImageContext,
-  useScheduleDisplay,
+  useScheduleDimension,
   useScheduleHasHydrated,
   useScheduleStore,
 } from '../store/use-schedule-store'
@@ -27,7 +27,7 @@ export default function ScheduleView() {
 
   const scheduleState = useScheduleStore(useShallow((s) => s))
   const scheduleBackgroundImageContext = useScheduleBackgroundImageContext()
-  const scheduleDisplay = useScheduleDisplay()
+  const scheduleDimension = useScheduleDimension()
 
   const canvasViewportState = useCanvasEngineStore(
     useShallow((s) => ({
@@ -85,7 +85,7 @@ export default function ScheduleView() {
     addBackgroundImage()
     /* scheduleDisplay is added here so that the image will be readded to the canvas.
     canvasEngine.render will not save the image object in the canvas if the display has changed */
-  }, [scheduleBackgroundImageContext, canvasEngine, scheduleDisplay])
+  }, [scheduleBackgroundImageContext, canvasEngine, scheduleDimension])
 
   /* Rerender the canvas when the states changes */
   useEffect(

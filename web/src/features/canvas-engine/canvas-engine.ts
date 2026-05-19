@@ -198,10 +198,10 @@ export class CanvasEngine {
     this._drawSubjectMeetings(state.subjects, defaultTimetableStyle, gridBounds, meetingGroup)
 
     /* Check for a dimension change before setting the canvas dimension */
-    const canvasDimensionChanged = this._canvasDimensionChanged(state.display)
+    const canvasDimensionChanged = this._canvasDimensionChanged(state.dimension)
 
     /* Set the dimensions of the canvas */
-    this._setCanvasDimension(timetableGroup, state.display)
+    this._setCanvasDimension(timetableGroup, state.dimension)
 
     if (canvasDimensionChanged) {
       this._resetAllObjectPosition()
@@ -231,13 +231,13 @@ export class CanvasEngine {
     this.CANVAS.requestRenderAll()
   }
 
-  _canvasDimensionChanged(currentDisplay: ScheduleStoreState['display']) {
+  _canvasDimensionChanged(currentDimension: ScheduleStoreState['dimension']) {
     /* Ignore the initial creation and render of the canvas */
     if (this.CANVAS.getWidth() === 0 || this.CANVAS.getHeight() === 0) {
       return false
     }
 
-    if (!currentDisplay) {
+    if (!currentDimension) {
       const usingDefaultDimensions =
         this.LOGICAL_CANVAS_WIDTH === this.DEFAULT_GRID_WIDTH &&
         this.LOGICAL_CANVAS_HEIGHT === this.DEFAULT_GRID_HEIGHT
@@ -245,8 +245,8 @@ export class CanvasEngine {
       return !usingDefaultDimensions
     }
 
-    const widthChanged = currentDisplay.dimensions.width !== this.LOGICAL_CANVAS_WIDTH
-    const heightChanged = currentDisplay.dimensions.height !== this.LOGICAL_CANVAS_HEIGHT
+    const widthChanged = currentDimension.width !== this.LOGICAL_CANVAS_WIDTH
+    const heightChanged = currentDimension.height !== this.LOGICAL_CANVAS_HEIGHT
     // console.log('Canvas dimension changed: ', widthChanged || heightChanged)
 
     return widthChanged || heightChanged
@@ -659,8 +659,8 @@ export class CanvasEngine {
     }
   }
 
-  _setCanvasDimension(timetableGroup: Group, display: Display | null) {
-    if (!display) {
+  _setCanvasDimension(timetableGroup: Group, dimension: ScheduleStoreState['dimension'] | null) {
+    if (!dimension) {
       this.CANVAS.setDimensions({
         width: timetableGroup.getScaledWidth(),
         height: timetableGroup.getScaledHeight(),
@@ -671,8 +671,8 @@ export class CanvasEngine {
 
       timetableGroup.set({ selectable: false, evented: false })
     } else {
-      const width = display.dimensions.width
-      const height = display.dimensions.height
+      const width = dimension.width
+      const height = dimension.height
 
       this.LOGICAL_CANVAS_WIDTH = width
       this.LOGICAL_CANVAS_HEIGHT = height

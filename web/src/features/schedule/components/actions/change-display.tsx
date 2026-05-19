@@ -13,7 +13,7 @@ import displays from '@/features/schedule/lib/displays'
 import { useScheduleActions } from '@/features/schedule/store/use-schedule-store'
 
 export default function ChangeDisplay() {
-  const { setDisplay } = useScheduleActions()
+  const { setDimension } = useScheduleActions()
 
   return (
     <Dialog>
@@ -34,7 +34,15 @@ export default function ChangeDisplay() {
             {displays.map((display, index) => {
               return (
                 <DialogClose key={index} asChild>
-                  <Button variant='outline' onClick={() => setDisplay(display)}>
+                  <Button
+                    variant='outline'
+                    onClick={() =>
+                      setDimension({
+                        width: display.dimensions.width,
+                        height: display.dimensions.height,
+                      })
+                    }
+                  >
                     {display.name}
                   </Button>
                 </DialogClose>

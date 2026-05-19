@@ -1,11 +1,8 @@
-import displays, { Display } from '@/features/schedule/lib/displays'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { Day, Meeting, Subject } from '../types'
 import { ExtractionResult } from '@/features/scanner/schemas'
 import { createUniqueColorGenerator } from '../lib/default-meeting-colors'
-
-type DisplayOrientation = 'portrait' | 'landscape'
 
 type ScheduleStoreActions = {
   setTitle: (title: string) => void
@@ -15,8 +12,7 @@ type ScheduleStoreActions = {
   deleteSubject: (subject: Subject) => void
   setBackgroundImageContext: (context: BackgroundImageContext | null) => void
   setBackgroundFill: (hex: string | null) => void
-  setDisplay: (display: Display | null) => void
-  setOrientation: (orientation: DisplayOrientation) => void
+  setDimension: (dimension: Dimension) => void
   setHasHydrated: () => void
 }
 
@@ -40,6 +36,11 @@ export type BackgroundImageContext = {
   }
 }
 
+export type Dimension = {
+  width: number
+  height: number
+}
+
 export type ScheduleStoreState = {
   title: string
   settings: Settings
@@ -48,8 +49,9 @@ export type ScheduleStoreState = {
     imageContext: BackgroundImageContext | null
     fill: string | null
   }
-  display: Display | null
-  orientation: DisplayOrientation
+
+  dimension: Dimension
+
   hasHydrated: boolean
   actions: ScheduleStoreActions
 }
@@ -71,9 +73,11 @@ export const useScheduleStore = create<ScheduleStoreState>()(
           imageContext: null,
           fill: '#e3463b',
         },
-        display: displays[0],
+        dimension: {
+          width: 1125,
+          height: 2436,
+        },
         hasHydrated: false,
-        orientation: 'portrait',
         actions: {
           setTitle: (title) => set({ title }),
           saveCORData: (data) => {
@@ -134,8 +138,7 @@ export const useScheduleStore = create<ScheduleStoreState>()(
             set({ background: { ...get().background, imageContext: context } }),
           setBackgroundFill: (hex) => set({ background: { ...get().background, fill: hex } }),
 
-          setDisplay: (display) => set({ display }),
-          setOrientation: (orientation) => set({ orientation }),
+          setDimension: (dimension) => set({ dimension }),
           setHasHydrated: () => set({ hasHydrated: true }),
         },
       }) as ScheduleStoreState,
@@ -145,9 +148,8 @@ export const useScheduleStore = create<ScheduleStoreState>()(
       partialize: (state) => ({
         title: state.title,
         subjects: state.subjects,
-        display: state.display,
+        dimension: state.dimension,
         background: state.background,
-        orientation: state.orientation,
         hasHydrated: state.hasHydrated,
       }),
       onRehydrateStorage: () => (state) => {
@@ -165,8 +167,8 @@ export function useScheduleBackgroundImageContext() {
   return useScheduleStore((state) => state.background.imageContext)
 }
 
-export function useScheduleDisplay() {
-  return useScheduleStore((state) => state.display)
+export function useScheduleDimension() {
+  return useScheduleStore((state) => state.dimension)
 }
 
 export function useScheduleActions() {

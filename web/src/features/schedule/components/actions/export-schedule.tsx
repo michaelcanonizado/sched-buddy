@@ -16,9 +16,10 @@ export default function ExportSchedule() {
     const { dataUrl, format } = canvasEngine.export()
     if (!dataUrl) return
 
+    const fileName = title.length !== 0 ? title : 'schedule'
     const link = document.createElement('a')
     link.href = dataUrl
-    link.download = `${title}.${format}`
+    link.download = `${fileName}.${format}`
     link.click()
   }
 

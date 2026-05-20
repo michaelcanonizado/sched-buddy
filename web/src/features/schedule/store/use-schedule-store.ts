@@ -37,6 +37,7 @@ export type BackgroundImageContext = {
 }
 
 export type Dimension = {
+  id: string | 'custom'
   width: number
   height: number
 }
@@ -74,6 +75,7 @@ export const useScheduleStore = create<ScheduleStoreState>()(
           fill: '#e3463b',
         },
         dimension: {
+          id: 'custom',
           width: 1125,
           height: 2436,
         },

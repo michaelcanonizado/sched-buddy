@@ -16,9 +16,13 @@ import {
   getDisplayDimensions,
   Orientation,
 } from '@/features/schedule/lib/displays'
-import { Dimension, useScheduleActions } from '@/features/schedule/store/use-schedule-store'
+import {
+  Dimension,
+  useScheduleActions,
+  useScheduleDimension,
+} from '@/features/schedule/store/use-schedule-store'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { ComponentChildrenProp, ComponentClassNameProp } from '@/types'
 import { TextBody, TextSub } from '@/components/text'
@@ -55,38 +59,41 @@ function DimensionPreview({
 function CustomDisplay({
   id,
   onValueChange,
+  defaultDimension,
 }: {
   id: string
   onValueChange: (dimension: Dimension) => void
+  defaultDimension: Dimension
 }) {
-  const [width, setWidth] = useState(1080)
-  const [height, setHeight] = useState(1920)
-  const orientation: Orientation = width <= height ? 'portrait' : 'landscape'
+  const displayId = 'custom'
+  const defaultWidth = defaultDimension.id === displayId ? defaultDimension.width : 402
+  const defaultHeight = defaultDimension.id === displayId ? defaultDimension.height : 874
 
-  const dimension: Dimension = { width, height }
+  const [width, setWidth] = useState(defaultWidth)
+  const [height, setHeight] = useState(defaultHeight)
+  const orientation: Orientation = width <= height ? 'portrait' : 'landscape'
 
   function handleOrientationChange(value: Orientation) {
     setWidth(height)
     setHeight(width)
-    onValueChange({ width: height, height: width })
+    onValueChange({ width: height, height: width, id: displayId })
   }
 
   function handleWidthChange(value: number) {
     const clamped = Math.max(1, value || 1)
     setWidth(clamped)
-    onValueChange({ width: clamped, height })
+    onValueChange({ width: clamped, height, id: displayId })
   }
-
   function handleHeightChange(value: number) {
     const clamped = Math.max(1, value || 1)
     setHeight(clamped)
-    onValueChange({ width, height: clamped })
+    onValueChange({ width, height: clamped, id: displayId })
   }
 
   return (
     <ChangeDisplayTab
       id={id}
-      dimension={dimension}
+      dimension={{ width, height, id: displayId }}
       orientation={orientation}
       setOrientation={handleOrientationChange}
     >
@@ -122,19 +129,27 @@ function CustomDisplay({
 function PresetDisplays({
   id,
   onValueChange,
+  defaultDimension,
 }: {
   id: string
+  defaultDimension: Dimension
   onValueChange: (dimension: Dimension) => void
 }) {
   const allDisplays = displayGroups.flatMap((group) => group.displays)
-  const defaultDisplay = displayGroups[0].displays[0]
+  const defaultDisplay =
+    allDisplays.find((d) => d.name === defaultDimension.id) ?? displayGroups[0].displays[0]
 
-  const [orientation, setOrientation] = useState<Orientation>(defaultDisplay.defaultOrientation)
+  const [orientation, setOrientation] = useState<Orientation>(
+    defaultDimension.height > defaultDimension.width ? 'portrait' : 'landscape',
+  )
   const [display, setDisplay] = useState<Display>(defaultDisplay)
 
   function handleDisplayChange(value: string) {
     const found = allDisplays.find((d) => d.name === value) ?? defaultDisplay
-    const newDimension = getDisplayDimensions(found.dimensions, found.defaultOrientation)
+    const newDimension = {
+      ...getDisplayDimensions(found.dimensions, found.defaultOrientation),
+      id: found.name,
+    }
 
     /* Update local state */
     setDisplay(found)
@@ -145,7 +160,10 @@ function PresetDisplays({
   }
 
   function handleOrientationChange(value: Orientation) {
-    const newDimension = getDisplayDimensions(display.dimensions, value)
+    const newDimension = {
+      ...getDisplayDimensions(display.dimensions, value),
+      id: display.name,
+    }
     /* Update local state */
     setOrientation(value)
 
@@ -156,7 +174,7 @@ function PresetDisplays({
   return (
     <ChangeDisplayTab
       id={id}
-      dimension={getDisplayDimensions(display.dimensions, orientation)}
+      dimension={{ ...getDisplayDimensions(display.dimensions, orientation), id: display.name }}
       orientation={orientation}
       setOrientation={handleOrientationChange}
     >
@@ -164,11 +182,11 @@ function PresetDisplays({
         <TextBody>Dimension</TextBody>
         <TextSub className='text-muted-foreground'>Choose a device</TextSub>
       </div>
-      <Select onValueChange={handleDisplayChange} defaultValue={defaultDisplay.name}>
+      <Select onValueChange={handleDisplayChange} defaultValue={display.name}>
         <SelectTrigger className='w-full'>
           <SelectValue placeholder='Select a device' />
         </SelectTrigger>
-        <SelectContent className='z-[99999]' position='popper'>
+        <SelectContent className='z-99999' position='popper'>
           {displayGroups.map((group, groupIndex) => {
             return (
               <SelectGroup key={`${group.name}.${groupIndex}`}>
@@ -244,12 +262,16 @@ function ChangeDisplayTab({
 
 export default function ChangeDisplay() {
   const { setDimension: setScheduleDimension } = useScheduleActions()
+  const defaultDimension = useScheduleDimension()
 
-  const defaultPresetDimension = getDisplayDimensions(
-    displayGroups[0].displays[0].dimensions,
-    displayGroups[0].displays[0].defaultOrientation,
-  )
-  const defaultCustomDimension: Dimension = { width: 1080, height: 1920 }
+  const defaultPresetDimension = {
+    ...getDisplayDimensions(
+      displayGroups[0].displays[0].dimensions,
+      displayGroups[0].displays[0].defaultOrientation,
+    ),
+    id: displayGroups[0].displays[0].name,
+  }
+  const defaultCustomDimension: Dimension = { width: 1081, height: 1920, id: 'custom' }
 
   const [dimension, setDimension] = useState<Dimension>(defaultPresetDimension)
   const [presetDimension, setPresetDimension] = useState<Dimension>(defaultPresetDimension)
@@ -289,6 +311,7 @@ export default function ChangeDisplay() {
             </TabsList>
             <PresetDisplays
               id='presets'
+              defaultDimension={defaultDimension}
               onValueChange={(dim) => {
                 setPresetDimension(dim)
                 setDimension(dim)
@@ -296,6 +319,7 @@ export default function ChangeDisplay() {
             />
             <CustomDisplay
               id='custom'
+              defaultDimension={defaultDimension}
               onValueChange={(dim) => {
                 setCustomDimension(dim)
                 setDimension(dim)

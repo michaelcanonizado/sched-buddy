@@ -5,7 +5,7 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
 import { Select as SelectPrimitive } from 'radix-ui'
 
 import { cn } from '@/lib/utils'
-import { textBodyClassNames } from '../text'
+import { textBodyClassNames, textSubClassNames } from '../text'
 
 function Select({ ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) {
   return <SelectPrimitive.Root data-slot='select' {...props} />
@@ -111,7 +111,7 @@ function SelectLabel({ className, ...props }: React.ComponentProps<typeof Select
   return (
     <SelectPrimitive.Label
       data-slot='select-label'
-      className={cn('text-muted-foreground px-2 py-1.5 text-xs', className)}
+      className={cn(textSubClassNames, 'text-muted-foreground px-2 py-1.5', className)}
       {...props}
     />
   )

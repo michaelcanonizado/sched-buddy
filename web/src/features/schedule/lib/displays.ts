@@ -1,187 +1,204 @@
+export type Orientation = 'portrait' | 'landscape'
+
 export type Display = {
   name: string
-  type: 'phone' | 'tablet' | 'custom'
-  /* 
-  Rules:
-  1) Unit is in pixels
-  2) Portrait and landscape is determined if height is greater than width
-  */
-  dimensions: {
-    width: number
-    height: number
+  /**
+   * [shortSide, longSide]
+   */
+  dimensions: [number, number]
+  defaultOrientation: Orientation
+}
+
+export type DisplayGroup = {
+  name: string
+  displays: Display[]
+}
+
+export function getDisplayDimensions(
+  dimensions: Display['dimensions'],
+  orientation: Orientation,
+): { width: number; height: number } {
+  const [a, b] = dimensions
+
+  const max = Math.max(a, b)
+  const min = Math.min(a, b)
+
+  const width = orientation === 'portrait' ? min : max
+  const height = orientation === 'portrait' ? max : min
+
+  return {
+    width,
+    height,
   }
 }
 
-const displays: Display[] = [
+export const displayGroups: DisplayGroup[] = [
   {
-    name: 'iPhone 11 Pro',
-    type: 'phone',
-    dimensions: {
-      width: 1125,
-      height: 2436,
-    },
-  },
-  {
-    name: 'iPhone 11 Pro (Landscape)',
-    type: 'phone',
-    dimensions: {
-      width: 2436,
-      height: 1125,
-    },
-  },
-
-  {
-    name: 'iPhone 14',
-    type: 'phone',
-    dimensions: {
-      width: 1170,
-      height: 2532,
-    },
-  },
-  {
-    name: 'iPhone 14 (Landscape)',
-    type: 'phone',
-    dimensions: {
-      width: 2532,
-      height: 1170,
-    },
-  },
-
-  {
-    name: 'iPhone 15 Pro Max',
-    type: 'phone',
-    dimensions: {
-      width: 1290,
-      height: 2796,
-    },
-  },
-  {
-    name: 'iPhone 15 Pro Max (Landscape)',
-    type: 'phone',
-    dimensions: {
-      width: 2796,
-      height: 1290,
-    },
-  },
-
-  {
-    name: 'Pixel 7',
-    type: 'phone',
-    dimensions: {
-      width: 1080,
-      height: 2400,
-    },
-  },
-  {
-    name: 'Pixel 7 (Landscape)',
-    type: 'phone',
-    dimensions: {
-      width: 2400,
-      height: 1080,
-    },
+    name: 'phone',
+    displays: [
+      {
+        name: 'iPhone SE',
+        dimensions: [750, 1334],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'iPhone 13 / 14',
+        dimensions: [1170, 2532],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'iPhone 14 Pro',
+        dimensions: [1179, 2556],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'iPhone 14 Pro Max',
+        dimensions: [1290, 2796],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'iPhone 16 Pro Max',
+        dimensions: [1320, 2868],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'Pixel 8',
+        dimensions: [1080, 2400],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'Pixel 9',
+        dimensions: [1080, 2424],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'Galaxy S24',
+        dimensions: [1080, 2340],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'Galaxy S24 Ultra',
+        dimensions: [1440, 3120],
+        defaultOrientation: 'portrait',
+      },
+    ],
   },
 
   {
-    name: 'Samsung Galaxy S23',
-    type: 'phone',
-    dimensions: {
-      width: 1080,
-      height: 2340,
-    },
-  },
-  {
-    name: 'Samsung Galaxy S23 (Landscape)',
-    type: 'phone',
-    dimensions: {
-      width: 2340,
-      height: 1080,
-    },
-  },
-
-  {
-    name: 'iPad Mini',
-    type: 'tablet',
-    dimensions: {
-      width: 1488,
-      height: 2266,
-    },
-  },
-  {
-    name: 'iPad Mini (Landscape)',
-    type: 'tablet',
-    dimensions: {
-      width: 2266,
-      height: 1488,
-    },
-  },
-
-  {
-    name: 'iPad Air',
-    type: 'tablet',
-    dimensions: {
-      width: 1640,
-      height: 2360,
-    },
-  },
-  {
-    name: 'iPad Air (Landscape)',
-    type: 'tablet',
-    dimensions: {
-      width: 2360,
-      height: 1640,
-    },
-  },
-
-  {
-    name: 'iPad Pro 11"',
-    type: 'tablet',
-    dimensions: {
-      width: 834,
-      height: 1194,
-    },
-  },
-  {
-    name: 'iPad Pro 11" (Landscape)',
-    type: 'tablet',
-    dimensions: {
-      width: 1194,
-      height: 834,
-    },
+    name: 'tablet',
+    displays: [
+      {
+        name: 'iPad Mini',
+        dimensions: [1488, 2266],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'iPad 10.9"',
+        dimensions: [1640, 2360],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'iPad Air 11"',
+        dimensions: [1640, 2360],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'iPad Pro 11"',
+        dimensions: [1668, 2420],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'iPad Pro 13"',
+        dimensions: [2064, 2752],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'Galaxy Tab A9',
+        dimensions: [800, 1340],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'Galaxy Tab S9',
+        dimensions: [1600, 2560],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'Galaxy Tab S9+',
+        dimensions: [1752, 2800],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'Galaxy Tab S9 Ultra',
+        dimensions: [1848, 2960],
+        defaultOrientation: 'portrait',
+      },
+    ],
   },
 
   {
-    name: 'iPad Pro 12.9"',
-    type: 'tablet',
-    dimensions: {
-      width: 2048,
-      height: 2732,
-    },
-  },
-  {
-    name: 'iPad Pro 12.9" (Landscape)',
-    type: 'tablet',
-    dimensions: {
-      width: 2732,
-      height: 2048,
-    },
+    name: 'desktop',
+    displays: [
+      {
+        name: 'Macbook Air',
+        dimensions: [1280, 832],
+        defaultOrientation: 'landscape',
+      },
+      {
+        name: 'Macbook Pro 14"',
+        dimensions: [1512, 982],
+        defaultOrientation: 'landscape',
+      },
+      {
+        name: 'Macbook Pro 16"',
+        dimensions: [1728, 1117],
+        defaultOrientation: 'landscape',
+      },
+      {
+        name: 'Desktop',
+        dimensions: [1440, 1024],
+        defaultOrientation: 'landscape',
+      },
+    ],
   },
 
   {
-    name: 'Surface Pro 9',
-    type: 'tablet',
-    dimensions: {
-      width: 1920,
-      height: 1280,
-    },
-  },
-  {
-    name: 'Surface Pro 9 (Landscape)',
-    type: 'tablet',
-    dimensions: {
-      width: 1280,
-      height: 1920,
-    },
+    name: 'paper',
+    displays: [
+      {
+        name: 'A6',
+        dimensions: [105, 148],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'A5',
+        dimensions: [148, 210],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'A4',
+        dimensions: [210, 297],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'A3',
+        dimensions: [297, 420],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'Letter',
+        dimensions: [216, 279],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'Legal',
+        dimensions: [216, 356],
+        defaultOrientation: 'portrait',
+      },
+      {
+        name: 'Tabloid',
+        dimensions: [279, 432],
+        defaultOrientation: 'portrait',
+      },
+    ],
   },
 ]
-
-export default displays

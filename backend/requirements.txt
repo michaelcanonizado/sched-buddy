@@ -8,7 +8,7 @@ pydantic-settings>=2.2.0
 torch>=2.0.0
 ultralytics>=8.0.0
 transformers<5.0
-surya-ocr
+google-cloud-vision
 opencv-python>=4.8.0
 Pillow
 rapidfuzz

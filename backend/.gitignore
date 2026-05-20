@@ -3,6 +3,7 @@ venv/
 *.cache
 
 *.env
+sched-buddy-fe40c33fa731.json
 
 outputs
 uploads

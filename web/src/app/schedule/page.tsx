@@ -1,13 +1,11 @@
 'use client'
 
 import WidthContainer from '@/components/container'
-import { Button } from '@/components/ui/button'
 import AddSubject from '@/features/schedule/components/actions/add-subject'
-import ChangeDevice from '@/features/schedule/components/actions/wallpaper-setup'
+import WallpaperSetup from '@/features/schedule/components/actions/wallpaper-setup'
 import DeleteSubject from '@/features/schedule/components/actions/delete-subject'
 import EditSubject from '@/features/schedule/components/actions/edit-subject'
 import ScheduleView from '@/features/schedule/components/schedule-view'
-import { PlusIcon } from 'lucide-react'
 import { TextBody } from '@/components/text'
 import ChangeBackground from '@/features/schedule/components/actions/change-background'
 import { ComponentChildrenProp } from '@/types'
@@ -54,7 +52,7 @@ function Sidebar() {
         <ButtonGroup>
           <TextBody>Customize</TextBody>
           <div className='flex flex-col gap-2'>
-            <ChangeDevice />
+            <WallpaperSetup />
             <ChangeBackground />
           </div>
         </ButtonGroup>

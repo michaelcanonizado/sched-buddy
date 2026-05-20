@@ -22,7 +22,7 @@ import {
   useScheduleDimension,
 } from '@/features/schedule/store/use-schedule-store'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { ComponentChildrenProp, ComponentClassNameProp } from '@/types'
 import { TextBody, TextSub } from '@/components/text'
@@ -188,10 +188,10 @@ function PresetTab({
           <SelectValue placeholder='Select a device' />
         </SelectTrigger>
         <SelectContent className='z-99999' position='popper'>
-          {deviceGroups.map((group, groupIndex) => {
+          {deviceGroups.map((group, gIndex) => {
             return (
-              <>
-                <SelectGroup key={`${groupIndex}`}>
+              <Fragment key={`${gIndex}`}>
+                <SelectGroup>
                   <SelectLabel>{group.name}</SelectLabel>
                   {group.devices.map((device, dIndex) => {
                     return (
@@ -205,8 +205,8 @@ function PresetTab({
                     )
                   })}
                 </SelectGroup>
-                {groupIndex < deviceGroups.length - 1 && <SelectSeparator />}
-              </>
+                {gIndex < deviceGroups.length - 1 && <SelectSeparator />}
+              </Fragment>
             )
           })}
         </SelectContent>

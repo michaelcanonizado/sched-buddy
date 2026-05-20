@@ -14,7 +14,7 @@ import {
 } from 'fabric'
 import { ScheduleStoreState, Settings } from '../schedule/store/use-schedule-store'
 import { Day, Meeting, Time } from '../schedule/types'
-import { Display } from '../schedule/lib/displays'
+import { Device } from '../schedule/lib/devices'
 import { SetObjectOverride, ViewportState } from './use-canvas-engine-store'
 
 type TimetableStyle = {

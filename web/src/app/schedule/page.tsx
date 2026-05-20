@@ -3,7 +3,7 @@
 import WidthContainer from '@/components/container'
 import { Button } from '@/components/ui/button'
 import AddSubject from '@/features/schedule/components/actions/add-subject'
-import ChangeDisplay from '@/features/schedule/components/actions/change-display'
+import ChangeDevice from '@/features/schedule/components/actions/wallpaper-setup'
 import DeleteSubject from '@/features/schedule/components/actions/delete-subject'
 import EditSubject from '@/features/schedule/components/actions/edit-subject'
 import ScheduleView from '@/features/schedule/components/schedule-view'
@@ -54,7 +54,7 @@ function Sidebar() {
           <TextBody>Customize</TextBody>
           <div className='flex flex-col gap-2'>
             <ChangeBackground />
-            <ChangeDisplay />
+            <ChangeDevice />
           </div>
         </ButtonGroup>
         <ButtonGroup>

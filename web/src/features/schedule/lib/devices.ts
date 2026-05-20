@@ -1,6 +1,6 @@
 export type Orientation = 'portrait' | 'landscape'
 
-export type Display = {
+export type Device = {
   name: string
   /**
    * [shortSide, longSide]
@@ -9,13 +9,13 @@ export type Display = {
   defaultOrientation: Orientation
 }
 
-export type DisplayGroup = {
+export type DeviceGroup = {
   name: string
-  displays: Display[]
+  devices: Device[]
 }
 
-export function getDisplayDimensions(
-  dimensions: Display['dimensions'],
+export function getDeviceDimensions(
+  dimensions: Device['dimensions'],
   orientation: Orientation,
 ): { width: number; height: number } {
   const [a, b] = dimensions
@@ -32,10 +32,10 @@ export function getDisplayDimensions(
   }
 }
 
-export const displayGroups: DisplayGroup[] = [
+export const deviceGroups: DeviceGroup[] = [
   {
-    name: 'phone',
-    displays: [
+    name: 'Phone',
+    devices: [
       {
         name: 'iPhone SE',
         dimensions: [750, 1334],
@@ -85,8 +85,8 @@ export const displayGroups: DisplayGroup[] = [
   },
 
   {
-    name: 'tablet',
-    displays: [
+    name: 'Tablet',
+    devices: [
       {
         name: 'iPad Mini',
         dimensions: [1488, 2266],
@@ -136,8 +136,8 @@ export const displayGroups: DisplayGroup[] = [
   },
 
   {
-    name: 'desktop',
-    displays: [
+    name: 'Desktop',
+    devices: [
       {
         name: 'Macbook Air',
         dimensions: [1280, 832],
@@ -157,47 +157,6 @@ export const displayGroups: DisplayGroup[] = [
         name: 'Desktop',
         dimensions: [1440, 1024],
         defaultOrientation: 'landscape',
-      },
-    ],
-  },
-
-  {
-    name: 'paper',
-    displays: [
-      {
-        name: 'A6',
-        dimensions: [105, 148],
-        defaultOrientation: 'portrait',
-      },
-      {
-        name: 'A5',
-        dimensions: [148, 210],
-        defaultOrientation: 'portrait',
-      },
-      {
-        name: 'A4',
-        dimensions: [210, 297],
-        defaultOrientation: 'portrait',
-      },
-      {
-        name: 'A3',
-        dimensions: [297, 420],
-        defaultOrientation: 'portrait',
-      },
-      {
-        name: 'Letter',
-        dimensions: [216, 279],
-        defaultOrientation: 'portrait',
-      },
-      {
-        name: 'Legal',
-        dimensions: [216, 356],
-        defaultOrientation: 'portrait',
-      },
-      {
-        name: 'Tabloid',
-        dimensions: [279, 432],
-        defaultOrientation: 'portrait',
       },
     ],
   },

@@ -11,11 +11,11 @@ import {
 } from '@/components/ui/dialog'
 import { TabletSmartphone, X } from 'lucide-react'
 import {
-  displayGroups,
-  Display,
-  getDisplayDimensions,
+  deviceGroups,
+  Device,
+  getDeviceDimensions,
   Orientation,
-} from '@/features/schedule/lib/displays'
+} from '@/features/schedule/lib/devices'
 import {
   Dimension,
   useScheduleActions,
@@ -32,6 +32,7 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
@@ -56,7 +57,7 @@ function DimensionPreview({
   )
 }
 
-function CustomDisplay({
+function CustomTab({
   id,
   onValueChange,
   defaultDimension,
@@ -65,9 +66,9 @@ function CustomDisplay({
   onValueChange: (dimension: Dimension) => void
   defaultDimension: Dimension
 }) {
-  const displayId = 'custom'
-  const defaultWidth = defaultDimension.id === displayId ? defaultDimension.width : 402
-  const defaultHeight = defaultDimension.id === displayId ? defaultDimension.height : 874
+  const deviceId = 'custom'
+  const defaultWidth = defaultDimension.id === deviceId ? defaultDimension.width : 402
+  const defaultHeight = defaultDimension.id === deviceId ? defaultDimension.height : 874
 
   const [width, setWidth] = useState(defaultWidth)
   const [height, setHeight] = useState(defaultHeight)
@@ -76,24 +77,24 @@ function CustomDisplay({
   function handleOrientationChange(value: Orientation) {
     setWidth(height)
     setHeight(width)
-    onValueChange({ width: height, height: width, id: displayId })
+    onValueChange({ width: height, height: width, id: deviceId })
   }
 
   function handleWidthChange(value: number) {
     const clamped = Math.max(1, value || 1)
     setWidth(clamped)
-    onValueChange({ width: clamped, height, id: displayId })
+    onValueChange({ width: clamped, height, id: deviceId })
   }
   function handleHeightChange(value: number) {
     const clamped = Math.max(1, value || 1)
     setHeight(clamped)
-    onValueChange({ width, height: clamped, id: displayId })
+    onValueChange({ width, height: clamped, id: deviceId })
   }
 
   return (
-    <ChangeDisplayTab
+    <ChangeDeviceTab
       id={id}
-      dimension={{ width, height, id: displayId }}
+      dimension={{ width, height, id: deviceId }}
       orientation={orientation}
       setOrientation={handleOrientationChange}
     >
@@ -122,11 +123,11 @@ function CustomDisplay({
           />
         </div>
       </div>
-    </ChangeDisplayTab>
+    </ChangeDeviceTab>
   )
 }
 
-function PresetDisplays({
+function PresetTab({
   id,
   onValueChange,
   defaultDimension,
@@ -135,24 +136,24 @@ function PresetDisplays({
   defaultDimension: Dimension
   onValueChange: (dimension: Dimension) => void
 }) {
-  const allDisplays = displayGroups.flatMap((group) => group.displays)
-  const defaultDisplay =
-    allDisplays.find((d) => d.name === defaultDimension.id) ?? displayGroups[0].displays[0]
+  const allDevices = deviceGroups.flatMap((group) => group.devices)
+  const defaultDevice =
+    allDevices.find((d) => d.name === defaultDimension.id) ?? deviceGroups[0].devices[0]
 
   const [orientation, setOrientation] = useState<Orientation>(
     defaultDimension.height > defaultDimension.width ? 'portrait' : 'landscape',
   )
-  const [display, setDisplay] = useState<Display>(defaultDisplay)
+  const [device, setDevice] = useState<Device>(defaultDevice)
 
-  function handleDisplayChange(value: string) {
-    const found = allDisplays.find((d) => d.name === value) ?? defaultDisplay
+  function handleDeviceChange(value: string) {
+    const found = allDevices.find((d) => d.name === value) ?? defaultDevice
     const newDimension = {
-      ...getDisplayDimensions(found.dimensions, found.defaultOrientation),
+      ...getDeviceDimensions(found.dimensions, found.defaultOrientation),
       id: found.name,
     }
 
     /* Update local state */
-    setDisplay(found)
+    setDevice(found)
     setOrientation(found.defaultOrientation)
 
     /* Update external state */
@@ -161,8 +162,8 @@ function PresetDisplays({
 
   function handleOrientationChange(value: Orientation) {
     const newDimension = {
-      ...getDisplayDimensions(display.dimensions, value),
-      id: display.name,
+      ...getDeviceDimensions(device.dimensions, value),
+      id: device.name,
     }
     /* Update local state */
     setOrientation(value)
@@ -172,9 +173,9 @@ function PresetDisplays({
   }
 
   return (
-    <ChangeDisplayTab
+    <ChangeDeviceTab
       id={id}
-      dimension={{ ...getDisplayDimensions(display.dimensions, orientation), id: display.name }}
+      dimension={{ ...getDeviceDimensions(device.dimensions, orientation), id: device.name }}
       orientation={orientation}
       setOrientation={handleOrientationChange}
     >
@@ -182,36 +183,39 @@ function PresetDisplays({
         <TextBody>Dimension</TextBody>
         <TextSub className='text-muted-foreground'>Choose a device</TextSub>
       </div>
-      <Select onValueChange={handleDisplayChange} defaultValue={display.name}>
+      <Select onValueChange={handleDeviceChange} defaultValue={device.name}>
         <SelectTrigger className='w-full'>
           <SelectValue placeholder='Select a device' />
         </SelectTrigger>
         <SelectContent className='z-99999' position='popper'>
-          {displayGroups.map((group, groupIndex) => {
+          {deviceGroups.map((group, groupIndex) => {
             return (
-              <SelectGroup key={`${group.name}.${groupIndex}`}>
-                <SelectLabel>{group.name}</SelectLabel>
-                {group.displays.map((display, displayIndex) => {
-                  return (
-                    <SelectItem
-                      key={`${display.name}.${displayIndex}`}
-                      value={display.name}
-                      className='flex flex-row items-center'
-                    >
-                      <TextBody>{display.name}</TextBody>
-                    </SelectItem>
-                  )
-                })}
-              </SelectGroup>
+              <>
+                <SelectGroup key={`${groupIndex}`}>
+                  <SelectLabel>{group.name}</SelectLabel>
+                  {group.devices.map((device, dIndex) => {
+                    return (
+                      <SelectItem
+                        key={`${dIndex}`}
+                        value={device.name}
+                        className='flex flex-row items-center'
+                      >
+                        <TextBody>{device.name}</TextBody>
+                      </SelectItem>
+                    )
+                  })}
+                </SelectGroup>
+                {groupIndex < deviceGroups.length - 1 && <SelectSeparator />}
+              </>
             )
           })}
         </SelectContent>
       </Select>
-    </ChangeDisplayTab>
+    </ChangeDeviceTab>
   )
 }
 
-function ChangeDisplayTab({
+function ChangeDeviceTab({
   dimension,
   children,
   orientation,
@@ -228,7 +232,7 @@ function ChangeDisplayTab({
   return (
     <TabsContent value={id} className=''>
       <div className='grid h-full grid-cols-2 gap-6'>
-        <div className='flex h-full w-full flex-col items-center gap-4'>
+        <div className='flex h-full w-full flex-col items-center gap-2'>
           <TextBody>Preview</TextBody>
           <div className='bg-muted relative h-[250px] w-full grow rounded-lg'>
             <div className='absolute inset-4 grid place-items-center overflow-hidden'>
@@ -260,16 +264,16 @@ function ChangeDisplayTab({
   )
 }
 
-export default function ChangeDisplay() {
+export default function WallpaperSetup() {
   const { setDimension: setScheduleDimension } = useScheduleActions()
   const defaultDimension = useScheduleDimension()
 
   const defaultPresetDimension = {
-    ...getDisplayDimensions(
-      displayGroups[0].displays[0].dimensions,
-      displayGroups[0].displays[0].defaultOrientation,
+    ...getDeviceDimensions(
+      deviceGroups[0].devices[0].dimensions,
+      deviceGroups[0].devices[0].defaultOrientation,
     ),
-    id: displayGroups[0].displays[0].name,
+    id: deviceGroups[0].devices[0].name,
   }
   const defaultCustomDimension: Dimension = { width: 1081, height: 1920, id: 'custom' }
 
@@ -290,26 +294,26 @@ export default function ChangeDisplay() {
       <DialogTrigger asChild>
         <Button variant='outline'>
           <TabletSmartphone />
-          Change Display
+          Wallpaper Setup
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Change Display</DialogTitle>
-          <DialogDescription>Change the background device</DialogDescription>
+          <DialogTitle>Wallpaper Setup</DialogTitle>
+          <DialogDescription>Customize the wallpaper dimensions</DialogDescription>
         </DialogHeader>
 
-        <div className='bg-muted h-fit px-8 py-4'>
+        <div className='bg-muted h-fit p-8'>
           <Tabs
             defaultValue='presets'
             onValueChange={handleTabChange}
-            className='bg-background h-full gap-4 rounded-2xl px-6 py-6 shadow-xs'
+            className='bg-background h-full gap-4 rounded-2xl border px-6 py-6 shadow-xs'
           >
             <TabsList className='w-full'>
               <TabsTrigger value='presets'>Presets</TabsTrigger>
               <TabsTrigger value='custom'>Custom</TabsTrigger>
             </TabsList>
-            <PresetDisplays
+            <PresetTab
               id='presets'
               defaultDimension={defaultDimension}
               onValueChange={(dim) => {
@@ -317,7 +321,7 @@ export default function ChangeDisplay() {
                 setDimension(dim)
               }}
             />
-            <CustomDisplay
+            <CustomTab
               id='custom'
               defaultDimension={defaultDimension}
               onValueChange={(dim) => {

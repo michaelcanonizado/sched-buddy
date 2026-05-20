@@ -7,13 +7,15 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { useScheduleActions } from '@/features/schedule/store/use-schedule-store'
 import WidthContainer from '@/components/container'
-import { TextBody, TextDisplay, TextHeadingLG, TextHeadingSM, TextSub } from '@/components/text'
+import { TextBody, TextDisplay, TextHeadingSM, TextSub } from '@/components/text'
 import { cn } from '@/lib/utils'
 import { ComponentClassNameProp } from '@/types'
 import { useCORExtraction } from '@/features/scanner/hooks/use-cor-extraction'
 import { validateCORFile } from '@/features/scanner/lib/validate-cor-file'
 import { Job } from '@/features/scanner/schemas'
 import Loading from '@/components/loading'
+import { useQuery } from '@tanstack/react-query'
+import healthQueryOptions from '@/features/scanner/query-options/health-query-options'
 
 function IdleState({
   className,
@@ -146,6 +148,13 @@ export default function ScanCOR() {
   const [moveToScheduleEditor, setMoveToScheduleEditor] = useState<boolean>(false)
   const { extract, status, data: extractedData, isError, error, job } = useCORExtraction()
 
+  const { data: healthData } = useQuery(healthQueryOptions())
+
+  useEffect(() => {
+    if (healthData) return
+    router.push('/')
+  }, [healthData, router])
+
   function onButtonClick() {
     fileInputRef.current?.click()
   }
@@ -189,13 +198,6 @@ export default function ScanCOR() {
     saveCORData(extractedData)
     router.push('/schedule')
   }, [extractedData, moveToScheduleEditor])
-
-  useEffect(() => {
-    console.log('extractedData: ', extractedData)
-    console.log('status: ', status)
-    console.log('isError: ', isError)
-    console.log('error: ', error)
-  }, [extractedData, isError, error, status])
 
   /* Prevent scrolling when loading screen is shown. If weird scroll is still present behavior (especially on mobile), add: overscroll-none */
   useEffect(() => {

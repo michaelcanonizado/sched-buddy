@@ -1,6 +1,7 @@
 import WidthContainer from '@/components/container'
 import { TextHeadingSM, TextDisplay } from '@/components/text'
 import { Button } from '@/components/ui/button'
+import ScanCORLink from '@/features/scanner/components/scan-cor-link'
 import { ScanQrCode, Wand } from 'lucide-react'
 import Link from 'next/link'
 
@@ -14,11 +15,7 @@ export default function HomePage() {
             <TextHeadingSM>Ut enim ad minim veniam, quis nostrud exercitation!</TextHeadingSM>
           </div>
           <div className='flex flex-row gap-2'>
-            <Button asChild>
-              <Link href='/scan-cor'>
-                <ScanQrCode /> Scan COR
-              </Link>
-            </Button>
+            <ScanCORLink />
             <Button variant='outline'>
               <Wand />
               Create Manually

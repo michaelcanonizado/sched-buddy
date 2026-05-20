@@ -12,7 +12,7 @@ from rapidfuzz import fuzz
 from column_handlers import ColumnHandler, get_handler
 from course_db import CourseDatabase
 from models import CellRecord, Detection, TableData
-from utils import bbox_intersection, collect_cell_text, ocr_full_table, LineList
+from utils import bbox_intersection, collect_cell_text, ocr_full_table, WordList
 
 logger = logging.getLogger(__name__)
 
@@ -38,17 +38,10 @@ def _best_fuzzy_match(
     best_name, best_score = query, -1
     query_norm = query.lower().strip()
     for candidate in candidates:
-        cand_norm = candidate.lower()
-        raw = max(
-            fuzz.partial_ratio(query_norm, cand_norm),
-            fuzz.ratio(query_norm, cand_norm),
+        score = max(
+            fuzz.partial_ratio(query_norm, candidate),
+            fuzz.ratio(query_norm, candidate),
         )
-        len_ratio = (
-            min(len(query_norm), len(cand_norm))
-            / max(len(query_norm), len(cand_norm))
-            if max(len(query_norm), len(cand_norm)) > 0 else 1.0
-        )
-        score = raw * len_ratio
         if score > min_score and score > best_score:
             best_name, best_score = candidate, score
     return best_name, best_score
@@ -72,11 +65,12 @@ def match_course(
 # Column-handler resolution (runs before cell extraction)
 # ---------------------------------------------------------------------------
 
+# 2. _resolve_column_handlers — accept words instead of calling ocr_crop
 def _resolve_column_handlers(
     detector,
     columns: list,
     header_dets: list,
-    words: LineList,                        # ← new parameter
+    words: WordList,                        # ← new parameter
 ) -> tuple[list[str], list[ColumnHandler]]:
     logger.info("⚠️  Resolving column handlers with %d columns and %d header detections",
         len(columns), len(header_dets),
@@ -93,14 +87,11 @@ def _resolve_column_handlers(
     names:    list[str]           = []
     handlers: list[ColumnHandler] = []
 
-    # FIXME: assign default headers due to poor structural detection; can remove once structure detection is improved.
-    for col, header_name in zip(columns, HEADER_NAMES):
+    for col in columns:
         cell = bbox_intersection(header_box, col.bbox)
         raw  = collect_cell_text(words, cell).strip() if cell else ""  # ← changed
 
-        # Extract first line for matching (e.g., "Units" from "Units\nCredit Lec Lab")
-        match_text = raw.split('\n')[0] if raw else ""
-        canonical, score = match_header(match_text, min_score=70)
+        canonical, score = match_header(raw, min_score=70)
         logger.info("Header match: %r → %r (score: %d)", raw, canonical, score)
 
         handler = get_handler(canonical)
@@ -213,9 +204,8 @@ def extract_table(
     if detector.image is None:
         raise RuntimeError("Call process() before extract_table().")
 
-    # ── Single Vision API call for the whole table ──────────────────
+    # Single Vision API call for the whole table 
     words = ocr_full_table(detector.image)
-    # ───────────────────────────────────────────────────────────────
 
     rows = sorted(
         [d for d in detections if "row" in d.label.lower()],
@@ -227,7 +217,6 @@ def extract_table(
     )
     header_dets = [d for d in detections if "header" in d.label.lower()]
 
-    # 1. Header OCR — must run before cell extraction so handlers are ready.
     header_names, handlers = _resolve_column_handlers(
         detector, columns, header_dets, words   # ← pass words
     )

@@ -124,7 +124,7 @@ class DaysHandler(ColumnHandler):
     )
 
     def parse_cell(self, text: str) -> list[str]:
-        cleaned = re.sub(r"[^a-zA-Z]", "", text).lower()
+        cleaned = re.sub(r"[^a-zA-Z\u0400-\u04FF]", "", text).lower()
         result: list[str] = []
         i = 0
         while i < len(cleaned):

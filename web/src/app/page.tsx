@@ -1,12 +1,12 @@
 import WidthContainer from '@/components/container'
-import ScanButton from '@/features/scanner/components'
 import { TextHeadingSM, TextDisplay } from '@/components/text'
 import { Button } from '@/components/ui/button'
-import { Wand } from 'lucide-react'
+import { ScanQrCode, Wand } from 'lucide-react'
+import Link from 'next/link'
 
 export default function HomePage() {
   return (
-    <div className='grid h-screen w-screen place-items-center'>
+    <div className='grid grow place-items-center'>
       <WidthContainer>
         <div className='flex flex-col items-center justify-center gap-8'>
           <div className='flex max-w-[500px] flex-col items-center gap-4'>
@@ -14,7 +14,11 @@ export default function HomePage() {
             <TextHeadingSM>Ut enim ad minim veniam, quis nostrud exercitation!</TextHeadingSM>
           </div>
           <div className='flex flex-row gap-2'>
-            <ScanButton />
+            <Button asChild>
+              <Link href='/scan-cor'>
+                <ScanQrCode /> Scan COR
+              </Link>
+            </Button>
             <Button variant='outline'>
               <Wand />
               Create Manually

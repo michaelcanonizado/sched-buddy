@@ -14,6 +14,7 @@ import { ComponentChildrenProp } from '@/types'
 import ExportSchedule from '@/features/schedule/components/actions/export-schedule'
 import { useScheduleActions, useScheduleStore } from '@/features/schedule/store/use-schedule-store'
 import { cn } from '@/lib/utils'
+import NewSchedule from '@/features/schedule/components/actions/new-schedule'
 
 function ButtonGroup({ children }: ComponentChildrenProp) {
   return <div className='flex flex-col gap-2'>{children}</div>
@@ -61,10 +62,7 @@ function Sidebar() {
           <TextBody>File</TextBody>
           <div className='flex flex-col gap-2'>
             <ExportSchedule />
-            <Button variant='outline'>
-              <PlusIcon />
-              New Schedule
-            </Button>
+            <NewSchedule />
           </div>
         </ButtonGroup>
       </div>

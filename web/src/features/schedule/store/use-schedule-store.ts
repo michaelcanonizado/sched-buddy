@@ -3,6 +3,8 @@ import { persist } from 'zustand/middleware'
 import { Day, Meeting, Subject } from '../types'
 import { ExtractionResult } from '@/features/scanner/schemas'
 import { createUniqueColorGenerator } from '../lib/default-meeting-colors'
+import { setBackgroundImageDB } from '../db/background-image'
+import { useCanvasEngineStore } from '@/features/canvas-engine/use-canvas-engine-store'
 
 type ScheduleStoreActions = {
   setTitle: (title: string) => void
@@ -13,6 +15,7 @@ type ScheduleStoreActions = {
   setBackgroundImageContext: (context: BackgroundImageContext | null) => void
   setBackgroundFill: (hex: string | null) => void
   setDimension: (dimension: Dimension) => void
+  resetScheduleStore: () => void
   setHasHydrated: () => void
 }
 
@@ -69,7 +72,6 @@ export const useScheduleStore = create<ScheduleStoreState>()(
           showWeekend: false,
         },
         subjects: [],
-        backgroundImageContext: null,
         background: {
           imageContext: null,
           fill: '#e3463b',
@@ -83,6 +85,8 @@ export const useScheduleStore = create<ScheduleStoreState>()(
         actions: {
           setTitle: (title) => set({ title }),
           saveCORData: (data) => {
+            get().actions.resetScheduleStore()
+
             const getRandomColor = createUniqueColorGenerator()
 
             const subjects: Subject[] = data.data.map((subject) => {
@@ -142,6 +146,31 @@ export const useScheduleStore = create<ScheduleStoreState>()(
 
           setDimension: (dimension) => set({ dimension }),
           setHasHydrated: () => set({ hasHydrated: true }),
+
+          resetScheduleStore: () => {
+            const canvasViewportState = useCanvasEngineStore.getState()
+            canvasViewportState.actions.resetViewport()
+            setBackgroundImageDB(null)
+            set({
+              title: '',
+              settings: {
+                timeFormat: '12',
+                startOfWeek: 'monday',
+                timeResolution: 30,
+                showWeekend: false,
+              },
+              subjects: [],
+              background: {
+                imageContext: null,
+                fill: '#e3463b',
+              },
+              dimension: {
+                id: 'custom',
+                width: 1125,
+                height: 2436,
+              },
+            })
+          },
         },
       }) as ScheduleStoreState,
     {

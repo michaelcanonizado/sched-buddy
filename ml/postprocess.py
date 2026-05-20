@@ -47,30 +47,41 @@ def _is_valid_days(val: Any) -> bool:
 
 
 def _is_valid_time(val: Any) -> bool:
-    """Return True only when *val* is a parsed TimeRange object."""
-    return isinstance(val, TimeRange)
+    """Accept either a TimeRange instance or a pre-serialized dict."""
+    if isinstance(val, TimeRange):
+        return True
+    if isinstance(val, dict):
+        start = val.get("start")
+        end   = val.get("end")
+        return (
+            isinstance(start, int) and isinstance(end, int)
+            and 0 <= start <= 1439 and 0 < end <= 1439
+            and end > start
+        )
+    return False
 
 
-def _collect_all_valid_slots(valid_rows: list[dict], invalid_rows: list[dict]) -> set[tuple[str, int, int]]:
-    """
-    Builds a definitive master set of occupied intervals.
-    Pulls from completely valid rows, plus valid individual slots buried in invalid rows.
-    Returns a set of exploded single-day tuples: (day, start_min, end_min)
-    """
+def _get_time_bounds(val: Any) -> tuple[int, int]:
+    """Extract (start, end) from a TimeRange or a dict."""
+    if isinstance(val, TimeRange):
+        return val.start, val.end
+    return val["start"], val["end"]
+
+def _collect_all_valid_slots(valid_rows, invalid_rows):
     occupied_set = set()
-    
-    # Helper to explode multi-day slots into distinct single-day entries
+
     def add_slots(rows_list):
         for row in rows_list:
             for slot in row.get("schedules", []):
-                days = slot.get("days")
+                days     = slot.get("days")
                 time_val = slot.get("time")
                 if _is_valid_days(days) and _is_valid_time(time_val):
+                    t_start, t_end = _get_time_bounds(time_val)
                     for day in days:
-                        occupied_set.add((day, time_val.start, time_val.end))
+                        occupied_set.add((day, t_start, t_end))
 
     add_slots(valid_rows)
-    add_slots(invalid_rows) # Safeguard: Don't stomp on partially readable slots in bad rows!
+    add_slots(invalid_rows)
     return occupied_set
 
 
@@ -106,7 +117,7 @@ def _find_free_slot_fast(
     return ["monday"], _SEARCH_END, _SEARCH_END + duration_mins
 
 
-def fill_missing_slots_optimized(invalid_rows: list[dict], occupied_set: set[tuple[str, int, int]]) -> None:
+def fill_missing_slots(invalid_rows: list[dict], occupied_set: set[tuple[str, int, int]]) -> None:
     """
     Repairs missing schedule components sequentially, updating the master set instantly
     as slots are filled to ensure fallback assignments never collide with each other.
@@ -124,13 +135,12 @@ def fill_missing_slots_optimized(invalid_rows: list[dict], occupied_set: set[tup
 
             # Scenario A: Time is known, Days are missing
             if valid_time and not valid_days:
-                duration = time_val.end - time_val.start
+                t_start, t_end = _get_time_bounds(time_val)
+                duration = t_end - t_start
                 new_days, _, _ = _find_free_slot_fast(occupied_set, duration)
                 slot["days"] = new_days
-                
-                # Instantly claim this territory in the master map
                 for d in new_days:
-                    occupied_set.add((d, time_val.start, time_val.end))
+                    occupied_set.add((d, t_start, t_end))
 
             # Scenario B: Days are known, Time is missing
             elif valid_days and not valid_time:
@@ -193,7 +203,7 @@ def validate_course_rows(table: TableData) -> TableData:
         occupied_set = _collect_all_valid_slots(valid_rows, raw_invalid_dicts)
         
         # Repair the invalid items in-place modifying our tracking set on-the-fly
-        fill_missing_slots_optimized(raw_invalid_dicts, occupied_set)
+        fill_missing_slots(raw_invalid_dicts, occupied_set)
 
         # Final verification round using our saved real-world index numbers
         for (original_idx, row), original_state in zip(invalid_rows_tracked, original_states):

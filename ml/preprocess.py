@@ -61,7 +61,7 @@ class PreprocessingConfig:
     clahe_tile:             tuple[int, int] = (8, 8)
     # I/O
     pdf_scale:              float           = 2.0
-    output_dir:             Path            = field(default_factory=lambda: Path("output"))
+    output_dir:             Path            = field(default_factory=lambda: Path("outputs"))
 
 
 # ---------------------------------------------------------------------------

@@ -105,7 +105,7 @@ class DaysHandler(ColumnHandler):
 
     _DAY_ALIASES: dict[str, list[str]] = {
         "monday":    ["Mon", "M"],
-        "tuesday":   ["Tue", "Tu", "T"],
+        "tuesday":   ["Tue", "Tu", "T", "Т", "т"], # add common OCR misreads
         "wednesday": ["Wed", "W"],
         "thursday":  ["Thu", "Th"],
         "friday":    ["Fri", "F"],
@@ -124,7 +124,7 @@ class DaysHandler(ColumnHandler):
     )
 
     def parse_cell(self, text: str) -> list[str]:
-        cleaned = re.sub(r"[^a-zA-Z]", "", text).lower()
+        cleaned = re.sub(r"[^a-zA-Z\u0400-\u04FF]", "", text).lower()
         result: list[str] = []
         i = 0
         while i < len(cleaned):
@@ -162,14 +162,14 @@ class TimeHandler(ColumnHandler):
         cleaned = re.sub(r';', ':', cleaned)
         cleaned = ' '.join(cleaned.split())
 
-        parts = self._RANGE_SEP.split(cleaned, maxsplit=1)
-        matches = [self._TIME_RE.search(p) for p in parts]
-
-        if not matches[0] or len(matches) < 2 or not matches[1]:
+        # Try to find all time patterns (handles both dash- and space-separated formats)
+        all_matches = list(self._TIME_RE.finditer(cleaned))
+        
+        if len(all_matches) < 2:
             raise ValueError(f"Expected 'HH:MM AM/PM - HH:MM AM/PM', got: {text!r}")
 
-        start = self._to_minutes(*matches[0].groups())
-        end   = self._to_minutes(*matches[1].groups())
+        start = self._to_minutes(*all_matches[0].groups())
+        end   = self._to_minutes(*all_matches[1].groups())
 
         if start >= end:
             raise ValueError(f"Invalid time range in: {text!r}")

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import shutil
 import sys
 import time
@@ -39,6 +40,14 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Set up Google Cloud credentials before importing ml/ modules
+# ---------------------------------------------------------------------------
+
+if settings.GOOGLE_APPLICATION_CREDENTIALS:
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = settings.GOOGLE_APPLICATION_CREDENTIALS
+    logger.debug("Set GOOGLE_APPLICATION_CREDENTIALS to: %s", settings.GOOGLE_APPLICATION_CREDENTIALS)
 
 # ---------------------------------------------------------------------------
 # Make ml/ importable — insert once at module load time
@@ -248,10 +257,17 @@ def run_pipeline(image_path: Path, job_id: str) -> ExtractionResult:
     t_postproc_start = time.perf_counter()
 
     # NOTE: UnitsHandler return a class breakdown dict, which fails CourseRow validation, so we serialize it before validation.
+    # 1. First pass serialization to normalize UnitsHandler outputs into dicts for Pydantic
     serialized_row = [serialize_row(row) for row in table_data.rows]
     serialized_table_data = TableData(headers=table_data.headers, rows=serialized_row, cells=table_data.cells)
     
+    # 2. Run validation and missing slot repairs
     normalized_table_data = validate_course_rows(table=serialized_table_data)
+    
+    # 3. CRITICAL FIX: Serialize the final rows AGAIN to catch any newly created 
+    #    TimeRange objects generated during the slot repair phase.
+    final_serialized_rows = [serialize_row(row) for row in normalized_table_data.rows]
+    normalized_table_data = TableData(headers=normalized_table_data.headers, rows=final_serialized_rows, cells=normalized_table_data.cells)
 
     timings['postprocessing'] = time.perf_counter() - t_postproc_start
 
@@ -299,4 +315,3 @@ def run_pipeline(image_path: Path, job_id: str) -> ExtractionResult:
     return ExtractionResult(
         data=normalized_table_data.rows,
     )
-

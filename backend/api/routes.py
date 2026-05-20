@@ -22,8 +22,8 @@ router = APIRouter()
 # ---------------------------------------------------------------------------
 # Allowed image types
 # ---------------------------------------------------------------------------
-ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/tiff", "image/webp"}
-ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp"}
+ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/tiff", "image/webp", "application/pdf"}
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp", ".pdf"}
 
 
 # ---------------------------------------------------------------------------

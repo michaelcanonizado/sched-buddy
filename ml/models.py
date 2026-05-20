@@ -24,7 +24,8 @@ class TimeRange(BaseModel):
     @field_validator('end')
     @classmethod
     def end_after_start(cls, v, info):
-        if info.data.get('start') and v <= info.data['start']:
+        start = info.data.get('start')
+        if start is not None and v <= start:
             raise ValueError('end time must be after start time')
         return v
 
@@ -48,8 +49,11 @@ class CourseRow(BaseModel):
     units: Optional[Union[UnitBreakdown, float]] = None
     class_section: Optional[str] = Field(None, alias="class", strict=True)
     schedules: List[Schedule] = Field(default_factory=list, min_length=1)
-    
-    model_config = {"populate_by_name": True}
+
+    model_config = {
+        "populate_by_name": True,
+        "serialize_by_alias": True, 
+    }
 
 @dataclass
 class Detection:

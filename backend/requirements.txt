@@ -7,8 +7,12 @@ pydantic-settings>=2.2.0
 # ML/Table Extraction
 torch>=2.0.0
 ultralytics>=8.0.0
-transformers
+transformers<5.0
+google-cloud-vision
 opencv-python>=4.8.0
 Pillow
-pytesseract
 rapidfuzz
+pymupdf
+scipy
+jdeskew
+timm

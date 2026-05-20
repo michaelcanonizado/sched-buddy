@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import shutil
 import sys
 import time
@@ -39,6 +40,14 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Set up Google Cloud credentials before importing ml/ modules
+# ---------------------------------------------------------------------------
+
+if settings.GOOGLE_APPLICATION_CREDENTIALS:
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = settings.GOOGLE_APPLICATION_CREDENTIALS
+    logger.debug("Set GOOGLE_APPLICATION_CREDENTIALS to: %s", settings.GOOGLE_APPLICATION_CREDENTIALS)
 
 # ---------------------------------------------------------------------------
 # Make ml/ importable — insert once at module load time

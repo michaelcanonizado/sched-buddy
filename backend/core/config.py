@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     # Hugging Face token for model downloads
     HF_TOKEN: str = ""
 
+    # Google Cloud credentials
+    GOOGLE_APPLICATION_CREDENTIALS: str = ""
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

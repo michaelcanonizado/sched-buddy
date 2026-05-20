@@ -54,8 +54,8 @@ function Sidebar() {
         <ButtonGroup>
           <TextBody>Customize</TextBody>
           <div className='flex flex-col gap-2'>
-            <ChangeBackground />
             <ChangeDevice />
+            <ChangeBackground />
           </div>
         </ButtonGroup>
         <ButtonGroup>

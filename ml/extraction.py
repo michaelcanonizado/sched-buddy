@@ -12,8 +12,7 @@ from rapidfuzz import fuzz
 from column_handlers import ColumnHandler, get_handler
 from course_db import CourseDatabase
 from models import CellRecord, Detection, TableData
-from utils import bbox_intersection, ocr_crop
-from postprocess import fill_missing_slots
+from utils import bbox_intersection, collect_cell_text, ocr_full_table, LineList
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +38,17 @@ def _best_fuzzy_match(
     best_name, best_score = query, -1
     query_norm = query.lower().strip()
     for candidate in candidates:
-        score = max(
-            fuzz.partial_ratio(query, candidate),
-            fuzz.ratio(query, candidate),
+        cand_norm = candidate.lower()
+        raw = max(
+            fuzz.partial_ratio(query_norm, cand_norm),
+            fuzz.ratio(query_norm, cand_norm),
         )
+        len_ratio = (
+            min(len(query_norm), len(cand_norm))
+            / max(len(query_norm), len(cand_norm))
+            if max(len(query_norm), len(cand_norm)) > 0 else 1.0
+        )
+        score = raw * len_ratio
         if score > min_score and score > best_score:
             best_name, best_score = candidate, score
     return best_name, best_score
@@ -70,6 +76,7 @@ def _resolve_column_handlers(
     detector,
     columns: list,
     header_dets: list,
+    words: LineList,                        # ← new parameter
 ) -> tuple[list[str], list[ColumnHandler]]:
     logger.info("⚠️  Resolving column handlers with %d columns and %d header detections",
         len(columns), len(header_dets),
@@ -89,15 +96,17 @@ def _resolve_column_handlers(
     # FIXME: assign default headers due to poor structural detection; can remove once structure detection is improved.
     for col, header_name in zip(columns, HEADER_NAMES):
         cell = bbox_intersection(header_box, col.bbox)
-        raw  = ocr_crop(detector.image, cell).strip() if cell else ""
+        raw  = collect_cell_text(words, cell).strip() if cell else ""  # ← changed
 
-        canonical, score = match_header(raw, min_score=70)
-        logger.info("Header match: %r → %r (score: %d): but using assigned header names", raw, canonical, score)
+        # Extract first line for matching (e.g., "Units" from "Units\nCredit Lec Lab")
+        match_text = raw.split('\n')[0] if raw else ""
+        canonical, score = match_header(match_text, min_score=70)
+        logger.info("Header match: %r → %r (score: %d)", raw, canonical, score)
 
-        handler = get_handler(header_name)
+        handler = get_handler(canonical)
         handler.configure(raw)
 
-        names.append(header_name)
+        names.append(canonical)
         handlers.append(handler)
 
     return names, handlers
@@ -204,6 +213,10 @@ def extract_table(
     if detector.image is None:
         raise RuntimeError("Call process() before extract_table().")
 
+    # ── Single Vision API call for the whole table ──────────────────
+    words = ocr_full_table(detector.image)
+    # ───────────────────────────────────────────────────────────────
+
     rows = sorted(
         [d for d in detections if "row" in d.label.lower()],
         key=lambda d: d.bbox[1],
@@ -215,7 +228,9 @@ def extract_table(
     header_dets = [d for d in detections if "header" in d.label.lower()]
 
     # 1. Header OCR — must run before cell extraction so handlers are ready.
-    header_names, handlers = _resolve_column_handlers(detector, columns, header_dets)
+    header_names, handlers = _resolve_column_handlers(
+        detector, columns, header_dets, words   # ← pass words
+    )
     schedule_fields = {
         name for name, h in zip(header_names, handlers) if h.is_schedule_field
     }
@@ -235,7 +250,7 @@ def extract_table(
             zip(columns, header_names, handlers), 1
         ):
             box  = bbox_intersection(row.bbox, col.bbox)
-            text = ocr_crop(detector.image, box) if box else ""
+            text = collect_cell_text(words, box) if box else ""  # ← changed
 
             cell_records.append(CellRecord(row=r_idx, column=c_idx, bbox=box, text=text))
 
@@ -261,11 +276,7 @@ def extract_table(
 
         rows_as_dicts.extend(expanded)
 
-    # 3. Fallback: fill any schedule slot whose days or time could not be
-    #    parsed from OCR with the earliest non-overlapping free slot.
-    fill_missing_slots(rows_as_dicts)
-
-    # 4. Post-process: fuzzy-match course codes against the database.
+    # 3. Post-process: fuzzy-match course codes against the database.
     _apply_course_matching(rows_as_dicts, header_names, db=db)
 
     logger.info(
